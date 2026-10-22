@@ -1,0 +1,3 @@
+stage,image_side_px,template_side_px,landmarks_per_frame,median_single_ms,p95_single_ms,serial_correlations_ms,tracemalloc_peak_bytes,old_window_array_bytes
+fine,96,32,50,0.5522999999811873,0.6025750019034604,27.614999999059364,499985,34611200
+coarse,364,64,15,19.35590000357479,28.413280000313538,290.33850005362183,7697815,2968813568

@@ -1,0 +1,3028 @@
+=== PAGE 1 ===
+CANSAT
+Mathematical derivations
+and verification
+A readable reference for terrain-relative navigation,
+wind retrieval and landing prediction
+30 September 2026
+Purpose.Derive the mathematics required by the project’s secondary-mission proposal, explain
+what each equation means, state the conditions under which it is valid, and verify the results with
+independent numerical identities and synthetic experiments.
+Basis.The local proposal dated 27 September 2026, including its mathematical index and
+Appendices A–L. This workspace contains no flight software, calibration dataset or measured
+descent logs. The connected CANSAT 2027 reference folder was inspected; its available regulations
+PDF describes the 2025–2026 competition. It is historical context, not confirmation of 2026–2027
+rules.
+Evidence levels.An algebraic identity can be proved within a model. A simulation checks
+implementation and consequences of that model. Agreement with the physical CanSat requires
+measurements. This document keeps those three statements separate.
+Deliverable.This source contains the entire document, including plotted coordinates. It needs
+no external figures, bibliography, or included source files. Supporting scripts retain reproducible
+checks and synthetic data in the project, but are not required to compile this document.
+Design inputs are identified as assumptions; no synthetic value is presented as a measured flight result.
+
+=== PAGE 2 ===
+CANSAT mathematics 30 September 2026
+Contents
+1 How to read this document 2
+2 Descent, wind response and suspension physics 4
+3 Thermodynamic stability and surface-layer inference 9
+4 Supporting engineering arithmetic 12
+5 Imaging, navigation, integrity, and target selection 15
+6 Turbulence along a descending path 31
+7 Wind retrieval, smoothing, and information content 34
+8 Landing prediction and the question of shrinking ellipses 41
+9 Numerical verification and synthetic experiments 43
+10 Coverage, unresolved questions, and engineering handoff 48
+1
+
+=== PAGE 3 ===
+CANSAT mathematics 30 September 2026
+1 How to read this document
+The mission has a connected chain of mathematics. A camera and inertial sensors estimate
+the probe’s motion; a dynamic response model converts that motion to an atmospheric wind
+profile; a statistical wind model propagates the remaining drift to predict landing. Pressure and
+temperature provide density, height and stability. A wrong assumption early in this chain can
+produce convincing but biased results later.
+Each section explains the model, derives its equations, and gives numerical or limiting-case
+checks. For a first reading, follow the physical dynamics, then the camera and filter, then
+turbulence, retrieval, and prediction. The supporting-engineering section supplies quantities
+needed to make the data collection possible. The final sections distinguish completed verification
+from the experiments still needed.
+1.1 Conventions and units
+Symbol Meaning and convention
+z,hHeight above the stated terrain datum, upward positive (m).
+s,vd Distance descended (m) and positive downward speed (m/s).
+u,wProbe velocity and atmospheric wind, respectively (m/s).
+gorg 0 Positive gravitational acceleration,9.80665m/s2 in examples.
+g(r)Adifferentobject: dimensionless transverse correlation.
+L,Lp,LO,ℓ Turbulence decay scale, suspension length, Obukhov length and
+horizontal lag length (m).
+Rwb,Rcb Body-to-world and body-to-camera rotations.
+θ Potential temperature in atmospheric sections; an explicitly
+vector-valued local rotation error in navigation.
+P,Σ,SCovariances, with squared units of the variables concerned.
+∆t,∆sTime and descended-distance sample intervals, both positive.
+Convert degrees to radians before usinghδθor angular-rate products. Use absolute temperature
+in kelvin and pressure in pascals except where a pressure ratio uses consistent units. Logarithms
+of lengths must be ratios to a stated reference length.
+1.2 Important corrections to the proposal
+The following are results of the mathematical audit; they do not silently replace a flight design
+decision.
+1. The lagℓ=v2
+d/g follows from isotropic vector drag, not from vertical canopy force balance
+alone. A measured lateral response coefficient is needed to justify it.
+2. The stated shear example gives a horizontal offset of23.8m over100m of descent. A
+vertical-path approximation is conditional, rather than accurate to a few percent at every
+scale.
+3. The warped turbulence coordinate must increase with descent. A positive time derivative is
+inconsistent with an upward-increasing definition.
+4. A body-axis accelerometer can be blind to swing under an ideal suspension, but gyro angular
+acceleration cannot determine arbitrary static tilt or unknown forcing.
+5. A temperature lapse does not determine Obukhov length. The bulk Richardson number is
+not the gradient stability theorem, and0.25is not a universal turbulence cutoff.
+2
+
+=== PAGE 4 ===
+CANSAT mathematics 30 September 2026
+6. Tilt and translation are separated by landmark geometry. Placing every landmark at the
+same off-axis radius is not, by itself, enough.
+7. An RMS or protection-level claim must state its dimension, truth uncertainty, correlations
+and probability model. A three-standard-deviation one-axis rule is not a two-dimensional
+integrity rule.
+8. RANSAC’sw = 0.5, two-point, p = 0.999example needs25iterations after rounding
+up. Truncated least squares requires a proper lifted formulation before claiming an SDP
+certificate.
+9. The greedy guarantee applies to normalised log-determinant improvement. It does not justify
+a scale-dependent multiplicative claim about raw log determinant.
+10. Remaining drift and absolute landing position have different covariance behaviour. The
+latter has a monotonic conditioning theorem under a fixed linear Gaussian model.
+1.3 Verification approach
+Analytic derivations are accompanied by checks that use a different route: direct projection against
+homography, finite differences against analytic Jacobians, numerical ODE integration against
+closed forms, Fourier quadrature against a rational spectrum, and batch Gaussian conditioning
+against Kalman/RTS inference. A successful test is evidence for the checked identity, not for every
+untested implementation detail.
+Lean certificates are not included. The ordinary linear algebra, calculus and probability identities
+are stated with their hypotheses and verified by independent calculations. The remaining uncer-
+tainty concerns unmeasured physical parameters, field representativeness, algorithmic assumptions
+and finite data; a formal certificate for algebra would not resolve those issues.
+3
+
+=== PAGE 5 ===
+CANSAT mathematics 30 September 2026
+2 Descent, wind response and suspension physics
+This section verifies Appendix F and the physical inputs to the wind retrieval. Equations are
+consequences of the stated models, not proof that an unmeasured parachute obeys those models.
+Numerical examples use proposal values as design inputs, not flight measurements. Takez positive
+upwards,s =z(0)−zpositive downwards,vd = ˙s>0, andg = 9.80665 m s−2for the numerical
+checks. Horizontal vehicle velocity isu, and horizontal air velocity isw. The suspension length
+Lp, turbulence scaleL, and Obukhov lengthLO are different quantities.
+2.1 Terminal descent and canopy sizing
+For a deployed, approximately steady canopy, negligible buoyancy, no vertical wind, and effective
+vertical drag areaDz =C D,zA, Newton’s law in the downward direction is
+m˙vd =mg−1
+2ρDzv2
+d.(2.1)
+Setting˙vd = 0gives
+vt =
+√︄
+2mg
+ρDz
+, D z = 2mg
+ρv2
+t
+, ρ= p
+RdTv
+.(2.2)
+Herep is in pascals,Tv is virtual temperature in kelvin, andRd is the dry-air specific gas constant.
+In dry airTv =T; neglecting humidity otherwise is an approximation.m must be the total mass
+supported by the aerodynamic system, with the convention for canopy mass stated. For a circular
+reference areaA=πd2/4,
+d=
+√︄
+8mg
+πρCD,zv2
+t
+.(2.3)
+The area convention used with a quoted coefficient must match the convention in this formula.
+Neither a numericalCD nor a finished canopy diameter is established by the proposal.
+Ifv min≤vt≤vmax is a specified design band, then
+2mg
+ρv2max
+≤Dz≤2mg
+ρv2
+min
+.(2.4)
+For uncertainm,ρ,Dz, the slowest terminal speed occurs at smallestm and largestρDz, and the
+fastest at the opposite corner of the uncertainty set. First-order fractional sensitivity is
+δvt
+vt
+= 1
+2
+(︃δm
+m −δρ
+ρ−δCD
+CD
+−δA
+A
+)︃
+.(2.5)
+This is a differential identity; root-sum-square uncertainty requires uncorrelated errors or the
+appropriate covariance terms.
+2.2 Transient and variable descent speed
+For constant parameters and release from rest, separating variables gives
+∫︂vd/vt
+0
+dq
+1−q2 = gt
+vt
+,(2.6)
+vd(t) =v t tanh(gt/vt),(2.7)
+s(t) = v2
+t
+g ln cosh(gt/vt).(2.8)
+4
+
+=== PAGE 6 ===
+CANSAT mathematics 30 September 2026
+Thus a300 mdescent at a constant10 .5 m s−1takes28 .57 s, whereas the ideal fully deployed
+release-from-rest model gives
+t(H) = vt
+g arcosh
+[︃
+exp
+(︃gH
+v2
+t
+)︃]︃
+≃29.31 s (H= 300 m).(2.9)
+The latter assumes instantaneous deployment and is not an inflation model. Linearization around
+vt gives
+δ˙v=−2g
+vt
+δv, τz = vt
+2g.(2.10)
+The vertical relaxation time is half the horizontal time in the isotropic drag approximation derived
+below.
+For variable density or drag, integrate the dynamical equation with˙z=−vd instead of imposing
+instantaneous terminal equilibrium. If quasi-steady descent is justified, then
+tremaining =
+∫︂h
+0
+dz
+vd(z),∆x=
+∫︂h
+0
+u(z)
+vd(z)dz.(2.11)
+Quasi-steady tracking requires the fractional equilibrium-speed change overτz to be small. A
+vertical air velocitywz, positive upwards, changes the air-relative downward speed tovd +wz;
+ground-relative descent speed cannot then be substituted indiscriminately in drag. Perturbing the
+first integral yields
+δt= δh
+vd(h)−
+∫︂h
+0
+δvd(z)
+vd(z)2 dz.(2.12)
+Altitude and descent-model uncertainty therefore both enter touchdown time.
+2.3 Pressure altitude: the precise hypsometric equation
+Hydrostatic balancedp/dz=−ρgand the ideal gas relation give
+dz=−RdTv
+g dlnp.(2.13)
+With approximately constantgover the layer,
+z2−z1 = Rd
+g
+∫︂p1
+p2
+Tv(p)dlnp(2.14)
+= RdT lnp
+v
+g ln(p1/p2),(2.15)
+T lnp
+v =
+∫︁p1
+p2 Tv(p)dlnp
+ln(p1/p2) .(2.16)
+The exact mean is weighted in log pressure, rather than an unspecified arithmetic mean. In
+the isothermal case, p(z) = p1 exp[−g(z−z1)/(RdTv)]; substitution recovers z−z1 exactly.
+Differentiation of the constant-temperature form gives
+δh=Rd
+g
+[︃
+ln(p1/p2)δTv +Tv
+(︃δp1
+p1
+−δp2
+p2
+)︃]︃
+.(2.17)
+A common pressure bias may largely cancel in a pressure difference; treating all samples as
+independent can therefore give the wrong uncertainty. For air density, the dry-air differential is
+δρ
+ρ= δp
+p −δTv
+Tv
+, Var(ρ)
+ρ2 ≃Var(p)
+p2 + Var(Tv)
+T 2v
+−2 Cov(p,Tv)
+pTv
+.(2.18)
+5
+
+=== PAGE 7 ===
+CANSAT mathematics 30 September 2026
+Humidity uncertainty enters throughTv. In the same ideal-gas, hydrostatic model,
+dlnρ
+dz =−g
+RdTv
+−1
+Tv
+dTv
+dz .(2.19)
+An uncertain assigned height consequently perturbs a prescribed density profile byδρ≃ρzδz.
+Do not add that term again if the density is already estimated directly from the same uncertain
+pressure–temperature observations in a joint model: their covariance must be propagated together.
+Pressure altitude needs a reference pressure and a ground elevation to become altitude above
+ground. Dynamic pressure at a sensor inlet, thermal offsets, and non-hydrostatic motions are
+separate errors, not removed by the algebra.
+2.4 Horizontal lag: what follows from isotropic drag
+Let q = (u−w,−vd)denote air-relative velocity with zero vertical wind. Suppose the total
+aerodynamic force is the isotropic vector model
+Fa =−b|q|q, b=1
+2ρCDA.(2.20)
+For|u−w|≪vd,|q|=vd +O(|u−w|2/vd). The horizontal equation is consequently
+m ˙u=−bvd(u−w).(2.21)
+At vertical terminal equilibriumbv2
+d =mg, so
+τh = m
+bvd
+= vd
+g , ℓ h =v dτh = v2
+d
+g .(2.22)
+At vd = 10.5 m s−1this givesτh = 1.07070 sand ℓh = 11.2424 m. Becaused/dt = vdd/ds, the
+first-order model implies
+w(s) =u(s) +ℓh(s)du
+ds.(2.23)
+There is no derivative ofℓh in this algebraic inversion. A time-dependent coefficient does prevent
+the use of a single global Fourier transfer function.
+2.5 Why canopy terminal speed does not identify horizontal lag
+A real canopy has an orientation and different axial, normal, and rotational responses. Define its
+local horizontal force Jacobian by
+Fa,h≃−Kh(u−w) +F0, M h ˙u=−Kh(u−w) +F0.(2.24)
+Here Mh may include an effective added-mass contribution when justified, andF 0 represents trim
+or coupling forces. ProvidedKh is invertible, the conditional local inverse is
+w=u+K −1
+h Mh ˙u−K−1
+h F 0.(2.25)
+Neither Kh norF 0 follows fromFa,z =mg. As an explicit counterexample, parameterize one axis
+by Kh = rmg/vd, Mh = m,F 0 = 0, withr >0. Every value ofr is consistent with the same
+prescribed vertical terminal balance, while
+τh = vd
+rg, ℓ h = v2
+d
+rg.(2.26)
+The illustrative ratiosr = 0.5, 1, 2give relaxation times2.14140, 1.07070, 0.535351 s. These are
+sensitivity cases, not measured coefficients. Thus Appendix F.3 is a valid derivation within its
+6
+
+=== PAGE 8 ===
+CANSAT mathematics 30 September 2026
+isotropic model, but the claimed physical lag length is not established for the chosen canopy.
+Identification from instrumented drops is needed.
+Primary-source context: the NASA study by Pei et al.,Modal Analysis of the Orion Capsule
+Two Parachute System, uses separate axial and normal force coefficients, entrapped-air mass,
+and canopy-dependent oscillation parameters. Its multi-canopy configuration is not this CanSat;
+it demonstrates why a single drag coefficient cannot establish all lateral dynamics. https:
+//ntrs.nasa.gov/api/citations/20200002721/downloads/20200002721.pdf
+2.6 Frequency response, resolution and pendulum contamination
+For constantℓh, a wind Fourier componentw(s) =Weiks gives
+U
+W = 1
+1 +ikℓh
+,|H −1|=
+√︂
+1 + (kℓh)2, k= 2π/λ.(2.27)
+This verifies the inversion-amplification factor. At wavelengthλ= 20 mand ℓh = 11.2424 m,
+amplification is approximately3.670. A20 mbin is not automatically a resolved20 mFourier
+structure. Resolution must be read from the retrieval’s averaging kernels and error covariance.
+If suspension motion adds velocityup to the canopy or system-reference velocityuc, then applying
+the same inverse tou =uc +up adds the false wind termup +τh ˙up. The required correction is
+a translational suspension or lever-arm velocity, not merely a camera rotation correction. For a
+measured rigid displacementr=Rr b from the reference point,
+vsensor =v ref +R(ωb×rb).(2.28)
+A flexible suspension needs its own configuration estimate. GPS and image sensors can share this
+physical bias; agreement between their inferred winds does not by itself validate absolute wind
+accuracy.
+2.7 Pendulum specific force and the limits of gyro acceleration
+For a point payload, lete point from a moving pivot to the payload,r =rP +Lpe, and let tension
+be−Te. With gravitygand other forceFo,
+a=g−T
+me+ Fo
+m,f=a−g=− T
+me+ Fo
+m.(2.29)
+Thus the ideal accelerometer measures tension direction, rather than gravity direction. Lateral
+body-framereadings vanish only when the measured body axis is aligned with the suspension,
+the sensor is at the modeled point, and other forces vanish. Body rotation relative to the line
+and rotational lever-arm accelerations violate that special case. Appendix F.4’s statement that
+residuals are necessarily too small to help is not supported by a measurement or model.
+In a planar model withx horizontal andz up,e = (sinθ,−cosθ)and eθ= (cosθ,sinθ). Projecting
+acceleration ontoeθeliminates tension:
+Lp¨θ=−gsinθ−aP,x cosθ−aP,z sinθ+Fo·eθ
+m .(2.30)
+After small-angle linearization and an assumed viscous damping law,
+¨θ+ 2ζpω0 ˙θ+ω2
+0θ=F(t), ω 2
+0 = g+a P,z
+Lp
+,(2.31)
+when aP,z is sufficiently constant and the remaining forcing is collected intoF, with unitss−2.
+ω2
+0 =g/Lp is the fixed-pivot limit. Aerodynamic canopy motion can change both effective pivot
+and restoring dynamics.
+7
+
+=== PAGE 9 ===
+CANSAT mathematics 30 September 2026
+Rearrangement gives the exact linear-model diagnostic
+θ=F−¨θ−2ζpω0 ˙θ
+ω2
+0
+.(2.32)
+The proposedθ≃−¨θ/ω2
+0 follows only when forcing and damping contributions are negligible.
+Constant forcing admitsθ=F/ω2
+0 with zero angular velocity and acceleration: a direct counterex-
+ample to unconditional tilt observability from gyro acceleration. Differentiating a noisy gyro also
+amplifies high-frequency noise. This can be a calibrated model diagnostic, not an independent
+absolute attitude measurement without additional assumptions.
+For a stable, constant-coefficient linear oscillator with stationary forcing and transients removed,
+Fourier transformation gives
+Hp(ω) = 1
+ω2
+0−ω2 + 2iζpω0ω, S θ(ω) =|Hp(ω)|2SF (ω).(2.33)
+This verifies F.5’s spectrum relation under those conditions. Measured swing growth alone cannot
+distinguish changing forcing from changing canopy damping or natural frequency.
+2.8 Shear, the sampling path, and a conditional frozen field
+For perfect local mean-wind tracking,U(z) =U0 +Szandz(t) =z 0−vdtimply
+x(t)−x(0) =
+∫︂t
+0
+U(z(t′))dt′,(2.34)
+ξ(t) =x(t)−x(0)−tU(z(t))(2.35)
+=
+∫︂t
+0
+[U(z(t′))−U(z(t))]dt′= Svdt2
+2 = S(∆z) 2
+2vd
+.(2.36)
+The subtraction compares the trajectory to uniform advection at the current layer’s speed. It is
+not a single global frame comoving with every sheared layer. ForS = 0.05 s−1, vd = 10.5 m s−1
+and∆ z = 100 m,ξ= 23.81 m, or23.8%of the vertical separation. At∆z = 10 m,ξ= 0.2381 m,
+or2 .38%. F.6’s arithmetic is correct at100 m, but its “few percent” conclusion fails at that
+separation.
+With finite lag,τh ˙u+u=U(t)andU(t) =U(0)−Sv dthave solution
+u(t) =U(t) +τhSvd + [u(0)−U(0)−τhSvd]e−t/τh.(2.37)
+The locally air-relative path slope after the transient is|u−U|/vd =|S|τh, which is0.05354
+in the isotropic numerical example. It is distinct from the finite-separation offset above. An
+approximately vertical covariance model needs both effects, suspension motion, turbulence and
+vertical wind to be small on the separations used.
+If an eddy has crossing scaleL, characteristic internal velocityσ, and turnover estimatete∼L/σ,
+then
+tcross
+te
+∼σ
+vd
+,|S|tcross∼|S|L
+vd
+.(2.38)
+The first estimate being small is helpful, but not sufficient: shear deformation, anisotropic eddy
+scales, scale-dependent sweeping, evolution, nonstationarity and nonvertical sampling also matter.
+The ratio is scale-independent only if the sameL and a scale-independentσdescribe both estimates.
+Values0.05–0.1are hypotheses until measured. F.7’s claim of validity at every height is therefore
+not proved. Direct atmosphericmeasurementsand simulationshavefound failuresof thefrozen-field
+assumption at some scales: Cheng et al. (2017),https://doi.org/10.1002/2017GL073499.
+8
+
+=== PAGE 10 ===
+CANSAT mathematics 30 September 2026
+3 Thermodynamic stability and surface-layer inference
+3.1 Potential temperature from the first law
+For a dry ideal gas,h =cpT and specific volumeα=RdT/p. Reversible adiabatic motion satisfies
+dh−αdp= 0, hence
+cpdT−RdTdp
+p = 0, dlnT= Rd
+cp
+dlnp.(3.1)
+Integration defines the conserved potential temperature
+θ=T
+(︃p0
+p
+)︃Rd/cp
+, p 0 = 1000 hPa, R d/cp≃0.286.(3.2)
+The pressure ratio must use consistent units. Under hydrostatic balance,
+dlnθ
+dz = 1
+T
+dT
+dz + g
+cpT, dθ
+dz = θ
+T
+(︄
+dT
+dz + g
+cp
+)︄
+.(3.3)
+For cp = 1004 J kg−1K−1, the dry-adiabatic lapse isg/cp = 9.7676 K km−1, or2 .9303 Kover
+300 m. A temperature decrease with altitude can still have increasingθ, and therefore stable dry
+stratification.
+A parcel displaced upwards byδzapproximately preserves itsθwhile ambientθchanges byθzδz.
+Its buoyancy is−(g/θ)θzδz, so
+δ¨z=−N2δz, N 2 = g
+θ
+dθ
+dz.(3.4)
+N 2> 0gives restoring buoyancy;N 2< 0gives local dry static instability. Unsaturated moist-air
+buoyancy uses virtual potential temperature; saturated parcel stability needs moist thermodynam-
+ics. The dry expressions do not settle those cases.
+Temperature and pressure uncertainty propagate as
+δθ
+θ= δT
+T −Rd
+cp
+δp
+p ,Var(θ)≃J θΣT,pJ T
+θ.(3.5)
+Differences between levels require their cross-covariances. A first-order thermistor model obeys
+τT ˙Tm +Tm =T air, T air =T m +vdτT
+dTm
+ds .(3.6)
+Its spatial lag length isvdτT, equal to10.5 mif τT = 1 sand the proposal speed applies. Differen-
+tiation again needs regularization; shielding does not determine response time or eliminate all
+radiation and self-heating error.
+3.2 MOST: integration with displacement and the lower boundary
+Monin–Obukhov similarity theory (MOST) describes ensemble or suitable time-averaged profiles
+over approximately homogeneous terrain in a stationary, constant-flux surface layer. Letd0 be
+displacement height,he =z−d0>0,z 0 aerodynamic roughness length, and
+u∗= [(u′w′)2 + (v′w′)2]1/4, L O =−u3
+∗θv
+κgw′θ′v
+.(3.7)
+For an aligned mean windU, the assumed flux-gradient relationship is
+dU
+dz = u∗
+κhe
+ϕm(he/LO).(3.8)
+9
+
+=== PAGE 11 ===
+CANSAT mathematics 30 September 2026
+Defineψm(0) = 0and
+ψ′
+m(ζ) =1−ϕm(ζ)
+ζ .(3.9)
+Integrating from the aerodynamic referencehe =z0, where the extrapolated profile hasU = 0,
+yields
+U(z) = u∗
+κ
+[︃
+lnz−d0
+z0
+−ψm
+(︃z−d0
+LO
+)︃
++ψm
+(︃z0
+LO
+)︃]︃
+.(3.10)
+The lower-boundary term and displacement height are absent from K.2. Dropping the former
+requires|z0/LO|≪1; dropping the latter requires justification from terrain. The zero condition
+is an extrapolated aerodynamic definition, not a literal measurement at a plant surface. Avoid
+the logarithmic singularity and avoid extrapolating MOST to touchdown. A reference-height
+difference can be fitted without specifying zero wind at ground:
+U(z 2)−U(z1) = u∗
+κ
+[︃
+lnz2−d0
+z1−d0
+−ψm
+(︃z2−d0
+LO
+)︃
++ψm
+(︃z1−d0
+LO
+)︃]︃
+.(3.11)
+3.3 Checking the empirical stability corrections
+The frequently used Dyer choices are
+ϕm(ζ) =
+{︄
+1 + 5ζ, ζ≥0,
+(1−16ζ)−1/4, ζ <0. (3.12)
+The constants are empirical, not first-principles consequences of MOST. For the stable branch
+integration givesψm =−5ζ. For the unstable branch putx = (1−16ζ)1/4; thendζ=−x3dx/4.
+Substitution intodψm = (1−1/x)dζ/ζgives
+dψm = 4x2
+(x+ 1)(x 2 + 1)dx=
+(︃2
+x+ 1 + 2x−2
+x2 + 1
+)︃
+dx.(3.13)
+Integrating fromx= 1enforcesψ m(0) = 0:
+ψm = 2 ln 1 +x
+2 + ln 1 +x 2
+2 −2 arctanx+π
+2.(3.14)
+Differentiation recovers1−ζψ′
+m =ϕm, checking the normalization and signs. In the neutral limit
+LO→±∞, ψm→0and the logarithmic law is recovered. Positive heat flux gives negativeLO
+under the convention above.
+The original field experiment is Businger et al. (1971),https://journals.ametsoc.org/view/
+journals/atsc/28/2/1520-0469_1971_028_0181_fprita_2_0_co_2.xml. The specific5and
+16choices and their empirical status are discussed by Dyer (1974), primary paper available at
+https://gibbs.science/efd/handouts/dyer_1974.pdf. No fixed50–100 mlayer is guaranteed
+to meet the constant-flux, homogeneous-surface assumptions on launch day. A single short descent
+through different air parcels is not automatically a mean wind profile: drift, temporal variability
+and heterogeneous fetch can confound the fit.
+3.4 Richardson numbers and what the quarter threshold means
+Comparing stratification with vector shear gives
+Rig = N 2
+S2, S 2 =
+(︃du
+dz
+)︃2
++
+(︃dv
+dz
+)︃2
+.(3.15)
+10
+
+=== PAGE 12 ===
+CANSAT mathematics 30 September 2026
+Approximating both derivatives across a layer of thickness∆z > 0gives the proposal’s bulk
+quantity
+Rib = g
+θ
+∆θ∆z
+(∆u)2 + (∆v)2.(3.16)
+It is dimensionless. Negative∆θdiagnoses dry static instability under the earlier assumptions.
+A nearly zero denominator makes this ratio poorly determined; report shear and stratification
+uncertainties rather than forcing a classification. Turning wind requires both velocity components,
+not speed differences alone.
+For explicit uncertainty propagation, setA = g/θ, q = ∆ θ, h = ∆ z, a = ∆ u, b = ∆ v, and
+D=a 2 +b 2. Withr=Ri b =Aqh/D, the nonzero partial derivatives are
+rq =Ah/D, r h =Aq/D,(3.17)
+ra =−2Aqha/D2, r b =−2Aqhb/D2,(3.18)
+rθ=−r/θ.(3.19)
+Thus Var(r)≃JrΣJ T
+r for the joint level-difference, mean-temperature and height covariance.
+This expression remains well behaved atq = 0when D> 0, whereas fractional-error formulas do
+not. NearD = 0, even this linearization can fail and a joint Monte Carlo or interval treatment
+is required. Adjacent layers share sensor samples, pressure-derived heights, thermistor lag and
+retrieved wind errors, so neither theirRib values nor the errors in numerator and denominator are
+generally independent.
+The Miles–Howard theorem is a statement about infinitesimal normal-mode stability of steady,
+parallel, inviscid, nondiffusive, stably stratified flow. The sufficient condition is Rig > 1/4
+everywhere, not a condition on a coarseRib, and not a guarantee that existing turbulence vanishes.
+A compact independent algebra check follows. For the two-dimensional Taylor–Goldstein problem
+with perturbationφ(z)eik(x−ct),
+φ′′+
+[︄
+N 2
+(U−c)2−U′′
+U−c−k2
+]︄
+φ= 0.(3.20)
+Supposec i = Imc>0, soU−chas no real zero, and setφ= (U−c)1/2F. Differentiation gives
+[(U−c)F′]′+
+[︄
+N 2−U′2/4
+U−c −U′′
+2 −k2(U−c)
+]︄
+F= 0.(3.21)
+Multiply byF∗, integrate with homogeneous boundary values (or adequate decay), and take the
+imaginary part. The result is
+ci
+∫︂[︄
+|F′|2 +k 2|F|2 + N 2−U′2/4
+|U−c|2 |F|2
+]︄
+dz= 0.(3.22)
+For a nonzero mode withk > 0, N 2−U′2/4≥0makes the integral positive, contradicting
+ci> 0. Conversely, violating this sufficient condition does not prove instability. Finite amplitude,
+viscosity, diffusion, forcing, time dependence and coarse averaging require separate analysis.
+Howard’s originalNote on a paper of John W. Miles,Journal of Fluid Mechanics10(4), 509–512
+(1961), is https://doi.org/10.1017/S0022112061000317; the conditions and distinctions are
+alsostatedintheprimaryresearchofLiu, ThorpeandSmyth(2012), https://www.pmf.unizg.hr/
+_download/repository/Liu_Thorpe_Smyth_turb-stratif-shearJFM2012.pdf. Consequently
+K.3’s claim that bulk values above0.25establish insufficient shear to sustain turbulence must be
+weakened to a conditional stability diagnostic.
+11
+
+=== PAGE 13 ===
+CANSAT mathematics 30 September 2026
+3.5 Why a temperature lapse does not determine Obukhov length
+LO contains momentum and buoyancyfluxes; a temperature gradient alone does not measure
+either. A model-dependent relation can be derived if MOST applies and both gradients are
+measured. Withθ∗=−w′θ′/u∗and
+dθ
+dz = θ∗
+κhe
+ϕh(ζ), ζ=h e/LO,(3.23)
+substitution intoRig for aligned shear gives
+Rig =ζϕh(ζ)
+ϕm(ζ)2.(3.24)
+For the assumed stable Dyer choiceϕh =ϕm = 1 + 5ζ,
+Rig = ζ
+1 + 5ζ, ζ= Rig
+1−5Rig
+(0≤Rig <0.2).(3.25)
+The0.2limit is a property of these closures; it is different from the Miles–Howard quarter threshold.
+Inversion is ill-conditioned near it. Replacing gradientRig with bulkRib without integrated profile
+relationships is not an exact derivation. S2 can test consistency between joint wind–temperature
+profiles and a fitted stability model; it cannot claim that temperature lapse alone fixes the relevant
+MOST class orLO.
+3.6 Neutral profile fitting and roughness uncertainty
+For neutral conditions, specifiedd0, and a fixed reference lengthhr to keep logarithms dimensionless,
+U(z) =αlnz−d0
+hr
++β, u ∗=κα, z 0 =h r exp(−β/α).(3.26)
+For observationsy = Xb +ϵ, b = (α,β)T and known covarianceΣ, minimizing the weighted
+residual quadratic gives
+ˆ︁b= (X TΣ−1X)−1X TΣ−1y, C b = (X TΣ−1X)−1.(3.27)
+The formula requires rank two and assumes heights and displacement are known; uncertain heights
+require errors-in-variables or a joint model. Withq= ln(z0/hr) =−β/α,
+∇q=
+(︃β
+α2,−1
+α
+)︃
+,Var(q)≃∇qC b∇qT.(3.28)
+A near-Gaussianq produces multiplicative, asymmetric intervals forz0. Smallα, limited height
+range, unknownd0, changing stability and correlated profile errors reduce identifiability. The
+land-cover values in K.5 can be broad priors; they are not site-specific measurements and cannot
+establish a validated roughness estimate.
+4 Supporting engineering arithmetic
+4.1 Footprint and exposure blur
+Assume a rectilinear nadir camera over horizontal terrain, horizontal field of view90◦, square
+pixels and1280×800resolution. Then fx =fy = 640pixels, normalized horizontal image edge is
+|x|= 1, and vertical edge is|y|= 0.625. The ground width and height are
+Wg = 2htan 45◦= 2h, H g = 800
+1280Wg = 1.25h,GSD =h/f= 0.46875 m/px (h= 300 m).
+(4.1)
+12
+
+=== PAGE 14 ===
+CANSAT mathematics 30 September 2026
+Thus the quoted600×375 mfootprint is consistent with ahorizontal, rather than diagonal,90◦
+field. A real lens needs distortion calibration and the actual field specification.
+For a stationary scene point with camera coordinates(X,Y,Z ), x = X/Z, y = Y/Z, camera
+translationvand angular velocityω, ˙P=−v−ω×Pgives
+˙x=−vx +xvz
+Z +xyωx−(1 +x2)ωy +yωz,(4.2)
+˙y=−vy +yv z
+Z + (1 +y 2)ωx−xyωy−xωz.(4.3)
+For exposurete short enough that velocity is approximately constant, the path length in pixels is
+B≃te
+√︂
+(fx ˙x)2 + (fy ˙y)2.(4.4)
+This is a flow approximation; the actual image is the time integral of the moving projection.
+Translation, pitch, roll, spin and descent contribute simultaneously, and their vectors may add or
+cancel.
+At a pitch rate40◦/s = 0.698132 rad/s and te = 1 ms, pure pitch gives0.4468pixels at image
+center,0 .8936pixels at the horizontal edge, and0.9362pixels at the corner. Pure spin at one
+revolution per second gives
+B=r px(2π)te, r px =
+√︁
+6402 + 4002, B= 4.7420 px(4.5)
+at that corner, halved for a0.5 ms exposure. Descent adds radial flow of magnitude approximately
+rpxvd/h: at h = 80 m, vd = 10.5 m/s and1 ms it contributes0.0991pixels at the corner. The
+proposal’s subpixel swing claim is consistent with isolated pitch under these ideal intrinsics, but is
+not a bound on combined motion. Short exposure also requires adequate photon signal; daylight
+alone does not verify signal-to-noise ratio or shutter timing.
+4.2 Frame count, storage and processing capacity
+WithN x,Ny pixels, storedbbits per pixel and frame ratefc,
+Bframe =N xNyb/8, R image =f cBframe, S total =N fBframe +S metadata +S sensors.(4.6)
+Compression changes these numbers only if its achieved size is measured. At1280×800, eight-bit
+grayscale and5 Hz, Bframe = 1,024,000bytes and Rimage = 5.12decimal MB/s. A30 simage
+record is153.6MB; a60 srecord is307 .2MB. The proposal’s300MB per flight therefore needs a
+longer logging window, sixteen-bit storage, or a stated allowance; it is not the direct result for a
+thirty-second eight-bit record.
+The mean sample spacing under constant descent is∆s =vd/fc = 2.1 m; a20 mlayer lasts1.9048 s
+and contains approximately9.52sampling intervals. The exact integer frame count depends on
+the alignment of triggers and layer boundaries. Averagingn correlated errors with covarianceC
+gives
+Var(ϵ) =1TC1
+n2 .(4.7)
+Only independent equal-variance errors reduce toσ2/n; common bias and suspension-model error
+do not disappear by layer averaging.
+A serialized processor must satisfyfc E[tservice]< 1to avoid persistent queue growth, with margin
+for variability and other tasks. At5Hz the frame interval is200 ms;250 ms per frame is too
+slow for one sequential worker. Several workers or pipelining may meet throughput, but require
+measured resource contention, queue limits and timing. Distinguish latency from throughput. For
+a logging stall of durationTstall, a sufficient image buffer under constant input rate isRimageTstall,
+in addition to data already buffered; recovery requires write rate above the mean input rate.
+13
+
+=== PAGE 15 ===
+CANSAT mathematics 30 September 2026
+4.3 Battery energy, peak current and mechanical loading
+For mission phasesj of duration tj with load powerPj and conversion efficiencyηj, energy
+conservation requires
+Ebatt,required =
+∑︂
+j
+Pjtj
+ηj
+, E usable =V nominalQAhfusable in Wh iftj is in hours.(4.8)
+Hence
+QAh≥
+∑︁
+jPjtj/ηj
+Vnominalfusable
+.(4.9)
+fusable includes justified capacity, temperature, ageing and cutoff effects rather than an invented
+universal derating. A safety or design margin can be applied explicitly. Ground waiting and brief
+camera operation must be represented by different phases. No numerical capacity or endurance
+can be certified without measured power and battery data. Peak operation also needs
+Ibatt,peak≃Ppeak
+ηVbatt
+, V loaded =V open−IbattRinternal,(4.10)
+and a demonstrated minimum rail voltage during radio, compute and storage peaks. A three-hour
+bench run tests the configured article, not every temperature or battery condition.
+For a specified equivalent accelerationadesign, a mounted item of massmi applies inertial load
+Fi = miadesign. If the proposal’s20g is the adopted load case,adesign = 20g; whether weight
+is added depends on the stated test convention. Stress and bending checks require geometry,
+material allowables and load direction. A stated connection pull load does not follow from terminal
+canopy force alone: deployment loads require an inflation/deceleration model or measurement.
+For stopping speed change∆v over∆ t, impulse balance gives average net forcem∆v/∆t, but does
+not bound peak force. The proposal’s load and endurance numbers are inputs awaiting verification
+against the applicable competition rules and physical tests.
+4.4 Radio airtime with explicit parameters
+Payload byte count and packet rate alone do not establish airtime. For the Semtech SX1276 LoRa
+packet convention, letSF denote spreading factor,BW bandwidth in hertz,PL payload bytes,npre
+programmed preamble symbols,C CRC flag,I implicit-header flag,D low-data-rate optimization
+flag, andrc = 1,...,4the coding rate parameter corresponding to4/5,...,4/8.
+Tsym = 2SF/BW,(4.11)
+npayload = 8 + max
+{︃⌈︃8PL−4SF + 28 + 16C−20I
+4(SF−2D)
+⌉︃
+(rc + 4),0
+}︃
+,(4.12)
+Tpacket = (npre + 4.25 +npayload)Tsym.(4.13)
+This is protocol accounting, not a modulation law derived from the CanSat mechanics. For an
+illustrative explicit-header packet withPL = 40, SF = 7, BW = 125000, rc = 1, C = 1, I =D = 0
+and npre = 8, the numerator is336, the ceiling is12, npayload = 68, and Tpacket = 82.176 ms.
+At one packet per second that example occupies8.2176%of transmission time before retries or
+acknowledgements. It is not the selected flight configuration or a compliance verdict. Account
+for all transmissions in the applicable assessment interval and verify current regional sub-band
+conditions for the actual settings.
+The formula and register meanings are verified against the manufacturer’s datasheet, section
+4.1.1.7 (Semtech document hosted by SparkFun):https://cdn.sparkfun.com/assets/7/7/3/
+2/2/SX1276_Datasheet.pdf. For link budgeting, a separate conditional calculation is
+Pr,dBm =P t,dBm +Gt +Gr−Lpath−Lother, L FS = 20 log10(4πR/λ), λ=c/f.(4.14)
+14
+
+=== PAGE 16 ===
+CANSAT mathematics 30 September 2026
+Free-space loss assumes an unobstructed far-field path. Can orientation, antenna pattern, ground
+reflections, interference and receiver sensitivity must be measured or bounded before claiming
+range.
+4.5 Numerical checks completed and remaining physical evidence
+Independent in-memory calculations performed during this review checked the following identities.
+They used no flight measurements. The calculations are now preserved as reproducible standard-
+library unit tests insim/maths/test_physics_extra.py; all ten tests passed on execution. They
+additionally check the radio example, neutral MOST limit, lower boundary, dry-adiabatic invariant,
+shear solution, pendulum counterexample, storage and blur arithmetic, and source-file control
+bytes.
+Check Method Result
+First-order response, r =
+0.5,1,2
+RK4,∆t= 0.001 s max. error< 1.9×10−13m/s
+Isothermal height,300 mpressure forward/inverse error<6×10 −13m
+MOST integrated correction quadrature in log height max. residual1.5×10 −14
+MOST gradient correction central difference max. residual1.4×10 −9
+For the lag check the independently integrated equation was˙u= (5−u)/τh, u(0) = 0, for five
+seconds; theanalyticcomparatorwas5(1 −e−t/τh). Forthehydrostaticcheck, Rd = 287.05 J/(kg K),
+T = 288.15 Kand p(0) = 101325 Pa. MOST checks used ζ=−2,−0.1, 0.1, 2, z0 = 0.1 m,
+|LO|= 30 m, central-difference step10−6, and composite Simpson quadrature with10000intervals.
+These residuals verify algebra and numerical implementation for the chosen models; they do not
+establish agreement with the real atmosphere.
+Physical validation still needs time-aligned drops measuring deployment, vertical speed, lateral
+response, line geometry and sensor offsets; temperature response tests in representative airflow;
+suitable independent wind observations; measured camera exposure and image signal quality; and
+endurance, storage-stall and radio tests in flight configuration. Retain measured data and report
+fitted coefficients and their uncertainty. The deterministic counterexamples above are sufficient
+to reject unconditional claims about horizontal lag, gyro-derived static tilt, vertical sampling at
+all separations, bulk Richardson thresholds, or Obukhov length inferred from temperature lapse
+alone.
+5 Imaging, navigation, integrity, and target selection
+This section audits proposal Sections 10–12 and 14 and Appendices A–D, G, H, and L. Alge-
+braic identities are distinguished from statistical claims, which require the stated noise model.
+Numerical checks below use synthetic data, not flight measurements. They verify equations and
+implementations under their assumptions; they do not establish the proposed flight accuracy,
+reliability, computation time, or terrain-match success.
+5.1 Frames, signs, units, and camera model
+Use a local Cartesian world frame with upward vertical coordinatez, ground plane z = 0,
+and gravityg = (0, 0,−g0)T. Let Rwb∈SO(3)take body coordinates to world coordinates,
+Rcb∈SO(3)take body coordinates to camera coordinates, andℓb denote the camera centre
+15
+
+=== PAGE 17 ===
+CANSAT mathematics 30 September 2026
+relative to the IMU origin in body coordinates. The navigation positionp is the IMU origin.
+Camera depth is positive in front of the camera. Thus
+C=p+R wbℓb, R cw =R cbRT
+wb,(5.1)
+qc =R cb{RT
+wb(m−p)−ℓb}=Rcw(m−C),(5.2)
+z=π(Kqc), π([a,b,c] T) = [a/c,b/c] T.(5.3)
+Here K has positive focal lengthsfx,fy in pixels, principal point(cx,cy), and, unless stated
+otherwise, zero skew. Image coordinates must be undistorted before using this pinhole model, or
+distortion must be included in the observation function and its derivative. All attitude increments
+and angular rates in calculations are in radians.
+The proposal usesR for a world-to-camera rotation in Section 10 and a body-to-world rotation in
+Appendix H. Both equations can be valid, but the same symbol must not be passed between them
+without taking the transpose and applying the camera extrinsic rotation. Equation(5.3) removes
+that ambiguity. A camera lever arm may be neglected only after its magnitude and associated
+rotational displacement have been shown small relative to the error allocation.
+5.2 Ground-plane rectification and field of view
+WriteRcw = [r1r2r3]. Form= (X,Y,0) T,
+KRcw(m−C) =K[r1r2 −RcwC]⏞ ⏟⏟ ⏞
+H
+[X,Y,1] T.(5.4)
+Homogeneous scaling does not change the pixel after division by its last coordinate. This proves
+the proposed homography directly. Rectification is inverse image sampling: for each desired
+ground-grid point, compute its image pixel throughH, then interpolate the recorded image there.
+It does not require numerically invertingHfor every ground pixel.
+The map-to-image homography is invertible when the camera is not in the plane andK is
+nonsingular. Indeed, because rotations preserve cross products,
+detH= detK(r 1×r2)T(−RcwC) =−Cz detK.(5.5)
+Invertibility alone does not guarantee visibility. Require positive camera depth and pixels inside
+the valid image, and exclude rays nearly parallel to the ground, where division is ill-conditioned.
+A tilted camera generally produces a quadrilateral footprint, not the nadir rectangle. Nonplanar
+terrain produces parallax that a single homography cannot remove.
+For a nadir camera withhorizontalfield of view90 ◦, image width1280, and square pixels,
+fx =f y = 640pixels. At heighththe ground width and height are
+W= 1280h
+640 = 2h, H g = 800h
+640 = 1.25h, r g = h
+640 m/pixel.(5.6)
+At h = 300 mthese give600 ×375 mand0 .46875 m/pixel. The vertical field of view is
+2 arctan(400/640) = 64 .0108◦. These numbers require a horizontal90◦specification; a diag-
+onal or vertical90◦lens specification gives different focal lengths and footprints.
+For a camera height error caused by neglecting terrain elevationδz, an oblique ray at angleϕhas
+horizontal intersection errorδztanϕto first order. This is geometry, not proof that terrain errors
+are independent, Gaussian, or of fixed magnitude across landmarks.
+16
+
+=== PAGE 18 ===
+CANSAT mathematics 30 September 2026
+5.3 Timing, exposure blur, and tilt–translation separation
+5.3.1 Timestamp error and exposure
+An image observed att but assigned attitude att +δτhas first-order attitude errorωδτ. For a
+central nadir ray and a pitch or roll rateω, the corresponding ground error ishωδτ. Allocatingbt
+metres therefore gives
+|δτ|≤bt
+h|ω|.(5.7)
+Forbt = 1 m, h = 300 m, and|ω|= 40π/180 = 0.698132 rad/s, the limit is4.77465 ms. The
+proposal’s5ms is a rounded value, not an exact upper limit. A0.5 ms offset contributes0.10472 m
+in this central-ray example.
+For tiltβ, the nadir intersection ishtanβand its derivative ishsec 2βω. Motion of the camera
+centre adds a termvδτ. In the full pixel model the timing derivative is˙z =Hpv +Hθω, with
+consistent frames and any lever-arm motion included. Thus the central-ray formula is a design
+approximation, not a bound for all pixels and attitudes. Treat unknown timing offset as a shared
+nuisance parameter if it is estimated from the same images.
+Exposure blur is a different effect. A pitch perturbation at normalized horizontal coordinatex
+produces speedf(1 +x2)|ω|pixels/s; a yaw rate produces speedrpx|ωz|at image radiusrpx. With
+f = 640and40 ◦/s, a1 ms exposure gives0.44680pixel at the centre and0.89361pixel at the
+horizontal45◦edge. A1revolution/s yaw rate gives2 π
+√
+6402 + 4002(0.001) = 4.74204pixels
+at a corner. Halving exposure halves these first-order values. Finite angle, mixed rotation, lens
+distortion, and translation can change the result; actual exposure feasibility requires measurements
+of light and sensor noise.
+5.3.2 The one-dimensional separation proof
+For one horizontal section of a nadir image, writexi =Xi/h = tanαi and ui =fxi. A camera
+translationδpx givesδui =−fδpx/h. A small pitchδθgives
+δui =−f(1 +x2
+i )δθ.(5.8)
+Choosing δpx =hδθmatches the central shift and leaves−fx2
+iδθ=−ftan2αiδθ, as claimed in
+Appendix C.
+The useful statistical statement follows by explicitly eliminating unknown translation. With
+independent pixel noise of varianceσ2
+px, the Jacobian row for(δpx,δθ)is[ −f/h,−f(1 +x2
+i )]. The
+Fisher information is its weighted outer-product sum. Its Schur complement after marginalizing
+translation is
+Jθ|unknownpx = f2
+σ2px
+{︄∑︂
+i
+(1 +x 2
+i )2−[∑︁
+i(1 +x 2
+i )]2
+n
+}︄
+(5.9)
+= f2
+σ2px
+∑︂
+i
+(x2
+i−x2)2.(5.10)
+This is positive exactly when the squared off-axis coordinates are not all equal. If all landmarks
+are at xi =±a, even at the image edges, the one-dimensional tilt and translation columns
+are proportional and the information is zero. A range of off-axis distances is necessary in this
+reduced model. If translation is known rather than marginalized, the information is instead
+f2∑︁
+i(1 +x 2
+i )2/σ2
+px.
+17
+
+=== PAGE 19 ===
+CANSAT mathematics 30 September 2026
+5.3.3 Full two-dimensional geometry and observability
+Forqc = Z[x,y, 1]T, with local camera attitude increment, the normalized-image rotational
+derivative is
+∂(x,y)
+∂δθc
+=
+[︄
+xy−(1 +x 2)y
+1 +y 2 −xy−x
+]︄
+.(5.11)
+Multiplying rows byfx,fy gives the pixel derivative. The normalized translation derivative in
+camera coordinates is
+1
+Z
+[︄
+−1 0x
+0−1y
+]︄
+.(5.12)
+These follow by differentiatingX/Z,Y/Z, so the signs are tied to(5.3). Thexy cross terms and
+the second image coordinate contain additional information. Appendix C’s residual is therefore
+the separating information in its one-dimensional example, not the only information in the full
+camera model.
+For an actual set of landmarks, form the full weighted pose Jacobian. Partition translation and
+other nuisance parameters from attitude, then inspect the Schur complement and its eigenvalues.
+Wide angular coverage can improve conditioning, but cannot guarantee a desired attitude accuracy
+regardless of feature geometry, unknown height, extrinsic calibration, terrain relief, or measurement
+noise. A known metric planar map and nondegenerate correspondences can locally constrain
+pose; finite planar pose ambiguities, association ambiguities, and weak conditioning still require
+handling. Velocity and IMU biases require information over time, not just a single image.
+Specific force is not a gravity direction during general acceleration. The identityfb =RT
+wb(¨p−g)
+shows that without a model or additional measurements, arbitrary acceleration can compensate
+a change in tilt. For the ideal aligned pendulum, line tension is the only nongravitational force
+and its measured direction is fixed in body coordinates: an accelerometer alone then supplies no
+instantaneous swing angle. Swing averaging becomes a useful initialization only under additional
+dynamical assumptions, not an observability theorem.
+5.4 Landmark correlation, peak uncertainty, and consensus
+5.4.1 Normalized cross-correlation and its fast evaluation
+For a template containingMpixels defineT 0(x) =T(x)−T,E T =∑︁T 2
+0, and, at shiftd,
+SI(d) =
+∑︂
+x
+I(x+d), S I 2(d) =
+∑︂
+x
+I2(x+d),(5.13)
+EI(d) =S I 2(d)−SI(d)2/M,(5.14)
+C(d) =
+∑︂
+x
+T0(x)I(x+d).(5.15)
+Because∑︁T0 = 0, subtracting the local image mean in the numerator does not changeC. Hence
+γ(d) = C(d)√︁
+ETEI(d).(5.16)
+Cauchy–Schwarz proves|γ|≤1when both energies are positive. Constant patches have zero
+energy and must be rejected or specially handled; assigning them a high-confidence match is
+undefined.
+The correlation theorem gives
+C=F −1{F(T0)F(I)}.(5.17)
+18
+
+=== PAGE 20 ===
+CANSAT mathematics 30 September 2026
+The arrays must be padded for linear correlation, at least to the sum of image and template
+dimensions minus one on each axis, unless an equivalent overlap-save scheme is used. Otherwise
+wrap-around creates spurious matches. Crop to valid overlap with a documented lag convention.
+Integral images ofI and I2 give each rectangular sum with four lookups after linear-time prepa-
+ration. Thus the padded numerator costsO(NlogN )for N padded pixels, while normalization
+costs O(N); this does not imply FFTs always beat direct correlation for small templates. Masks,
+missing pixels, or shift-dependent template support require corresponding weighted sums rather
+than the fixed-support formula. The fast normalization construction is described in the primary
+paper by Lewis.1
+5.4.2 Subpixel interpolation
+Fit q(t) =at2 +bt +c through samplesγ−1,γ0,γ+1 at t =−1, 0, 1. Solving the three equations
+gives
+a= γ−1−2γ0 +γ+1
+2 , b= γ+1−γ−1
+2 , c=γ 0.(5.18)
+The stationary point−b/(2a)is therefore
+δ= γ−1−γ+1
+2(γ−1−2γ0 +γ+1).(5.19)
+Accept it only for a concave, sufficiently curved, isolated interior maximum and a plausible subpixel
+offset. A flat or convex fit does not yield a useful peak location.
+Independent axis fits neglect mixed curvature. For a general local fitγ(d) =c +bTd−1
+2dTAd
+withA≻0, the joint maximum isA−1b. For example,γ= 1−(d−d∗)TQ(d−d∗)with
+Q=
+[︄
+3 1
+1 2
+]︄
+,d ∗= [0.23,−0.28]T,(5.20)
+has separate-axis offsets(0.136667,−0.165)but joint optimum(0 .23,−0.28). This is an exact
+quadratic counterexample to treating axis fits as universally exact two-dimensional interpolation.
+5.4.3 What peak curvature does and does not establish
+A dimensionless correlation curvature is not automatically an inverse covariance. Under a specified
+image model
+y=aT(d) +b1+ε,ε∼N(0,σ 2
+II),(5.21)
+let D = ∂T/∂dand B = [T,1 ]. Marginalizing the unknown photometric gain and offset by a
+Schur complement gives
+Jd = a2
+σ2
+I
+DT
+[︂
+I−B(BTB)−1BT
+]︂
+D.(5.22)
+This follows from the Gaussian likelihood Fisher matrixσ−2
+I [aD,B ]T[aD,B ]. Inverse information
+is meaningful only on identifiable directions. If texture varies along one direction, the other may
+be unobservable, the usual aperture problem.
+The proposal’sc(−∇2γ)−1is a calibration model, not an identity. It needs positive definite
+negative curvature, compatible coordinate units, and validation against known shifts with the
+same texture, blur, resampling, and photometric mismatch. Adjacent scores, map pixels, and
+resampled image pixels are correlated. Wrong-peak errors are association failures and cannot be
+1J. P. Lewis,Fast Normalized Cross-Correlation: https://www.ncorr.com/download/publications/lewisfast.
+pdf.
+19
+
+=== PAGE 21 ===
+CANSAT mathematics 30 September 2026
+represented merely by a Gaussian covariance about the selected peak. A sharp aliased peak may
+be wrong. Measurements produced on a pose-rectified image should be mapped back to original
+image coordinates with the warp and covariance accounted for, or use an observation model that
+explicitly represents their dependence on the predicted pose.
+5.4.4 RANSAC iteration count and model choice
+If a trial has probabilityq of selecting a valid all-inlier minimal set and independent trials are
+drawn, the probability allN trials fail is(1−q)N. Requiring success probability at leastp gives
+N≥
+⌈︃log(1−p)
+log(1−q)
+⌉︃
+.(5.23)
+With independent inlier labels and sample sizek, q = wk. With n fixed correspondences,nI
+known inliers, andkdistinct points sampled uniformly within each independently redrawn trial,
+q=
+(︁nI
+k
+)︁
+(︁n
+k
+)︁.(5.24)
+Degenerate all-inlier samples lowerq further. These formulas are sampling probabilities, not
+probabilities that the finally chosen model is correct. Structured aliases and unmodelled distortions
+can generate large wrong consensuses. The original RANSAC paper establishes the random-
+consensus framework.2
+An orientation-preserving two-dimensional similarity obeysmi =zui +t in complex coordinates.
+Two distinctui determine
+z= m2−m1
+u2−u1
+, t=m 1−zu1.(5.25)
+Require distinct source points, nonzero admissible scale, and adequate baseline relative to noise.
+Forw = 0.5, k = 2, andp = 0.999, N≥⌈24.011768⌉= 25. With24trials the success probability
+is1 −0.7524 = 0.998996609, slightly short of the target. Usingn = 50,nI = 25also requires25
+trials under the distinct-point formula. A general planar homography needs four point pairs in
+general position; the same independent-label assumptions give108trials fork= 4.
+The residual between two differently rectified plane images is in general a homography, not a
+similarity. Similarity consensus is an approximation justified only when the remaining perspective
+error is small enough for its threshold. Alternatively use a homography or a physical camera-pose
+hypothesis and its appropriate minimal solver. Reject geometric degeneracy explicitly and refine
+the selected model on its accepted correspondences.
+5.5 Error-state navigation filter with a coherent convention
+The local/right attitude convention used here agrees with the proposal’s Appendix H and the
+convention analyzed by Solà.3 Define[a]×b=a×b, true-minus-nominal Euclidean errors, and
+Rwb = ˆ︁Rwb Exp([δθ]×).(5.26)
+Forϑ=∥θ∥, Rodrigues’ formula gives
+Exp([θ]×) =I+ sinϑ
+ϑ[θ]×+ 1−cosϑ
+ϑ2 [θ]2
+×,(5.27)
+with continuous small-angle limits. If scalar-first Hamilton quaternions are used withR(q1⊗q2) =
+R(q1)R(q2), the increment isqδ= [ cos(ϑ/2),θsin(ϑ/2)/ϑ]and is multiplied on the right. A
+different quaternion convention requires corresponding changes.
+2Fischler and Bolles (1981):https://doi.org/10.1145/358669.358692.
+3Joan Solà,Quaternion kinematics for the error-state Kalman filter:https://arxiv.org/abs/1711.02508.
+20
+
+=== PAGE 22 ===
+CANSAT mathematics 30 September 2026
+5.5.1 Propagation and its linearization
+Let the measured specific force and angular rate be
+am =f b +ba +na,ω m =ωb +bg +ng.(5.28)
+With ˆ︁f=a m−ˆ︁ba and ˆ︁ω=ωm−ˆ︁bg, nominal propagation is
+˙ˆ︁p= ˆ︁v, ˙ˆ︁v= ˆ︁Rwbˆ︁f+g, ˙ˆ︁Rwb = ˆ︁Rwb[ˆ︁ω]×.(5.29)
+Assume biases are random walks with independent zero-mean driving noisesnba,nbg. Since
+[δθ]×ˆ︁f =−[ˆ︁f]×δθ, subtracting nominal acceleration from true acceleration and retaining first-
+order errors gives
+δ˙p=δv,(5.30)
+δ˙v=−ˆ︁Rwb[ˆ︁f]×δθ−ˆ︁Rwbδba−ˆ︁Rwbna,(5.31)
+δ˙θ=−[ˆ︁ω]×δθ−δbg−ng,(5.32)
+δ˙ba =n ba, δ ˙bg =n bg.(5.33)
+For the attitude equation, differentiatingR = ˆ︁R(I + [δθ]×)and using ˙R = R[ω]×leaves the
+commutator[δθ]×[ˆ︁ω]×−[ˆ︁ω]×[δθ]×= [δθ×ˆ︁ω]×, which proves its sign.
+Stack the errors as(δp,δv,δθ,δba,δbg)to obtain ˙δx= Fδx+Gn from (5.33). For continuous
+noise spectral covarianceQc,
+˙P=FP+PF T +GQcGT.(5.34)
+For frozenF,G,Q c over∆t, the exact discretization is
+Φ =e F∆t , Q d =
+∫︂∆t
+0
+eFsGQcGTeF Tsds, P −
+k+1 = ΦP +
+k Φ T +Qd.(5.35)
+For example, if
+exp
+(︄
+∆t
+[︄
+F GQ cGT
+0−F T
+]︄)︄
+=
+[︄
+ΦB d
+0 Φ −T
+]︄
+,(5.36)
+thenQd =BdΦ T, as follows from the block exponential integral.Qc denotes a noise density, not a
+sampled sensor variance; confusing these introduces an erroneous factor of sample interval. The
+frozen-coefficient approximation must be evaluated at the actual motion and sampling interval.
+No magnetometer or accelerometer gravity update is implied by these equations.
+For the scalar-first quaternion convention above, the rotation kinematics also give
+˙ˆ︁q= 1
+2ˆ︁q⊗[0,ˆ︁ω], ˆ︁qk+1 =ˆ︁qk⊗
+[︃
+cos∥ˆ︁ω∥∆t
+2 , ˆ︁ω
+∥ˆ︁ω∥sin∥ˆ︁ω∥∆t
+2
+]︃
+(5.37)
+when the body angular rate is constant over the interval; take the continuous zero-rate limit
+for the vector component. To derive the differential equation, compose the attitude with the
+infinitesimal right increment[1,ˆ︁ωdt/2] +O(dt2)and divide the quaternion difference bydt. For
+constant rate, exponentiating this linear differential equation gives the trigonometric increment
+in (5.37), equivalentlyRk+1 =Rk exp([ˆ︁ω]×∆t). For a changing rate, a single exponential of the
+rate integral is generally not exact, because rotations about different axes do not commute. Use
+adequately resolved integration or an appropriate coning correction, and verify the integration
+error against the expected motion. Quaternion norm renormalization corrects roundoff but does
+not correct integration bias.
+21
+
+=== PAGE 23 ===
+CANSAT mathematics 30 September 2026
+5.5.2 Landmark reprojection Jacobian and its sign
+At the nominal state definepb = ˆ︁RT
+wb(m−ˆ︁p)and pc = Rcb(pb−ℓb) = [X,Y,Z ]T. Pinhole
+differentiation yields
+Jπ=
+[︄
+fx/Z0−f xX/Z2
+0f y/Z−fyY/Z 2
+]︄
+.(5.38)
+From (5.26),
+RT
+wb(m−p)≃(I−[δθ]×)(pb−ˆ︁RT
+wbδp)(5.39)
+=p b−ˆ︁RT
+wbδp+ [pb]×δθ.(5.40)
+Consequently
+Hp =−JπRcbˆ︁RT
+wb, H θ= +J πRcb[pb]×.(5.41)
+The positive attitude sign in Appendix H.2 is correct for this local error convention. Reversing it
+without changing the convention would be an error. With a lever arm, the cross-product usespb,
+notpb−ℓb, since the lever arm is fixed in the body frame. Extrinsic uncertainty needs additional
+Jacobian columns.
+For a known map point perturbationδm, Hm =JπRcbˆ︁RT
+wb. Known independent map uncertainty
+can be propagated asHmΣmH T
+m into the measurement covariance. Shared datum errors and
+inter-landmark map correlations require joint covariance or nuisance states.
+For a height-above-terrain observation h(p) = pz −zg(px,py), the position Jacobian is
+[−∂xzg,−∂yzg, 1]. A barometric altitude relative to launch pressure instead measures altitude
+relative to that datum; conversion to above-ground height must account for ground elevation and
+datum uncertainty. Height bias is not removed by naming it AGL.
+5.5.3 Update, injection, and covariance reset
+Stack compatible measurements into an innovationν=z−h(ˆ︁x)with covariance V conditional on
+the state. With linearized JacobianH, independent measurement noise gives
+S=HP −H T +V, K f =P −H TS−1,(5.42)
+ˆ︂δx=Kfν, P c = (I−KfH)P−(I−KfH) T +KfVK T
+f.(5.43)
+The last expression is the Joseph covariance update. For shared noise or dependence between the
+prediction and measurement errors, cross covariances must be included; the displayed equations
+assume they vanish. Inject the Euclidean increments by addition and attitude by
+ˆ︁R+ = ˆ︁R−Exp([ˆ︂δθ]×).(5.44)
+The error coordinates have now changed, so retainingPc unchanged is not generally correct. If
+a= ˆ︂δθ, the new attitude error is
+δθ+ = Log{Exp(−[a]×) Exp([δθ−]×)}.(5.45)
+Here Log returns the three-vector rotation increment on its local principal branch, so
+Log(Exp([v]×)) =vfor∥v∥<π. Differentiating atδθ−=agives the right Jacobian
+Jr(a) =
+∫︂1
+0
+exp(−s[a]×)ds(5.46)
+=I−1−cos∥a∥
+∥a∥2 [a]×+∥a∥−sin∥a∥
+∥a∥3 [a]2
+×=I−1
+2[a]×+O(∥a∥2).(5.47)
+22
+
+=== PAGE 24 ===
+CANSAT mathematics 30 September 2026
+One way to see the derivative isExp([a +ε]×) = Exp([a]×) Exp([Jr(a)ε]×) +O(∥ε∥2); left multipli-
+cation by Exp(−[a]×)and the local logarithm then returnJr(a)ε. Integrating Rodrigues’ formula
+proves the closed form. With true-minus-nominal Euclidean errors the reset matrix is
+T= diag(I 3,I 3,Jr(a),I 3,I 3), P + =TP cT T.(5.48)
+This also transforms attitude cross-covariances. Set the mean error state back to zero after
+injection. Large residual rotations require relinearization or iteration rather than trusting a
+first-order update.
+5.5.4 Visual odometry and its sign
+After rotational compensation, a nadir camera above stationary flat terrain obeysu =f(mx−
+px)/h+c x. At constant height,
+∆p x =−h
+f ∆u, v x≃−h
+f
+∆u
+∆t .(5.49)
+The minus sign applies when∆u means the displacement of a ground feature in image coordinates.
+A correlation shift defined as the compensating image translation has the opposite sign, so code
+must document which convention it uses. Appendix H.7’s unsigned formula is incomplete until its
+shift convention is specified.
+With changing heights the exact nadir-plane relation is
+∆p x = h1
+f (u1−cx)−h2
+f (u2−cx).(5.50)
+Thus descent produces scale change even without horizontal motion. Simple translation-only
+correlation of unscaled frames will confound this expansion with drift. Use plane rectification
+at each height or a scale-aware model; propagate height and attitude uncertainty. Consecutive
+displacements share images and therefore have correlated errors. Their velocity estimates are
+not independent new measurements of the same filter that produced the rectification unless that
+dependence is represented. Without fresh absolute map fixes, visual odometry drift and datum
+uncertainty accumulate.
+The temporal covariance can be derived directly. Suppose a tracked feature has independent
+zero-mean image-location errorsηk with covarianceCk, and the known-height, known-rotation
+transformation to horizontal ground position isBk (for the aligned nadir example,Bk = (hk/f)I2).
+Its displacement error between imageskandk+ 1isϵ k =B kηk−Bk+1ηk+1. Therefore
+Cov(ϵk) =B kCkBT
+k +Bk+1Ck+1BT
+k+1,(5.51)
+Cov(ϵk,ϵk+1) =−Bk+1Ck+1BT
+k+1.(5.52)
+Both equalities follow by expanding products and discarding independent cross terms. The
+negative shared-image covariance is present even in this idealized case. Velocity covariance divides
+the first expression by∆t2
+k and the adjacent cross-covariance by∆tk∆tk+1. Tracking errors across
+frames, multiple features, and pose-dependent rectification can add other cross terms; thus the
+independent-location derivation is a baseline, not the full pipeline model. Height error introduces
+additional derivatives ofBk and must be propagated as well.
+If the prior state errore and measurement noisev are correlated, letC = E[evT]and write
+ν=He+v. Expansion gives
+S=HPH T +HC+C TH T +V,(5.53)
+Cov(e,ν) =PHT +C,(5.54)
+Kf = (PH T +C)S−1,(5.55)
+Pc =P−(PHT +C)S−1(HP+C T).(5.56)
+23
+
+=== PAGE 25 ===
+CANSAT mathematics 30 September 2026
+The gain follows by minimizing the covariance ofe−Kfν, or by Gaussian conditioning. These
+equations show precisely which omitted terms can cause double use of old visual information. For
+temporal measurement correlation, whiten the complete noise model, augment the state with its
+correlated components, or use a joint update with the block covariance; treating every velocity
+increment as independent does not reproduce that update.
+5.6 Error budget, information bounds, and filter consistency
+5.6.1 A design sensitivity calculation is not posterior covariance
+The proposal’s scalar budget assumes independent source errors and a specified one-dimensional
+projection. Usingr m for map metres/pixel to avoid confusing it with gravity, it is
+σ2
+p≃(hσθ)2 + r2
+mσ2
+c
+n +σ2
+datum + (hωστ)2 + (σz tanϕ)2.(5.57)
+This follows from a linear errore =∑︁
+jajηj and Var(e) = ∑︁
+ja2
+j Var(ηj)only when the source
+covariances vanish. In general, withe=Aη,
+Σe =AΣ ηAT =
+∑︂
+j,k
+Aj Cov(ηj,ηk)AT
+k.(5.58)
+Matching noise averages down as1/n only for independent, equal-quality, translation-only ob-
+servations. Repeated texture, image warp, timing, terrain geometry, and map datum are often
+common across landmarks. For equal correlationρbetween scalar matching errors, the mean
+variance isσ2{(1−ρ)/n +ρ}, obtained by summing then diagonal andn(n−1)off-diagonal
+covariance entries.
+Forrm = 0.5 m/pixel, σc = 0.2pixels and n = 50, the independent translation matching term is
+0.0141421 m. The assumption is much more consequential than its rounded value. A common
+map offset remains in every fix and does not shrink by adding landmarks or frames.
+The ESKF already estimates position and attitude jointly. Its posteriorPpp contains the effects
+of marginalized attitude uncertainty and correlation with position. Addingh2Pθθto that same
+Ppp generally double-counts uncertainty. Either use the joint posterior and propagate it through
+the desired output, or construct a separate, explicitly defined design estimator and its source
+sensitivities. Map datum and calibration nuisance uncertainties not in the filter must be added
+with their correct cross-covariance or included as states.
+The nominal attitude–datum crossover is obtained by settinghσθ=σdatum:
+h∗= σdatum
+σθ
+= 2.5
+0.5π/180= 286.479 m.(5.59)
+The units require radians. Inferring attitude precision from an observed crossover is not unique
+unless the datum, terrain, timing, correlations, and altitude-dependent geometry are separately
+controlled. If tilt is estimated from fixed angular geometry with fixed pixel noise, its posterior
+precision may itself vary with height and feature support.
+In (5.57), taking the terrain contribution to be exactly1 m, timing0.5 ms at40 ◦/s, and the
+matching value above gives2.73470to6 .11774 mat300 mfor( σθ,σdatum)from(0 .3◦, 2 m)to
+(1◦, 3 m). At100 mthe corresponding endpoints are2.29686and3 .61215 m. These are worked
+sensitivity estimates, not predictions validated on hardware. State whether an error is a per-axis
+standard deviation, horizontal RMS
+√︁
+tr Σp, radial quantile, or bias bound: they are different
+quantities.
+24
+
+=== PAGE 26 ===
+CANSAT mathematics 30 September 2026
+5.6.2 Fisher information and nuisance marginalization
+For fixed correct correspondences with independent Gaussian observationszi = hi(x) + εi,
+covarianceVi independent ofx, the log-likelihood is a sum of weighted squared residuals. Taking
+the expected outer product of the score gives
+Jlik =
+∑︂
+i
+H T
+i V−1
+i Hi.(5.60)
+For a differentiable identifiable deterministic parameter, the Cramér–Rao inequality follows by
+differentiating estimator unbiasedness and applying the covariance Schur complement to the
+estimator error and likelihood score:
+Cov(ˆ︁x)⪰J−1
+lik.(5.61)
+The regularity assumptions allow differentiation under the integral, and the unbiasedness derivative
+must be identity. A biased estimator, selected associations, wrong measurement model, or singular
+information invalidates this simple statement.
+With a Gaussian linear prior,J0 =P−1
+0 and linear measurements, the posterior precision is exactly
+J0 +Jlik. In a nonlinear EKF it is a local linearized posterior approximation. Adding a prior does
+not turn this into a frequentist bound foranyunbiased estimator without specifying a Bayesian
+bound and its assumptions. For correlated observations, stackH and useJ = H TV−1H; the
+independent sum is not valid unless conditional independence holds.
+Partition information between parameters of interestx and nuisanceb. IfJbb is invertible, the
+effective information is
+Jx,eff =J xx−JxbJ−1
+bb Jbx.(5.62)
+Block Gaussian elimination proves this formula and(J−1)xx = J−1
+x,eff. It explicitly shows why
+pretending tilt, datum, or calibration is known overstates accuracy. If a gauge direction is
+unobservable, restricttoanidentifiablesubspaceoraddajustifiedindependentdatummeasurement.
+A pseudoinverse alone must not be reported as a finite error bound in an unobservable direction.
+5.6.3 Innovation gates and consistency against imperfect truth
+For an unselected correct landmark with Gaussian innovationν∼N(0,S )and rank two covariance,
+whitening gives
+νTS−1ν∼χ2
+2, χ 2
+2(0.997) =−2 log(0.003) = 11.618286.(5.63)
+The equality uses the radial squared length of two independent unit normal variables: in polar
+coordinates its density is1
+2e−q/2for q≥0. A threshold rejects an inlier with probability0.003
+under this model. It does not bound acceptance of a bad association. Searching many candidate
+peaks, consensus selection, and prior dependence can alter the distribution. Validate the complete
+selection and gating pipeline, including rejected cases. Several landmarks with shared noise should
+be gated jointly or treated with their joint covariance.
+For true state errore∼N(0,P )in an n-dimensional observable state,ϵ=eTP−1e∼χ2
+n. ForN
+independent realizations at a comparable epoch,
+N∑︂
+r=1
+ϵr =N ϵ∼χ2
+nN.(5.64)
+A two-sided significance levelαgives average bounds[χ2
+nN(α/2)/N,χ2
+nN(1−α/2)/N]. High values
+indicate excess error relative to stated covariance; low values can indicate conservative covariance,
+25
+
+=== PAGE 27 ===
+CANSAT mathematics 30 September 2026
+dependence, or selection effects. Successive flight epochs are correlated and are notN independent
+realizations. One flight cannot be turned into many independent trials merely by increasing sample
+rate.
+GPS position cannot supply the true full 15-dimensional ESKF state. For the horizontal difference
+d= ˆ︁pTRN−ˆ︁pGPS, use the observed dimension and
+Σd = Σ TRN + Σ GPS−CTG−CT
+TG,(5.65)
+where CTG is the cross-covariance of the two estimation errors. Even with GPS excluded from
+navigation, datum survey, time alignment, or calibration can make errors correlated. Include map
+datum uncertainty if it is not already inΣTRN, and distinguish a measured bias from random
+error. Then dTΣ−1
+d d tests consistency of the difference model; it is not pure navigation NEES
+unless the truth is sufficiently accurate and independent.
+5.7 Horizontal protection level and integrity limitations
+Assume horizontal errore∼N(0, Σp)withΣ p≻0. Write e = Σ 1/2
+p ξ, ξ∼N(0,I 2), and let
+qα=χ2
+2(1−α) =−2 logα. The ellipsoid
+Eα={e:eTΣ−1
+p e≤qα}(5.66)
+has probability1−α. Since∥e∥2≤λmax(Σp)∥ξ∥2, the circle
+PL =
+√︁
+−2 logα
+√︂
+λmax(Σp)(5.67)
+contains that ellipsoid and has exceedance probability at mostα. The circle probability is
+exactly1 −αfor isotropic covariance; for anisotropic covariance it can be conservative. At95%
+containmentk =√−2 log 0.05= 2.44774683. Usingk = 3in isotropic two-dimensional error gives
+taile−9/2= 0.011108997, not the one-dimensional “three sigma” tail.
+If an unknown deterministic bias has a justified bound∥b∥≤B, the triangle inequality gives
+PL = B +√qαλmax. If there is an unmodelled failure probabilitypf, a conditional Gaussian
+bound provides, at best, total exceedance boundpf +αby a union bound. A covariance circle
+alone supplies no protection against unbounded datum error, systematic model error, or wrong
+matches.
+Empirical exceedance counts require uncertainty on their estimated rate. WithM independent
+trials and zero exceedances, the one-sided1−βbinomial upper bound is
+pexceed≤1−β1/M,(5.68)
+because the probability of zero under ratep is(1 −p)M. Correlated epochs do not meet this
+independence assumption. Comparing against GPS also measures the error of the difference, not
+exact true TRN error. Report integrity as a model and an experimental diagnostic; the proposal
+does not establish an aviation certification claim.
+5.8 Map gauge, robust registration, and certification
+5.8.1 The map datum gauge
+If all map coordinates and the camera position are shifted by the samed, then(mi +d)−(C +d) =
+mi−C, so every predicted pixel is unchanged. More generally, changing map/world coordinates
+by a rigid transformm′
+i = Qmi +d, C′= QC +d, and R′
+cw = RcwQT leaves the projection
+unchanged. Gravity and other references can constrain some frame rotations, but imagery alone
+26
+
+=== PAGE 28 ===
+CANSAT mathematics 30 September 2026
+cannot determine an unknown absolute map origin. An external surveyed datum is required.
+Represent its uncertainty as a shared quantity across images and landmarks. A fixed known
+map removes the gauge algebraically; its georeferencing accuracy remains a separate physical
+uncertainty.
+5.8.2 Exact truncated-least-squares reformulation
+Let q = [a,b,t x,ty]T represent complex scale-rotationz = a +ib and translation. For point
+ui = (uix,uiy), define
+Ai =
+[︄
+uix −uiy 1 0
+uiy uix 0 1
+]︄
+, r i =m i−Aiq.(5.69)
+The similarity residual is affine, but the robust objective
+F(q) =
+∑︂
+i
+min
+(︄
+∥ri∥2
+σ2
+i
+,c 2
+i
+)︄
+(5.70)
+is nonconvex. Exactly,
+F(q) = min
+wi∈{0,1}
+∑︂
+i
+[︄
+wi
+∥ri∥2
+σ2
+i
++ (1−wi)c2
+i
+]︄
+.(5.71)
+For fixedq each independent switch chooses the smaller term. However,wi∥mi−Aiq∥2 has
+total polynomial degree three in(wi,q ). Thus the proposal’s statement that binary switches
+immediately give a quadratic programme is incomplete.
+An explicit exact quadratic lifting introducesvi =w iqand constraints
+w2
+i−wi = 0, v ij−wiqj = 0 (j= 1,...,4).(5.72)
+Then solve the quadratically constrained quadratic programme
+minq,w,v
+∑︂
+i
+[︄
+∥wimi−Aivi∥2
+σ2
+i
++ (1−wi)c2
+i
+]︄
+.(5.73)
+Whenwi = 0the constraint forcesvi = 0, givingc2
+i. Whenwi = 1,vi =q and the cost is the original
+squared residual. These two cases prove equivalence in both directions. Additional physically
+justified scale constraints may be imposed throughs2
+min≤a2 +b2≤s2
+max; translation/search
+bounds must also be stated if used. Without a nonzero scale restriction, z = 0is allowed
+algebraically although it is a collapsed transformation, not an invertible similarity.
+5.8.3 What an SDP certificate requires
+Collect the variables and a homogeneous leading1intox. Every objective and quadratic constraint
+can be written asxTQx and xTAjx =bj, including linear terms through the leading entry. Set
+X =xxT, enforceX00 = 1, and replace quadratic forms by traces. DroppingrankX = 1gives an
+SDP withX⪰0, linear trace constraints, and linear objective. Any exact original feasible point
+generates an SDP feasible matrix with the same objective, so
+LSDP≤Fglobal.(5.74)
+If a globally optimal SDP solution has rank one and its factor withx0 = 1satisfies every original
+constraint, it provides an original feasible point with costLSDP. Therefore
+LSDP≤Fglobal≤F(x) =LSDP,(5.75)
+27
+
+=== PAGE 29 ===
+CANSAT mathematics 30 September 2026
+which proves global optimality. This is the mathematical content of a lossless relaxation certificate.
+The primary work by Yang and Carlone develops semidefinite approaches to robust geometric
+estimation.4
+Rank oneby itselfis insufficient: a suboptimal rank-one feasible point is just a candidate. A
+floating-point eigenvalue ratio is a numerical diagnostic, not a proof of exact rank, feasibility, or
+optimality. A practical claim must report primal constraint residuals, original-variable feasibility,
+recovered original objective, and a valid dual lower bound. For an equality-constrained SDP, a
+dual vectory satisfying Q−∑︁
+jyjAj⪰0gives the lower bound∑︁
+jyjbj. Together with a feasible
+candidate of costU, it certifies suboptimality at mostU−L. Inequality constraints require the
+corresponding sign restrictions on multipliers. Tolerance-based claims must be named numerical
+certificates; exact certificates require validated arithmetic or exact bounds. A relaxation need not
+be tight, and a rank-one optimum need not be returned even when one exists. Finally, global
+optimality of the stated robust cost does not prove that the map correspondence is physically
+correct.
+5.9 Landmark selection: normalized objective and greedy proof
+Assume a fixed observable parameterization, a positive definite baseline information matrixJ0,
+and fixed positive semidefinite per-landmark informationJi. Define
+JS =J 0 +
+∑︂
+i∈S
+Ji, f(S) = log detJ S−log detJ0.(5.76)
+Then f(∅) = 0. The subtraction is essential for the approximation guarantee and removes the
+arbitrary log-determinant constant arising from coordinate units.
+Fori /∈S, the determinant identity gives
+∆ i(S) =f(S∪{i})−f(S) = log det{I+J1/2
+i J−1
+S J1/2
+i }≥0.(5.77)
+The equality follows fromdet(I +AB) = det(I +BA)and factorization byJS. IfA⊆B, then
+JA⪯JB and inversion reverses the positive definite order,J−1
+A ⪰J−1
+B . Congruence withJ1/2
+i
+preserves that order. The log determinant is increasing on positive definite matrices: along a PSD
+incrementD, its derivative istr[(M+tD) −1D]≥0. Therefore
+∆ i(A)≥∆i(B),(5.78)
+proving diminishing returns, hence submodularity and monotonicity.
+For a cardinality constraint|S|≤k, letO be optimal andSt the greedy set aftert additions. By
+monotonicity and repeated diminishing returns,
+f(O)−f(St)≤f(O∪St)−f(St)(5.79)
+≤
+∑︂
+i∈O\St
+∆ i(St)≤k{f(St+1)−f(St)}.(5.80)
+Thus the remaining gap contracts by at least1−1/kat each addition:
+f(Sk)≥[1−(1−1/k)k]f(O)≥(1−1/e)f(O).(5.81)
+This is the normalized gain guarantee, not a guarantee that the rawlog detJSk is at least(1−1/e)
+times the raw optimum. The original approximation theorem is due to Nemhauser, Wolsey, and
+Fisher.5
+4Heng Yang and Luca Carlone,Certifiably Optimal Outlier-Robust Geometric Perception: https://arxiv.org/
+abs/2109.03349.
+5An analysis of approximations for maximizing submodular set functions–I(1978):https://thibaut.horel.
+org/submodularity/papers/nemhauser1978.pdf.
+28
+
+=== PAGE 30 ===
+CANSAT mathematics 30 September 2026
+Independent observations conditional on an augmented state can supply fixed additiveJi. Corre-
+lated measurement noise, selection-dependent linearization, or optimizing a pose-only determinant
+after marginalizing shared nuisance states need not meet that additive model; do not assert
+this proof then applies without a separate argument. A singularJ0 makes the normalized log
+determinant undefined. Remove gauge directions or use a justified prior; a fictitious prior conceals
+an unobservable mode. Unequal landmark costs require a different budget-constrained algorithm
+and guarantee. Greedy can prefer outer features in the simple tilt model, but maximizing full
+pose information can also select inner features, directions that fill a weak mode, or lower-noise
+landmarks. “Always chooses edge landmarks” is not a theorem.
+5.10 Uncertainty-aware notional safe-target selection
+Letc(p)be a bounded nonnegative map cost and let terminal displacement error have distribution
+e∼N(0,Σland)under the specified predictor. Ifpis the intended mean target, expected cost is
+cΣ (p) =E[c(p+e)] =
+∫︂
+R2
+c(p+e)N(e; 0,Σ land)de.(5.82)
+For the indicator of a hazard setH, this equals the modeled probability of landing in a hazard.
+It is a convolution, not merely an unspecified inflation radius. Use terminal covariance, map
+uncertainty, and actuator/model uncertainty appropriate to the target decision; current position
+covariance alone need not equal terminal uncertainty.
+A robust alternative uses the confidence error ellipsoidEαdefined above. Require
+(p+E α)∩H=∅⇐⇒p /∈H⊕(−Eα),(5.83)
+where⊕is Minkowski addition. Then all errors in the ellipsoid avoid hazards, yielding modeled
+hazard probability at mostα. For a centered symmetric ellipse−Eα=Eα. Add a bounded
+datum/hazard-boundary uncertainty set by another Minkowski sum. Gaussian support is un-
+bounded, so finite inflation is a probability statement, not zero-risk clearance. Map completeness
+remains an unverified assumption until inspected.
+For a notional controllable canopy, let available horizontal air-relative control speed beumax(t).
+The triangle inequality gives a displacement bound
+∥∆pcontrol∥≤
+∫︂timpact
+t
+umax(t′)dt′.(5.84)
+If umax =κvd, vertical descent is monotone withdh/dt =−vd, and control can point freely in the
+plane without delay, then the bound isRdiv =κh. Under those idealized conditions every point
+in the disc can be generated by suitable bounded control. Atκ= 0.3this gives90 mat300 m
+and30 mat100 m. If turn-rate limits, deployment transients, directional constraints, or spatially
+varying wind affect the control path, this disc can overstate reachability.
+Define the compact, nonempty modeled feasible setDand choose
+p∗∈arg min
+p∈D
+cΣ (p).(5.85)
+A continuous cost on a compact set attains a minimum. On a finite raster, search all admissible
+cells and specify a deterministic tie rule; quantify discretization and boundary handling. If no
+acceptable cell exists, report infeasibility rather than outputting a falsely safe target. The actual
+passive CanSat has no commanded divert, soκ= 0.3describes a hypothetical decision experiment,
+not its physical reachable set. Agreement between TRN- and GPS-driven decisions tests sensitivity
+to navigation, not proof that an unflown control would reach the target.
+29
+
+=== PAGE 31 ===
+CANSAT mathematics 30 September 2026
+5.11 Executed numerical checks and remaining validation
+The following checks were executed with NumPy and Python, usingdefault_rng(20260930)
+for random inputs. No SciPy, SDP solver, flight imagery, or flight measurements were used.
+The random rotations were generated with Rodrigues’ formula. The reproducible module
+sim/maths/test_navigation_extra.py prints the numerical report and executes thirteen unit
+tests; its derivatives, rotations, and FFT checks also use the adjacent mathematical reference
+models. Reprojection tests usedK = (fx =fy = 640,cx = 640,cy = 400), nominal camera height
+300 m, 100 random ground points and attitude perturbations, a nonidentity camera extrinsic
+rotation, and body lever arm(0.04,−0.03, 0.015) m. Symmetric finite differences used step10−5
+for projection, with rotations perturbed on the right. These are algebraic consistency checks.
+Executed check Result
+Homography versus direct projection, maximum pixel
+difference
+2.03×10−13pixels
+Position reprojection derivative, maximum component
+error
+1.02×10−8pixels/m
+Local attitude reprojection derivative, maximum com-
+ponent error
+6.96×10−8pixels/rad
+Exact reset derivative ata = (0.3,−0.2, 0.1)rad, step
+10−6, versusJr(a)
+3.07×10−11maximum component
+error
+FFT NCC versus direct NCC, all 117 valid windows
+of a13×16random image and5×4random template
+4.45×10−16maximum score differ-
+ence
+Gaussian radial95%circle, 200000 independent draws Observed containment0 .9492; spec-
+ified probability0.95
+For the Gaussian circle experiment, the binomial standard deviation of the sample proportion
+under the specified model is
+√︁
+0.95(0.05)/200000= 0.0004873. The observed difference−0.0008
+is about−1.64such standard deviations. This is compatible with sampling variation and verifies
+the simulated distribution; it gives no evidence for the Gaussianity of real matching errors.
+For(5.10), withf = 640and σpx = 0.2, the normalized landmark sets(−0.02,−0.01, 0, 0.01, 0.02),
+(−1,−1, 1, 1), and(−1,−0.5, 0, 0.5, 1)gave marginalized attitude information1 .4336,0, and
+8.96×106 rad−2, respectively. These confirm strong near-centre ill-conditioning and the equal-
+radius degeneracy in the one-dimensional model. They are not full-camera attitude performance
+predictions.
+A separate normalized-logdet check generated eight fixed PSD landmark matricesJi = H T
+i Hi
+from2 ×3normal matrices and usedJ0 = diag(0.2, 0.4, 0.6). All diminishing-return comparisons
+between a subset and a one-element larger subset were checked; the maximum positive violation
+was zero in floating-point arithmetic. Greedy selection of three landmarks gave normalized value
+8.573753638, while exhaustive search over all
+(︁8
+3
+)︁
+= 56triples gave8.598882151, a ratio0.997077700.
+This is a numerical example of the proved guarantee, not a proof for every matrix set or a statement
+about real image landmarks.
+Additional passing tests compare constant-rate quaternion propagation against an independent
+matrix exponential and Runge–Kutta integration, the right Jacobian against numerical integration
+of
+∫︁1
+0 exp(−s[a]×)ds, and the shared-image covariance(5.52) against300000independently gener-
+ated triples of image errors. They also check signed odometry with changing height, undefined
+constant-template NCC, the two-dimensional quadratic peak counterexample, integer RANSAC
+counts, the exact two binary cases of the TLS lifting, and the Gaussian innovation gate. The
+latter rejected0.00314of the200000synthetic Gaussian innovations at the specified0.003nominal
+30
+
+=== PAGE 32 ===
+CANSAT mathematics 30 September 2026
+rate. No test substitutes for the proof of the corresponding general identity, and no test claims an
+SDP solve.
+No semidefinite certificate has been computed here; the exact lifted formulation and certificate
+conditions above specify what would need to be checked. Before interpreting navigation simulations
+as physical validation, run the same pipeline on independently rendered terrain with elevation,
+calibration error, timing offset, motion blur, shared map datum error, and repetitive textures.
+Retain failed associations and rejected updates. Then validate with surveyed ground imagery and
+independent attitude and position references. The required flight accuracy, tilt observability under
+real swing, covariance consistency, and match integrity remain hypotheses until such evidence
+exists.
+6 Turbulence along a descending path
+6.1 What is being derived, and what is being assumed?
+The algebra below constructs a valid Gaussian random-field prior. It does not establish that a
+particular atmosphere has that prior. The physical assumptions are a locally vertical sampling
+path, frozen turbulence over the crossing time, and local isotropy and incompressibility before
+introducing the height-dependent deformation. The shear and crossing-time calculations in the
+preceding physics section are tests of those assumptions, not proofs that they always hold.
+Write the wind as a mean plus a fluctuation,
+w(z) =µ(z) +˜︁w(z),E ˜︁w(z) = 0.(6.1)
+The standard deviationσ(z)has units of m s−1; the length scaleL(z)has units of metres. Here
+L is the exponential decay parameter. It is not automatically the integral length scale of every
+component.
+6.2 Why a horizontal wind component uses the transverse covariance
+In an isotropic field the correlation tensor at separationr=rnhas the form
+Rij(r) =σ2{g(r)δij + [f(r)−g(r)]ninj}.(6.2)
+Here f describes a component parallel to the separation andg a component perpendicular to it.
+Incompressibility requires∂Rij/∂rj = 0. Using∂ni/∂rj = (δij−ninj)/r and summing over three
+spatial dimensions gives
+f′(r) + 2
+r [f(r)−g(r)] = 0, g(r) =f(r) + r
+2f′(r). (6.3)
+Choose the modelf(r) =e −r/L. Differentiating and substituting yields
+g(r) =
+(︃
+1−r
+2L
+)︃
+e−r/L. (6.4)
+For a vertical separation, the vertical wind is longitudinal and both horizontal winds are transverse.
+This relabelling follows from the tensor geometry. Boundary-layer anisotropy is a reason to
+compare alternative priors, rather than to assume this relabelling remains an exact physical law.
+The covariance becomes negative whenr > 2L. Negative covariance does not mean negative
+variance: it means that fluctuations at two points tend to have opposite signs. Its integral is
+∫︂∞
+0
+g(r)dr=L
+∫︂∞
+0
+(1−q/2)e−qdq= L
+2.(6.5)
+31
+
+=== PAGE 33 ===
+CANSAT mathematics 30 September 2026
+Thus the transverse integral length isL/2. Confusing it withL changes an inferred eddy scale by
+a factor of two.
+6.3 Positive definiteness: a direct spectral proof
+Setq=r/L, and use the two-sided Fourier convention
+S(ω) =
+∫︂∞
+−∞
+g(|q|)e−iωqdq, g(|q|) =1
+2π
+∫︂∞
+−∞
+S(ω)eiωqdω.(6.6)
+Sincegis even, only the cosine term remains. The two needed integrals are
+∫︂∞
+0
+e−qcos(ωq)dq= 1
+1 +ω2,(6.7)
+∫︂∞
+0
+qe−qcos(ωq)dq= 1−ω2
+(1 +ω2)2.(6.8)
+The first follows by integratinge−(1−iω)qand taking its real part. The second follows by differenti-
+ating that integral with respect to its decay coefficient. Therefore
+S(ω) = 1 + 3ω2
+(1 +ω2)2≥0. (6.9)
+For any finite set of points and real coefficientsaj,
+∑︂
+j,k
+ajakg(|qj−qk|) =1
+2π
+∫︂
+S(ω)
+⃓⃓⃓⃓⃓⃓
+∑︂
+j
+ajeiωqj
+⃓⃓⃓⃓⃓⃓
+2
+dω≥0.(6.10)
+This proves thatg is a valid covariance kernel on the line, even though some of its off-diagonal
+entries are negative. In physical distance, the spectrum is
+Sw(k) =σ2L 1 + 3(kL)2
+[1 + (kL)2]2.(6.11)
+Its units are wind variance times metres; integratingSw(k)dk/(2π)givesσ2.
+6.4 Deriving the exact two-state stochastic model
+LetW q be Brownian motion, withVar(dWq) =dq. Define
+dx=Fxdq+BdW q, F=
+[︄
+0 1
+−1−2
+]︄
+, B=
+[︄
+0
+1
+]︄
+, c=
+[︂
+1
+√
+3
+]︂
+, ˜︁w=σcx.(6.12)
+The state is dimensionless. The matrix has the repeated eigenvalue−1, so the process is stable.
+To determine its stationary covariance, put
+P=
+[︄
+a b
+b d
+]︄
+inFP+PF T +BB T = 0.(6.13)
+The(1 , 1)entry gives2 b = 0; the off-diagonal entry givesd−a−2b = 0; the(2, 2)entry gives
+−2b−4d+ 1 = 0. Hence
+P∞= 1
+4I2,Var( ˜︁w) =σ2cP∞cT =σ2. (6.14)
+32
+
+=== PAGE 34 ===
+CANSAT mathematics 30 September 2026
+WriteF =−I+N, whereN 2 = 0. The exponential series then terminates after the linear term
+inN:
+eFq =e−q(I+qN) =e −q
+[︄
+1 +q q
+−q1−q
+]︄
+.(6.15)
+For a stationary initial state independent of future increments,
+Cov[˜︁w(q), ˜︁w(q+r)] =σ 2cP∞eF TrcT (6.16)
+= σ2e−r
+4 {1 +r+ 3(1−r)}(6.17)
+=σ2(1−r/2)e−r.(6.18)
+The
+√
+3r cross terms cancel. This proves the exact covariance identity, rather than merely fitting
+a simulated curve. Equivalently the transfer function is(1 +
+√
+3,iω)/(1 +iω)2, whose squared
+modulus is the spectrum above.
+6.5 Making the scale vary with height, without a sign error
+Heightz increases upward and distance descendeds increases downward:z =zstart−s. Define
+the increasing descent coordinate
+q(z) =
+∫︂zstart
+z
+dξ
+L(ξ), dq
+ds = 1
+L(z) >0, dq
+dt = vd
+L(z) >0. (6.19)
+The proposal instead defined an upward-increasing coordinate while assigning it a positive descent
+derivative. Using q corrects the sign and keeps the stochastic dynamics stable; it is not valid
+simply to run the stable forward system backwards with the same noise.
+For a deterministic non-negative amplitudeσ(z), the warped covariance is
+R(z1,z 2) =σ(z1)σ(z2)g(|q(z1)−q(z2)|).(6.20)
+For any coefficientsai, its quadratic form equals the valid stationary quadratic form with coefficients
+aiσ(zi). Positive semidefiniteness is therefore preserved. The deformation defines a model along a
+line; it does not prove a globally isotropic, incompressible three-dimensional field after deformation.
+Three useful cases follow by integration:
+L(z) =L 0 :|∆q|=|z2−z1|/L0,(6.21)
+L(z) =az:|∆q|=|ln(z2/z1)|/a,(6.22)
+L(z) = az
+1 +az/L∞
+:|∆q|=
+⃓⃓⃓⃓
+1
+a lnz2
+z1
++ z2−z1
+L∞
+⃓⃓⃓⃓.(6.23)
+The coefficienta is dimensionless. In the attached-eddy case, equal ratios of height give equal
+normalised correlation. They do not necessarily give equal information: sensor noise, probe lag,
+changing intensity, and sampling rate still matter.
+6.6 Changing the independent variable and handling the ground
+A Brownian increment over distanceds has varianceds/L, while over timedt it has variance
+vddt/L. Therefore
+dx= F
+L xds+ B√
+L
+dWs,(6.24)
+dx= vd
+LFxdt+
+√︃vd
+LBdWt.(6.25)
+33
+
+=== PAGE 35 ===
+CANSAT mathematics 30 September 2026
+The square roots are essential: multiplying the noise byvd/L would give the wrong variance.
+There is no derivative ofσin the latent-state equation because˜︁w(z) =σ(z)cx(z)is evaluated as
+the output. Its covariance already contains the changing amplitude.
+With L = az, q diverges atz = 0. A stationary process at infiniteq has no unique limiting
+realisation at the ground; the formula cannot be used as an unexamined endpoint boundary
+condition. One must terminate above the ground and specify a final-layer model, or introduce
+a measured scale floor or taper. The simulations useL = 0.5 max(z,zc)with zc = 1m and test
+zc = 0.5and2m. This is an explicit numerical scenario, not a choice of flight physics.
+If L≈azand lag length isℓ, the ratioℓ/Lbecomes order one atz≈ℓ/a. Forℓ= 11.24m and
+a = 0.5the crossover is22.5m. This is a heuristic conditioning scale. It does not by itself prove
+that every retrieval below that height is prior-dominated; averaging kernels test that claim.
+6.7 Intensity models are competing empirical priors
+The historical low-altitude MIL model quoted in the proposal uses heighth in feet and reference
+wind at 20 ft, namely6.096m, not exactly6m:
+σw = 0.1W20, σ u =σv = σw
+(0.177 + 0.000823h)0.4.(6.26)
+These are empirical aviation-model intensity prescriptions. Relabelling a spectrum according
+to a vertical path does not erase their anisotropy or establish their accuracy during a CanSat
+descent. The numerical coefficients for neutral surface-layer intensity quoted in the proposal are
+also empirical, rather than consequences of Gaussian-process algebra. Test intensities against
+the mast data and retrieval uncertainty, and rotate along-wind/cross-wind components when
+applying directional surface-layer models. NASA’s implementation/testing report provides a
+primary reference for numerical Dryden implementations.6
+7 Wind retrieval, smoothing, and information content
+7.1 The forward lag equation, including its initial condition
+Consider one horizontal component, with known positive lag lengthℓ:
+ℓdu
+ds +u=w(s).(7.1)
+Multiply byes/ℓand integrate from0tos. This gives
+u(s) =e−s/ℓu0 +
+∫︂s
+0
+1
+ℓe−(s−r)/ℓw(r)dr. (7.2)
+Thus velocity is a smoothed version of wind, plus memory of the initial velocity. For piecewise-
+constant windwj on cells of width∆s, puta=e −∆s/ℓ:
+uj =au j−1+ (1−a)wj, K ji = (1−a)aj−i (1≤i≤j).(7.3)
+Thenu= Kw+b u0 with bj =aj. An uncertainu0 must be jointly estimated or marginalised. If
+it is correlated with the wind, as it is under a stationary coupled prior, adding an independent
+initial-error variance is insufficient.
+6https://ntrs.nasa.gov/citations/19980028448
+34
+
+=== PAGE 36 ===
+CANSAT mathematics 30 September 2026
+For constant coefficients a Fourier modeeiks is attenuated by
+Huw(k) = 1
+1 +ikℓ,|H uw|= 1√︁
+1 + (kℓ)2.(7.4)
+The formal inverse amplifies velocity noise by
+√︁
+1 + (kℓ)2. A 20 m sinusoidal wavelength has
+k = 2π/20, soℓ= 11.24m gives amplification3 .67. A 20 m bin average is not the same as
+resolving all 20 m wavelength fluctuations. Differentiating noisy velocities is therefore a poor
+substitute for a regularised inverse.
+7.2 Deriving the Gaussian inverse by completing the square
+On a chosen grid suppose
+y=Kw+ε,w∼N(µ,Sa),ε∼N(0,Sε),(7.5)
+with independent wind and measurement errors and positive-definite covariances. The negative
+log posterior, ignoring constants, is
+1
+2(y−Kw)TS−1
+ε(y−Kw) +1
+2(w−µ)TS−1
+a (w−µ).(7.6)
+Differentiating with respect towgives a linear equation. Collect the quadratic and linear terms
+to obtain
+Ppost = (KTS−1
+εK+S −1
+a )−1,(7.7)
+ˆ︁w=µ+P postKTS−1
+ε⏞ ⏟⏟⏞
+G
+(y−Kµ).(7.8)
+The same answer can be evaluated without explicitly invertingSa:
+G=S aKT(KSaKT +Sε)−1,(7.9)
+Ppost =S a−GKSa.(7.10)
+Both expressions follow from the same normal equation. In numerical code, solve linear systems
+instead of forming inverse matrices. A singular prior can be handled through the joint Gaussian
+conditioning expression; the precision expression above requires invertibility.
+7.3 Averaging kernels: what did the observations actually resolve?
+Holding the prior and hyperparameters fixed,
+A=GK= ∂E(ˆ︁w|w)
+∂w ,DFS = trA. (7.11)
+The expectation removes random measurement noise. A row ofA gives the response to true wind
+at every grid cell. Rows need not be positive or integrate to one, so quoting a single positive
+“width” can be misleading if there are negative lobes. Report the whole row, sensitivity sum, and
+an explicitly defined width statistic.
+To see why0≤DFS≤n, whiten the prior and measurement noise and setM = S−1/2
+ε KS 1/2
+a .
+ThenAis similar to
+(I+M TM)−1M TM.(7.12)
+Ifλi≥0are the eigenvalues ofM TM, the eigenvalues of this expression areλi/(1 +λi). Each lies
+between zero and one. DFS counts partially resolved modes, not necessarily a count of distinct
+non-overlapping layers.
+35
+
+=== PAGE 37 ===
+CANSAT mathematics 30 September 2026
+7.4 A continuous state model for both wind and drift
+For one axis takeX= [ x1,x 2,u,I ]T, whereI is horizontal drift in metres. The dynamics in
+distance descended are
+dX=A(z)Xds+b(z)ds+B(z)dW s,(7.13)
+where
+A=
+⎡
+⎢⎢⎢⎣
+0 1/L0 0
+−1/L−2/L0 0
+σ/ℓ
+√
+3σ/ℓ−1/ℓ0
+0 0 1/v d 0
+⎤
+⎥⎥⎥⎦,b=
+⎡
+⎢⎢⎢⎣
+0
+0
+µ/ℓ
+0
+⎤
+⎥⎥⎥⎦,B=
+⎡
+⎢⎢⎢⎣
+0
+1/
+√
+L
+0
+0
+⎤
+⎥⎥⎥⎦.(7.14)
+The final row follows fromdI/dt =u and ds/dt =vd. ThereforedI/ds =u/vd has units metres
+per metre. The velocity observation isy = HX+ ε, H = [0 0 1 0]. Two independent copies
+model two horizontal axes only if that independence is an accepted prior; otherwise use a coupled
+covariance.
+7.5 Discretisation: transition, noise covariance, and forcing
+For coefficients constant over a step∆s, variation of constants gives
+Xk+1 = ΦkXk +dk +qk,(7.15)
+Φk =eA∆s,d k =
+∫︂∆s
+0
+eArbdr,(7.16)
+Qk = Cov(qk) =
+∫︂∆s
+0
+eArBBTeATrdr.(7.17)
+Using Q≈BBT∆s omits propagated within-step noise in velocity and drift. The exact constant-
+step block formula is
+exp
+(︄[︄
+AD
+0−AT
+]︄
+∆s
+)︄
+=
+[︄
+ΦE
+0 Φ −T
+]︄
+, D=BB T, Q=EΦ T.(7.18)
+An affine forcing is handled by adding one constant state: the last column of the exponential of[︁Ab
+0 0
+]︁
+∆sgivesd.
+For the two turbulence states alone,Φ =eF∆q and Q = P∞−ΦP∞Φ T are exact even with a
+varyingL, becauseq absorbs the variation. For the augmented lag/drift system, midpoint freezing
+is an approximation whenL,σ,ℓor vd vary. Subdividing each step and checking convergence is
+required. The reference implementation compares the block formula with independent Runge–
+Kutta integration of ˙Φ =AΦand ˙Q=AQ+QA T +D.
+7.6 Kalman update derived from joint Gaussian conditioning
+Suppose the predicted state isN (m−,P−)and the observation error is independent. The joint
+covariance of state and observation is
+[︄
+P− P−H T
+HP−HP−H T +R
+]︄
+.(7.19)
+Completing its joint quadratic form, or taking its Schur complement, gives
+ν=y−Hm−, S=HP −H T +R, K f =P −H TS−1,(7.20)
+m+ =m−+Kfν, P + =P −−KfSK T
+f.(7.21)
+36
+
+=== PAGE 38 ===
+CANSAT mathematics 30 September 2026
+Prediction usesm−
+k+1 = Φkm+
+k +dk andP−
+k+1 = ΦkP +
+k Φ T
+k +Qk. In finite precision use the Joseph
+covariance expression
+P + = (I−KfH)P−(I−KfH) T +KfRK T
+f (7.22)
+and symmetrise to remove round-off asymmetry. These expressions are exact for the linear
+Gaussian model with fixed known coefficients. They are approximations for nonlinear navigation
+or fitted random hyperparameters. The state-space/GP equivalence is established in the primary
+work of Hartikainen and Särkkä.7
+7.7 Why a post-flight smoother improves the whole profile
+Filtering estimates the present state from past observations. Smoothing also uses later observations.
+Conditional on the filtered state, the one-step predicted covariance isP−
+k+1 and the cross covariance
+isP +
+k Φ T
+k. A second Gaussian conditioning step gives the Rauch–Tung–Striebel gain
+Jk =P +
+k Φ T
+k (P−
+k+1)−1.(7.23)
+Starting at the last filtered state and working backwards,
+ms
+k =m +
+k +Jk(ms
+k+1−m−
+k+1),(7.24)
+Ps
+k =P +
+k +Jk(Ps
+k+1−P−
+k+1)J T
+k.(7.25)
+The output wind isµk +σkcxs
+k. Its point variance isσ2
+kcPs
+xx,kcT. Layer-average uncertainty
+requires thecross-heightsmoother covariances as well as the diagonal variances; simply averaging
+individual standard deviations is incorrect.
+7.8 Correlated errors, layer averages, and the S1 comparison
+If velocities are differences of independent position errors of varianceσ2
+p, then
+εv,k = εp,k−εp,k−1
+∆t ,Var(εv,k) = 2σ2
+p
+∆t 2,Cov(ε v,k,εv,k+1) =−σ2
+p
+∆t 2.(7.26)
+Navigation-filter outputs may instead have positive, long-lived correlations and correlations with
+the predictor’s states. A scalar noise variance alone cannot represent either case. Use a joint
+estimator, augment the coloured-error states, or use the full measurement covariance in a batch
+calculation.
+Forncorrelated errors with covarianceS,
+Var(¯ε) =1
+n2 1TS1.(7.27)
+If all have varianceσ2 and lag correlationρj, this is
+σ2
+n
+⎡
+⎣1 + 2
+n−1∑︂
+j=1
+(︃
+1−j
+n
+)︃
+ρj
+⎤
+⎦.(7.28)
+The familiarσ/√n standard deviation is valid only for uncorrelated errors. Withρj = 0.85j and
+n= 10, the bracket is about6.27; ten samples act like about1.60independent samples.
+For image and GPS wind retrievals, the difference covariance is
+Sdiff =S image +S GPS−Scross−ST
+cross.(7.29)
+7https://users.aalto.fi/~ssarkka/pub/gp-ts-kfrts.pdf
+37
+
+=== PAGE 39 ===
+CANSAT mathematics 30 September 2026
+Shared attitude corrections, lag parameters and priors create cross covariance. Agreement against
+GPS tests mutual consistency; a common canopy-model bias can make both agree while both
+misestimate the air’s wind. Score vector RMS explicitly: if each independent component has RMS
+r, the vector RMS is
+√
+2r. The proposal’s “±0.5m/s RMS” should specify component or vector,
+and a tolerance rather than a plus/minus confidence interval.
+7.9 Worked remedy: explicitly track correlated velocity error
+The preceding correlation warning has a constructive solution. Suppose a velocity observation has
+an errorek with a stationary first-order autoregressive model,
+ek+1 =ρek +ηk, η k∼N(0,σ2
+e(1−ρ2)),|ρ|<1.(7.30)
+The innovationsηk are independent of one another, the wind process and the initial state. Choose
+e0∼N(0,σ2
+e). Direct variance propagation gives
+Var(ek+1) =ρ2σ2
+e +σ2
+e(1−ρ2) =σ2
+e.(7.31)
+Applying the recurrencej times and using independence of the intervening innovations gives
+Cov(ek,ek+j) =σ2
+eρj. This proves both stationarity and the desired coloured covariance.
+Append e to the four-dimensional wind/velocity/drift state. The physical state transition remains
+the one already derived. At each observation interval,
+[︄
+Xk+1
+ek+1
+]︄
+=
+[︄
+Φk 0
+0ρ
+]︄[︄
+Xk
+ek
+]︄
++
+[︄
+dk
+0
+]︄
++qa
+k,Cov(q a
+k) =
+[︄
+Qk 0
+0σ 2
+e(1−ρ2)
+]︄
+.(7.32)
+The observation is now
+yk =
+[︂
+0 0 1 0 1
+]︂[︄
+Xk
+ek
+]︄
+. (7.33)
+There is no additional white-noise variance in this example: the entire observation error is already
+inek. Addingσ2
+e again to the measurement covariance would double count it. A genuinely separate
+white component may be added with its own variance. Although wind and error are independent
+initially, conditioning on a shared observation makes their posterior estimates correlated. Keeping
+the full augmented covariance preserves those correlations.
+This is a stochastic observation-error state; it does not apply an additional aerodynamic force to
+the CanSat. The coefficientρis per observation interval. If a continuous-time correlation decay
+Te is assumed, useρk = exp(−∆tk/Te)and Var(ηk) =σ2
+e(1−ρ2
+k)for varying intervals. A fitted
+ρwith substantial uncertainty is not a known constant; parameter uncertainty needs sensitivity
+analysis or joint/marginal inference.
+An independent check compares this augmented Kalman/RTS implementation with the direct
+batch inverse having
+[Sε]ij =σ2
+eρ|i−j|.(7.34)
+All posterior wind means and the entire cross-height covariance matrix agree within3×10−13in the
+test case. The independent formulations verify the remedy itself, rather than only demonstrating
+a failure of the independent-noise assumption.
+7.10 Deriving the covariance of a layer average
+The quantity required by a wind profile is often a layer average, not an instantaneous wind sample.
+For layer[za,zb]of thickness∆z=z b−za>0,
+wab = 1
+∆z
+∫︂zb
+za
+w(z)dz.(7.35)
+38
+
+=== PAGE 40 ===
+CANSAT mathematics 30 September 2026
+Given observationsD, linearity of expectation gives its posterior mean. Bilinearity of covariance
+gives its posterior variance:
+Var(wab|D) =1
+∆z 2
+∫︂zb
+za
+∫︂zb
+za
+Cov(w(z),w(z′)|D)dzdz′. (7.36)
+On a finite grid letw≈∑︁
+iaiwi. The weights are determined by the chosen quadrature or
+cell-overlap rule and sum to one for an average of a constant field. Then
+Var(w|D) =
+∑︂
+i,j
+aiaj[Sw
+post]ij =a TSw
+posta.(7.37)
+For uniform point samples one may useai = 1/n as a discrete sample-average metric; that is
+not automatically the exact integral over a 20 m bin. To represent a physical layer average, clip
+cells at the bin boundaries and use overlap lengths divided by the layer thickness, or refine a
+quadrature until its error is negligible relative to retrieval error.
+In a state-space smoother the cross-height terms can be recovered without a dense batch inverse.
+The filtered joint Gaussian law forXi andX i+1 implies the regression
+Xi =m +
+i +Ji(Xi+1−m−
+i+1) +ri, J i =P +
+i Φ T
+i (P−
+i+1)−1.(7.38)
+Conditional on past observations, the residualri is independent ofXi+1 and of later states and
+observations, by the Markov model. Thus, forj >i, conditioning on all observations yields
+Ps
+ij =J iPs
+i+1,j,(7.39)
+Ps
+ij =J iJi+1···Jj−1Ps
+j , P s
+ji = (Ps
+ij)T.(7.40)
+For wind output rowhi = [σic 0 0], with another final zero if the observation-error state is present,
+[Sw
+post]ij =h iPs
+ijhT
+j.(7.41)
+The recursion assumes the correct augmented Markov model. Applying it to a filter that silently
+ignores coloured noise cannot reconstruct the missing correlations.
+Keeping only the diagonal changes the variance to∑︁
+ia2
+i [Sw
+post]ii. This is generally wrong. The
+error can have either sign: positive cross-height covariance makes the diagonal-only calculation
+too small; negative covariance can make it too large. The numerical examples below show both
+behaviours in different synthetic measurement channels. The covariance matrix, not intuition
+about the sign, determines the answer.
+A two-sample example you can check by hand.Suppose two posterior wind errors each
+have standard deviationσ= 0.3m/s and correlationr. Their mean is(w1 +w2)/2. Expanding
+its variance gives
+Var
+(︃w1 +w 2
+2
+)︃
+= 1
+4(σ2 +σ2 + 2rσ2) = σ2
+2 (1 +r).(7.42)
+Ifr = 0, themeanhasstandarddeviation0 .3/
+√
+2 = 0.212m/s. If r = 0.8, itis0.3
+√
+0.9= 0.285m/s:
+the two errors tend to move together and averaging helps little. Ifr =−0.5, it is0.3
+√
+0.25= 0.150
+m/s: the errors partly cancel. All three covariance matrices are valid because their eigenvalues
+are σ2(1 +r)and σ2(1−r), both non-negative for|r|≤1. The diagonal-only value0.212m/s
+misses the answer in both correlated cases.
+39
+
+=== PAGE 41 ===
+CANSAT mathematics 30 September 2026
+7.11 Worked initial-condition marginalisation
+The lag operator retains release-velocity memory. For zero-mean perturbations, write
+y=Kw+bu 0 +ε, bj =e−j∆s/ℓ,Cov
+[︄
+w
+u0
+]︄
+=
+[︄
+Sa c0
+cT
+0 σ2
+0
+]︄
+.(7.43)
+Assume the measurement noise is independent of the joint wind/initial-velocity prior. Expand the
+observation covariance term by term:
+Sy =KS aKT +Sε+σ2
+0bbT (7.44)
++ (Kc0)bT +b(Kc 0)T,(7.45)
+Swy =S aKT +c 0bT.(7.46)
+The cross terms are necessary whenu0 and wind are correlated. Gaussian conditioning now gives
+the marginal wind posterior directly:
+ˆ︁w=S wyS−1
+y y, P w =S a−SwyS−1
+y ST
+wy. (7.47)
+For nonzero means, centreyby Kµw +bµ0 and addµw to the resulting posterior mean. Equiva-
+lently, augment the unknown vector byu0, use the joint block prior and forward matrix[K b],
+then take the wind block of its posterior. The two implementations agree numerically. Ifu0
+is exactly known, its centred variance and cross covariance are zero and the earlier inverse is
+recovered.
+The joint prior must be positive semidefinite. A transparent constructive example isu0 = 0.7w1+η0,
+with independentη0∼N(0,0.82)m/s and unit wind variance. Then
+c0 = 0.7Sa[:,1], σ 2
+0 = 0.72 + 0.82 = 1.13 m2 s−2.(7.48)
+This is a synthetic boundary-condition example, not a fitted canopy law. A useful memory-length
+check isb =e−s/ℓ: the initial contribution falls below 5% afters>ℓln20≈33.7m for ℓ= 11.24m.
+Its variance contribution decays ase−2s/ℓ, while a poor initial estimate may influence a smoothed
+profile farther through covariance coupling.
+7.12 Marginal likelihood and what model selection can establish
+The innovation distribution isνk∼N(0,Sk)under the model. The sequential likelihood factors
+as a product of these conditional densities, so
+logp(y|M,ϑ) =−1
+2
+∑︂
+k
+[︂
+dk log(2π) + log detSk +νT
+kS−1
+k νk
+]︂
+.(7.49)
+Here dk is the observation dimension andϑdenotes fixed hyperparameters. This is the likelihood,
+not a Bayes factor after hyperparameters have been optimised. A Bayes factor integratesp(y|
+ϑ,M)p(ϑ| M)over ϑ. Alternatives are held-out predictive scores or an explicitly justified
+complexity penalty.
+Compare exponential and transverse correlations crossed with constant, attached-eddy and
+saturating scales. A single short descent, correlated retrieval errors, and a drifting horizontal
+path limit identification. Fit uncertainty and profile likelihoods, not only the best-fita. A
+ratio-dependent preferred covariance is evidence for that statistical description; it is not a direct
+observation of attached eddies.
+40
+
+=== PAGE 42 ===
+CANSAT mathematics 30 September 2026
+8 Landing prediction and the question of shrinking ellipses
+8.1 The landing point must include uncertainty in the current position
+Letpbe the current horizontal position andIthe remaining drift. Resetting the integrator means
+setting its current mean to zero and its initial variance and cross covariance to zero; theposition,
+velocity and windcovariance must still be retained in the augmented predictor. Propagate the
+copied state to touchdown without treating imagined future velocity measurements as data.
+pland =p+I,Σ land =P pp +PII +PpI +PIp. (8.1)
+Adding only PII makes the landing ellipse too small whenever current position is uncertain.
+Adding an independent position term also fails whenpand drift are correlated through the
+same navigation history. For a fixed linear model, prediction remains Gaussian; uncertain drag,
+uncertain touchdown time, nonlinear geometry and a mixture of weather models can make the
+true distribution non-Gaussian.
+An anemometer observation at 6.096 m can constrain the spatial wind prior if it is available at
+prediction time and the mast measures representative wind. Its error covariance must include
+instrument error and spatial/time representativeness. A simulated future mast reading is not an
+observation. The reference Monte Carlo does not assimilate a mast reading, so it makes no claim
+for that improvement.
+8.2 Touchdown time and its uncertainty
+Sincedt=−dz/vd(z)for positive downward speed,
+tland =t now +
+∫︂h
+0
+dz
+vd(z). (8.2)
+Ifvd is constant, the remaining time ish/vd. Its derivatives are∂t/∂h= 1/vd and∂t/∂vd =−h/v2
+d.
+Linear uncertainty propagation gives
+σ2
+t≈σ2
+h
+v2
+d
++ h2σ2
+vd
+v4
+d
+−2h
+v3
+d
+Cov(h,vd).(8.3)
+Forh = 300m, vd = 10.5m/s, independent σh = 0.5m and σvd = 0.3m/s, this givesσt≈0.82
+s. The speed uncertainty dominates. These are illustrative input uncertainties, not sensor
+measurements.
+For variable speedvd(z;ϑ), the gradient is
+∂t
+∂ϑj
+=−
+∫︂h
+0
+1
+vd(z;ϑ)2
+∂vd(z;ϑ)
+∂ϑj
+dz.(8.4)
+The joint(x,y,t )covariance must also include wind–speed, height–position and drag-parameter
+correlations. A mean time without this uncertainty is not a calibrated time prediction.
+8.3 Calibration: a precise probability statement
+If the landing error is unbiased Gaussian with positive-definite2×2covarianceΣ, whitening gives
+two independent standard normals. Hence
+d2 = (ptrue−ˆ︁p)TΣ−1(ptrue−ˆ︁p)∼χ2
+2.(8.5)
+41
+
+=== PAGE 43 ===
+CANSAT mathematics 30 September 2026
+Since Pr(χ2
+2 ≤x) = 1 −e−x/2, the 95% ellipse usesd2 ≤ −2 ln 0.05 = 5 .991. Its semiaxes
+are√5.991λ1 and√5.991λ2. Across N independent drops the coverage count is binomial. Its
+approximate standard error at nominal 95% is
+√︁
+0.95(0.05)/N, which is0.00487at N = 2000.
+Many predictions from one drop are correlated and do not constitute many independent landings.
+8.4 A theorem for a fixed landing point
+Let P be thesame final landing pointthroughout the descent, andD the observations already
+collected. In a fixed linear Gaussian model, condition on one more observationY. Gaussian
+conditioning gives
+Cov(P|D,Y) = Cov(P|D)−CS−1CT,(8.6)
+where C = Cov(P,Y|D)and S = Cov(Y|D). The subtracted term is positive semidefinite.
+Thus the absolute landing covariance cannot increase as valid data is added, regardless of negative
+transverse correlations. With no new information it remains unchanged. This theorem concerns
+a fixed random endpoint, fixed model parameters, nested observations, and correct propagation
+of all cross covariances. Parameter refitting, EKF linearisation, model changes, and observation-
+dependent rejection can invalidate the theorem’s conditions.
+8.5 Why remaining-drift variance need not shrink
+The random variable “drift still to come” changes with height. Write the old remaining drift as
+A+B, withBthe slab just traversed. For the same conditioning data,
+Var(A+B)−Var(A) = Var(B) + 2 Cov(A,B).(8.7)
+This is the proposal’s sufficient condition for shrinkage. It is not automatically positive. For
+example, a valid Gaussian covariance
+Cov
+[︄
+A
+B
+]︄
+=
+[︄
+1−0.2
+−0.2 0.05
+]︄
+(8.8)
+has positive determinant0.01but Var(A +B) = 0.65< 1 = Var(A). RemovingB increases the
+variance. This is a rigorous counterexample to an unconditional theorem for arbitrary Gaussian
+remaining drifts.
+There is also a counterexample on a two-cell quadrature of the permitted warped-transverse
+family. Choosea = 0.5, heights1and e1.5 = 4.482m, intensity standard deviations100and1
+m/s, and drift weights0.1/10.5s. The eddy-coordinate separation is3and g(3) =−0.0248935.
+The covariance is positive definite, but removing the upper weighted cell increases the remaining
+variance from0.906669to0 .907029m 2. This extreme intensity contrast is a mathematical example,
+not a plausible flight atmosphere, and the two-cell calculation is not a claim about a continuous,
+realistic descent. A proof or counterexample under measured realistic intensity, lag and observation
+restrictions remains a narrower question.
+For an unconditioned constant-intensity, constant-L transverse prior, the integral covariance
+actually is positive:
+Cov
+(︄∫︂h
+0
+w(z)dz,w(h)
+)︄
+= σ2L
+2
+[︃
+1 +
+(︃h
+L−1
+)︃
+e−h/L
+]︃
+>0 (h>0).(8.9)
+The bracket is zero ath = 0, increases up toh = 2L, and then decreases to1, so it remains
+positive. Negative lobes alone therefore do not prove increasing variance. Moreover, actual drift
+uses the lagged velocityu/vd, rather than raw wind. The condition must be evaluated for that
+forward model and its posterior.
+42
+
+=== PAGE 44 ===
+CANSAT mathematics 30 September 2026
+9 Numerical verification and synthetic experiments
+9.1 Reproducibility and the scope of the simulation
+All persistent calculations use Python and NumPy. The reference scripts are insim/maths;
+run_verification.py writes results/verification.json, a test report, and one synthetic
+profile CSV. The random seed is 20260930. There are 2000 independent synthetic descents per
+scenario, each with two independent horizontal axes. The suite currently has 46 passing tests.
+The runs used Python 3.12.14 and NumPy 2.3.5.
+The mathematical reference implements only a small model, not onboard flight software. There
+is no terrain-image renderer or satellite-map matcher in these simulations. Projection and filter
+equations are checked numerically, but T1’s match reliability, first-fix time and actual position
+accuracy have not been established. The “TRN” velocity channel below is a synthetic measurement
+channelwithassumednoise; itisnotaresultfromimplementedterrain-relativenavigation. Likewise
+the prior-only channel is not a complete inertial dead-reckoning implementation.
+The synthetic atmosphere uses mean wind 5 m/s in each horizontal axis, fluctuation standard
+deviation 1 m/s,L(z) = 0.5 max(z, 1 m), known constant downward speed 10.5 m/s, and initial
+horizontal position standard deviation 2 m per axis. The mean and covariance parameters are
+known to the matched estimator. Velocity measurements are at 5 Hz, with independent Gaussian
+component noise 0.1 m/s for the GPS-labelled channel and 0.6 m/s for the vision-labelled channel.
+The initial coupled turbulence/velocity covariance is the stationary solution at 300 m; the initial
+position error is independent. Ground regularisation is a scenario assumption.
+The drift state is accumulated from the same uncertain initial position, rather than reset to a
+perfectly known current position. The endpoint predictor propagates the entire covariance and
+has no mast update. Post-flight wind retrieval uses an RTS smoother. This is a useful consistency
+test for the stated probabilistic system, while the nonlinear drag and coloured-noise experiments
+deliberately test departures from it.
+9.2 Independent identity checks
+Object Independent verification
+Plane homography Direct 3D pinhole projection; homogeneous division; extrin-
+sic and lever-arm cases.
+Reprojection derivatives Central finite differences of position and local rotation.
+Attitude reset Derivative of log(exp(−a) exp(a +ϵ))checked against the
+right Jacobian.
+Template matching Valid-window direct NCC against zero-padded FFT correla-
+tion; contrast/offset invariance.
+RANSAC and peak interpo-
+lation
+Failure probability after ceiling the iteration count; recovery
+of a known quadratic peak.
+Tilt information Schur complement of the joint translation/tilt information;
+same-radius degeneracy and wide-field advantage.
+Turbulence covariance Lyapunov residual, closed-form matrix exponential and co-
+variance identity; numerical Fourier quadrature.
+Warped covariance Positive eigenvalues on sample grids and equal-ratio correla-
+tion identity.
+Stochastic discretisation Block exponential against independently integrated transi-
+tion and covariance ODEs; semigroup and PSD checks.
+43
+
+=== PAGE 45 ===
+CANSAT mathematics 30 September 2026
+Object Independent verification
+Wind inversion Exact constant-input lag, limiting small/large lag, covari-
+ance/precision inverse equivalence.
+Smoothing and likelihood Direct batch GP posterior means/variances and log likeli-
+hood against two-state Kalman/RTS results.
+Descent and atmosphere Terminal transient against RK4, hydrostatic pressure for-
+ward/inverse, dry-adiabatic potential temperature, MOST
+derivative/integral checks.
+Selection and robustness Diminishing returns and greedy selection against exhaustive
+subsets; exhaustive finite-switch TLS example.
+Probability and counterex-
+amples
+Gaussian radial protection probability; covariance counterex-
+amples checked for PSD.
+The constant-step augmented transition and covariance agree with independently integrated
+ODEs within2 ×10−12in the checked case. The direct GP and RTS posterior checks use a
+2×10−13absolute tolerance. Their agreement verifies a different computational formulation of
+the same analytic model. Finite-grid PSD tests complement, but do not replace, the spectral and
+transformation proofs.
+9.3 Wind retrieval under matched assumptions
+The following are component errors against the simulated true wind. Layer errors average signed
+wind error over the sampled points within each 20 m layer first, then take RMS across runs. These
+equal-weight sample averages contain nine or ten samples per layer, not an exact continuous layer
+integral. “Mean layer RMS” is the mean of the eleven layer RMS values between 80 and 300 m; it
+is not a pooled pointwise RMS.
+Channel Sample RMS Mean layer RMS Worst layer RMS
+(m/s) (m/s) (m/s)
+GPS 0.283 0.057 0.067
+TRN 0.434 0.209 0.235
+prior 0.994 0.936 0.965
+For independent equal-quality axes the expected vector RMS is
+√
+2 times the component RMS.
+Thus the vision-labelled mean layer value corresponds to approximately 0.295 m/s vector RMS.
+This is error against simulated wind, not image-minus-GPS disagreement from a flight. It cannot
+establish S1 without real imagery, velocity error correlations, calibrated lag and truth uncertainty.
+9.4 Landing predictions under matched assumptions
+The RMS below is the two-dimensional distance to the synthetic touchdown point. Axis standard
+deviation is predicted by the estimator, and coverage is the fraction inside its nominal 95% ellipse.
+44
+
+=== PAGE 46 ===
+CANSAT mathematics 30 September 2026
+Channel Height (m) Radial RMS (m) Axis SD (m) Coverage (%)
+GPS 300.0 17.28 12.26 94.65
+GPS 199.2 11.52 8.20 94.70
+GPS 100.5 6.24 4.43 95.10
+GPS 20.7 2.98 2.09 94.50
+TRN 300.0 17.98 12.78 94.75
+TRN 199.2 11.99 8.54 94.75
+TRN 100.5 6.80 4.80 95.15
+TRN 20.7 3.63 2.55 94.15
+prior 300.0 19.84 14.06 95.05
+prior 199.2 19.84 14.06 95.05
+prior 100.5 19.84 14.06 95.05
+prior 20.7 19.84 14.06 95.05
+At about 100 m the vision-labelled mean squared Mahalanobis distance is 2.003, close to the
+χ2
+2 expectation of 2, and coverage is 95.15%. The Monte Carlo standard error of nominal 95%
+coverage is about 0.49 percentage points. This is evidence of internal calibration under known
+matched parameters. It is not evidence of real atmospheric calibration or a prediction of a specific
+competition landing error.
+0 20 40 60 80 100 120 140 160 180 200 220 240 260 280 3000
+5
+10
+15
+20
+Height remaining (m)
+Synthetic radial RMS (m)
+GPS-labelled velocity
+Vision-labelled velocity
+Prior only
+With no new information, the prior-only absolute endpoint covariance remains the same as height
+decreases. This is consistent with the fixed-endpoint theorem. Changing the remaining drift alone
+would answer a different covariance question.
+9.5 Averaging kernels reveal loss of independent information
+A separate piecewise-constant lag experiment on a 2.1 m grid between approximately 299 and 1 m
+uses the attached-eddy prior andℓ= 11.24m. It fixes the initial velocity perturbation to zero; it
+is a different boundary condition from the continuous-state descent Monte Carlo.
+Noise model DFS Mean posterior SD (m/s)
+Independent GPS noise, 0.1 m/s 43.12 0.226
+Independent vision noise, 0.6 m/s 14.98 0.402
+Vision noise with known AR(1) correlation 0.85 12.52 0.572
+45
+
+=== PAGE 47 ===
+CANSAT mathematics 30 September 2026
+The correlated-noise row uses the full error covariance in the inverse. Correlation can sometimes
+improve particular high-frequency differences while reducing information in the mean or long-wave
+modes, so it is not a theorem that every correlation pattern reduces every DFS. These numbers
+apply to this chosen covariance and sampling grid.
+9.6 Deliberately mismatched sensor errors
+In a separate state-space experiment the true vision noise has the same marginal 0.6 m/s standard
+deviation but AR(1) correlation 0.85. The estimator incorrectly assumes independent noise. Near
+100 m, coverage falls from 95.15% to 81.6%, and mean squared Mahalanobis distance rises from
+2.003 to 3.499. Near 20.7 m, coverage is 50.65%. The mean component layer RMS rises from
+0.209 to 0.490 m/s.
+The covariance underestimation is an outcome of a concrete misspecified model. It supports
+measuring temporal error covariance and incorporating it. Raising a protection multiplier after
+observing one test set is not a substitute for calibrating the underlying error model and evaluating
+fresh data.
+9.7 Verifying the remedy on exactly the same observations
+The added augmented-error filter uses the knownρ= 0.85and observation-error standard
+deviation 0.6 m/s. It is compared with the misspecified filter on thesamesimulated trajectories
+and measurement realisations, not a new or easier dataset. The new error state has stationary
+prior variance0.62, and its innovation variance is0.62(1−0.852). Its observation row adds that
+state to probe velocity, with no duplicate white observation variance.
+Height Coverage: ignored Coverage: tracked Tracked meand 2
+(m) (%) (%)
+300.0 94.75 94.75 1.978
+199.2 91.35 95.20 2.006
+100.5 81.60 94.85 2.015
+20.7 50.65 95.10 1.998
+Near 100 m the corrected coverage is 94.85%, versus 81.6% when the correlation is ignored. Near
+20.7 m it is 95.10%, versus 50.65%. The corrected predictor’s RMS remains larger than the
+independent-noise baseline because the observations contain less information about persistent
+velocity offsets. Honest covariance restores calibration; it does not turn coloured errors into
+independent measurements.
+The corrected mean component layer RMS is 0.428 m/s; its pointwise wind RMS is 0.587 m/s.
+These are synthetic results with the error correlation known exactly. Estimating correlation from
+a short flight and allowing uncertainty in it is additional work. The result shows that accounting
+for correlation can fix the particular demonstrated failure, rather than proving the model adequate
+for all sensor errors.
+9.8 Checking layer uncertainty rather than only layer accuracy
+For the 160–180 m layer, the synthetic grid contains nine samples. The posterior standard
+deviation is computed fromallsmoother cross-height covariances. “Diagonal SD” wrongly treats
+those posterior errors as independent and is included to quantify the mistake. Coverage is the
+fraction of 4000 independent component realisations (two axes for each of 2000 drops) within the
+nominal two-sided 95% interval.
+46
+
+=== PAGE 48 ===
+CANSAT mathematics 30 September 2026
+Channel Actual RMS Posterior SD Diagonal SD Coverage
+(m/s) (m/s) (m/s) (%)
+GPS, white 0.060 0.059 0.066 94.65
+Vision, white 0.219 0.215 0.113 94.53
+Coloured; ignored 0.508 0.215 0.113 58.95
+Coloured; tracked 0.447 0.434 0.173 94.17
+For the independent vision channel, the covariance calculation gives 0.215 m/s, close to the
+observed 0.219 m/s RMS, whereas dropping cross terms gives 0.113 m/s. With correctly tracked
+coloured errors, the figures are 0.434, 0.447 and 0.173 m/s. The GPS-labelled diagonal-only
+calculation instead gives alargervalue than the correct covariance calculation. This confirms that
+the omitted terms do not have a universally positive sign.
+The full corrected model’s layer coverages range from approximately 94.2% to 95.6% over the
+eleven bins. Coverage estimates fluctuate, and the eleven estimates from the same descents are
+correlated. They must not be treated as eleven independent experiments. Correct means and
+uncertainties for continuous physical layers also require a verified quadrature/overlap definition,
+rather than simply relabelling a sample average.
+9.9 Release-velocity uncertainty: an independently simulated boundary test
+An additional dense inversion uses the same 2.1 m lag grid and wind kernel, independent white
+velocity noise 0.1 m/s, and a zero-mean perturbation modelu0 = 0.7w1 +η0 with independent
+η0 standard deviation 0.8 m/s. The joint prior’s minimum covariance eigenvalue is positive,
+approximately 0.0111 in its stated units. Generate wind and release velocity by that constructive
+rule; then generate observations through the lag operator. Compare the wrongly fixedu0 = 0
+model with the correctly marginalised joint model.
+Release condition First-sample RMS Posterior SD 95% coverage
+(m/s) (m/s) (%)
+Incorrectly fixed 1.813 0.198 17.27
+Jointly estimated 0.291 0.291 94.62
+The first wind cell is represented at its midpoint, 1.05 m below the initial height; its velocity
+observation is at the cell’s lower boundary, after 2.1 m of descent. Treating an uncertain release
+velocity as known makes that observation look like direct wind information. The wrong posterior
+states an SD of 0.198 m/s while actual RMS is 1.813 m/s. Its interval coverage is only 17.275%.
+Joint marginalisation gives posterior SD 0.291 m/s, RMS 0.291 m/s and coverage 94.625%.
+This is an explicit boundary-condition counterexample to assuming an exact initial velocity for
+convenience.
+The unknown initial condition has no arbitrary mean bias in this experiment; the failure is a
+missing uncertainty and correlation. Across all wind samples, RMS changes from 0.319 to 0.241
+m/s. The numerical model is illustrative, rather than an estimate of ejection dynamics. The
+continuous-state descent Monte Carlo already uses a coupled random initial velocity; these dense
+inverse results are a separate test of how to handle that boundary in a gridded retrieval.
+9.10 Independent nonlinear dynamics test of the lag assumption
+The forward calculation here is not the linear estimator’s own simulator. It integrates a vector-
+quadratic horizontal drag equation with fixed vertical relative speed 10.5 m/s, mean wind 5 m/s,
+47
+
+=== PAGE 49 ===
+CANSAT mathematics 30 September 2026
+and smooth gust2sin(0.7t)m/s for 20 s using RK4 at 1 ms. A lateral coefficient ratior multiplies
+the horizontal force without changing the prescribed vertical force balance. Wind is recovered
+from the exact simulated acceleration, with no measurement noise.
+Lateral coefficient ratiorUsingτ=v d/gUsing calibratedτ= (v d/g)/r
+Wind RMS (m/s) Wind RMS (m/s)
+0.5 0.5700 0.0112
+1.0 0.0042 0.0042
+2.0 0.4929 0.0008
+The residual after calibration comes from retaining a linear inverse for nonlinear drag. A wrong
+lateral coefficient alone can consume the nominal 0.5 m/s wind budget even with perfect velocity
+and acceleration. These coefficient ratios are sensitivity cases, not measured canopy parameters.
+State-space lag mismatch is also tested by halving or doubling the true lag while retaining the
+nominal estimator. Mean vision component layer RMS becomes 0.230 and 0.311 m/s, respectively.
+The difference from the nonlinear experiment is expected: smoothing, forcing spectrum, prior
+regularisation and the error metric differ. Neither test permits treating the nominal lag as
+measured.
+9.11 Numerical convergence and ground-layer sensitivity
+Midpoint-frozen coefficients are tested with one, two and four substeps per 5 Hz interval. At
+about 100 m the vision prediction’s axis SD is 4.8040006, 4.8042459 and 4.8043083 m, respectively.
+Halving the substep reduces the change by about a factor of four, consistent with second-order
+coefficient freezing in this example. One-to-four-substep change is about 0.0064%, which is small
+relative to the assumed model uncertainty.
+At four substeps, varying the scale floor from 0.5 to 2 m changes that same axis SD by less than
+6×10−6m. This small influence occurs in the chosen 100 m forecast and lag model; it is not a
+claim that touchdown conditions or all near-ground retrievals are insensitive to boundary-layer
+physics. The example profiles and full sensitivity outputs are preserved, with their simulation
+labels.
+10 Coverage, unresolved questions, and engineering handoff
+10.1 Coverage of the proposal’s mathematical index
+This table traces every topic in Appendix E. “Derived” means established with the stated
+hypotheses in this document, rather than experimentally validated. Stretch techniques are
+included mathematically even though they need not be flown.
+Topic Derivation location
+Pinhole camera; ground-plane homography Navigation section
+FFT NCC; sub-pixel peak; covariance; RANSAC Navigation section
+Terminal velocity; canopy sizing; hypsometric altitude Physics section
+Horizontal lag and inversion conditioning Physics and retrieval sec-
+tions
+Pendulum specific force; forcing spectrum Physics section
+Error-state EKF; quaternion attitude; reset; reprojection
+derivatives
+Navigation section
+48
+
+=== PAGE 50 ===
+CANSAT mathematics 30 September 2026
+Topic Derivation location
+Innovation gating; NEES; information bound; protection
+level
+Navigation section
+Tilt–translation separation; timing; error budget; crossoverNavigation section
+Shear path and frozen-field approximation Physics section
+Drop-Dryden transverse covariance; scale deformation; ex-
+act states
+Section 6
+Kalman filtering; smoothing; Gaussian-process inverse Section 7
+Averaging kernels; degrees of freedom; layer covariance Section 7
+Landing position and time; Mahalanobis calibration Section 8
+Marginal likelihood; model-comparison limitations Section 7
+Potential temperature; MOST; Richardson number; rough-
+ness fit
+Boundary-layer section
+Pendulum response as a shear/turbulence diagnostic Physics section
+Landing uncertainty shrinkage Section 8: fixed-endpoint
+theorem; moving-drift coun-
+terexamples
+Map-datum gauge; survey uncertainty Navigation section
+Truncated least squares; lifted QCQP and SDP certificate
+conditions
+Navigation section
+Submodular landmark selection and its normalised guaran-
+tee
+Navigation section
+Uncertainty-aware notional target selection Navigation section
+Footprint, blur, sample count, storage, compute, power,
+loads and radio
+Engineering section
+10.2 Completed and strongest evidence
+The proposal’s mathematics has been assembled into a coherent reference with a consistent camera
+convention, stated physical assumptions, explicit derivations, corrected probability claims, and
+worked examples. The exact turbulence realisation, covariance positivity, descent time conversion,
+inverse lag, Gaussian conditioning, smoothing, and fixed-endpoint monotonicity have analytic
+derivations. The numerical suite verifies independent formulations and limiting cases, with retained
+synthetic outputs.
+The strongest simulation result is conditional: matched known parameters yield well-calibrated
+landing ellipses and sub-0.5 m/s layer errors in the synthetic case. The strongest engineering
+caution is also quantified: unmodelled error correlation severely reduces coverage, and uncalibrated
+lateral response can produce order-0.5 m/s wind bias despite perfect motion measurements.
+The built-in editor’s compilation was attempted and failed before producing a PDF with the
+environment message “Unable to find standard directories for platform.” Source brace/environment
+checks, unique-label checks and reference checks are separate from compilation. No rendered page
+layout, line overflow or package availability has been verified. The saved standalone source is
+preserved for the editor or another LaTeX installation; no compiler or plugin was installed.
+10.3 Decisions and assumptions
+The original proposal has been preserved as source material. This document records corrections
+without adopting a new mission architecture or declaring a physically unmeasured model to be
+true. No large dependency, external service, flight rule or canopy design has been introduced. The
+49
+
+=== PAGE 51 ===
+CANSAT mathematics 30 September 2026
+numerical model uses NumPy, known Gaussian parameters, a stated near-ground scale floor, two
+independent horizontal axes, and labelled synthetic velocity channels. Certifiable registration is
+described with its necessary primal-feasibility and optimality conditions; no actual SDP flight fix
+or numerical global-optimality certificate is claimed.
+10.4 What still requires measurements or project decisions
+1. Canopy dynamics.Measure terminal speed, lateral response, deployment transient and
+pendulum motion. Fit τh or a lateral drag model with confidence intervals. A vertical
+descent-rate measurement alone does not select the horizontal model.
+2. Camera and inertial calibration.Determine intrinsics, distortion, extrinsics, lever arms,
+exposure timing and timestamp uncertainty. Test map matches over representative terrain;
+measure failures, first-fix time, bias and temporal covariance.
+3. Truth quality.Survey map control points with quantified uncertainty, and log indepen-
+dent position/velocity truth. GPS alone does not supply all fifteen navigation error-state
+components for a full-state NEES calculation.
+4. Atmospheric inference.Measure thermistor response in flight-like airflow, pres-
+sure/density uncertainties, mast representativeness and relevant stability flux information
+or jointly identifiable MOST profiles. Assess displacement height and heterogeneous fetch
+before reporting roughness.
+5. Retrieval independence.Quantify the shared attitude, lag and prior errors in image-
+versus-GPS wind comparisons. A common bias can cancel in their difference.
+6. Calibration across drops.Evaluate prediction ellipses and time intervals on independent
+descents, with predeclared metrics and model tuning separate from validation. A single
+flight cannot test 95% long-run landing coverage.
+7. Stretch certification.Select the exact registration relaxation, bounds and solver toler-
+ances before issuing an SDP certificate; rank appearance alone is insufficient. Safe-target
+reachability is hypothetical for a passive canopy.
+8. Requirements.Confirm the current competition rules, actual radio configuration, mass
+convention, load cases, battery and processing budgets before asserting compliance.
+10.5 Highest-value next action
+Conduct a short, time-synchronised suspension/drop calibration with image logging, IMU, pressure
+and independent velocity truth. Use it first to estimate canopy lateral response and sensor-error
+correlation, then rerun the same mathematical model with those measured uncertainties. This
+directly tests the two assumptions that dominate the demonstrated gap between an internally
+consistent simulation and a reliable wind/landing result. Preserve raw logs and calibration
+metadata so later navigation and atmosphere analysis can be repeated.
+10.6 Reference provenance
+The local secondary mission proposal iswiki/trn_secondary_mission_proposal.md, draft 27
+September 2026. Primary literature, manufacturer formulas and theorem sources are linked beside
+the relevant derivations. Derivations shown here are worked calculations for this project, not
+copied passages from those sources.
+50
+
+=== PAGE 52 ===
+CANSAT mathematics 30 September 2026
+Theconnectedreferencefolderis https://drive.google.com/drive/folders/1ugYnjOalW-hIZqXO9nSJtGS6KleoJ3KW.
+Its listed Control Systems and Design Reviews folders were empty when inspected. The fetched his-
+toricalregulationswere https://drive.google.com/file/d/1LubKeC729i9NbmgHwG-wzu4gwhDO1PfJ/
+view. No Drive document was edited. No recent Git history was available because this local
+folder was not a Git checkout.
+51

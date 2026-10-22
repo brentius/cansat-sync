@@ -1,0 +1,39 @@
+# Local agent instructions, plans and project-state documents.
+/BOTS/
+
+# Track PCB sources and parts libraries; ignore temporary files.
+/pcb/**
+!/pcb/**/
+!/pcb/**/*.kicad_pro
+!/pcb/**/*.kicad_sch
+!/pcb/**/*.kicad_pcb
+!/pcb/**/*.kicad_sym
+!/pcb/**/*.pretty/*.kicad_mod
+!/pcb/**/fp-lib-table
+!/pcb/**/sym-lib-table
+!/pcb/**/.gitkeep
+
+# KiCad saved history, backups, autosaves and review snapshots.
+/pcb/**/.history/
+/pcb/**/*-backups/
+/pcb/**/_autosave-*
+/pcb/**/~*
+/pcb/**/routing_review/
+
+# Python caches and local environments.
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Simulation scratch files.
+/sim/**/*.log
+/sim/**/*.raw
+/sim/**/*.db
+/sim/**/generated/
+/sim/**/vendor/
+
+# Operating-system files.
+.DS_Store
+Thumbs.db
+Desktop.ini

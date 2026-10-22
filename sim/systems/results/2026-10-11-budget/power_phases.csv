@@ -1,0 +1,19 @@
+phase,label,corner,rail_3v3_ma,rail_3v3_w,rail_5v1_ma,rail_5v1_w,battery_w,battery_ma_at_7v2,endurance_h_continuous
+pad_pi_off,"Pad, Pi off",low,64.9,0.214,0.0,0.0,0.238,33.1,97.16
+pad_pi_off,"Pad, Pi off",typical,94.2,0.311,0.0,0.0,0.357,49.6,54.72
+pad_pi_off,"Pad, Pi off",high,149.9,0.495,0.0,0.0,0.604,83.9,24.42
+pad_pi_idle,"Pad, Pi idle",low,64.9,0.214,107.8,0.55,0.818,113.6,28.27
+pad_pi_idle,"Pad, Pi idle",typical,94.2,0.311,166.7,0.85,1.286,178.6,15.21
+pad_pi_idle,"Pad, Pi idle",high,149.9,0.495,313.7,1.6,2.451,340.4,6.02
+pad_pi_busy,"Pad, Pi and camera working",low,64.9,0.214,519.6,2.65,3.047,423.2,7.59
+pad_pi_busy,"Pad, Pi and camera working",typical,94.2,0.311,735.3,3.75,4.502,625.2,4.34
+pad_pi_busy,"Pad, Pi and camera working",high,149.9,0.495,960.8,4.9,6.403,889.3,2.3
+ascent,Ascent,low,70.6,0.233,176.5,0.9,1.209,167.9,19.13
+ascent,Ascent,typical,103.2,0.34,284.3,1.45,1.979,274.9,9.88
+ascent,Ascent,high,171.1,0.565,470.6,2.4,3.478,483.1,4.24
+descent,"Descent, 5 Hz matching",low,70.6,0.233,519.6,2.65,3.068,426.1,7.54
+descent,"Descent, 5 Hz matching",typical,103.2,0.34,735.3,3.75,4.536,630.1,4.31
+descent,"Descent, 5 Hz matching",high,171.1,0.565,960.8,4.9,6.492,901.6,2.27
+beacon,Post-landing beacon,low,73.6,0.243,0.0,0.0,0.27,37.5,85.65
+beacon,Post-landing beacon,typical,104.6,0.345,0.0,0.0,0.397,55.1,49.28
+beacon,Post-landing beacon,high,162.9,0.537,0.0,0.0,0.657,91.2,22.47

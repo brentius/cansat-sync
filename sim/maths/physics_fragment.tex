@@ -1,0 +1,836 @@
+\section{Descent, wind response and suspension physics}
+\label{sec:physics}
+
+This section verifies Appendix F and the physical inputs to the wind
+retrieval. Equations are consequences of the stated models, not proof that
+an unmeasured parachute obeys those models. Numerical examples use proposal
+values as design inputs, not flight measurements. Take $z$ positive upwards,
+$s=z(0)-z$ positive downwards, $v_d=\dot s>0$, and
+$g=9.80665\,\mathrm{m\,s^{-2}}$ for the numerical checks. Horizontal vehicle
+velocity is $\boldsymbol u$, and horizontal air velocity is $\boldsymbol w$.
+The suspension length $L_p$, turbulence scale $L$, and Obukhov length $L_O$
+are different quantities.
+
+\subsection{Terminal descent and canopy sizing}
+
+For a deployed, approximately steady canopy, negligible buoyancy, no
+vertical wind, and effective vertical drag area $D_z=C_{D,z}A$, Newton's
+law in the downward direction is
+\begin{equation}
+ m\dot v_d=mg-\tfrac12\rho D_z v_d^2.
+\end{equation}
+Setting $\dot v_d=0$ gives
+\begin{equation}
+ v_t=\sqrt{\frac{2mg}{\rho D_z}},\qquad
+ D_z=\frac{2mg}{\rho v_t^2},\qquad
+ \rho=\frac{p}{R_dT_v}.
+\end{equation}
+Here $p$ is in pascals, $T_v$ is virtual temperature in kelvin, and
+$R_d$ is the dry-air specific gas constant. In dry air $T_v=T$; neglecting
+humidity otherwise is an approximation. $m$ must be the total mass supported
+by the aerodynamic system, with the convention for canopy mass stated.
+For a circular reference area $A=\pi d^2/4$,
+\begin{equation}
+ d=\sqrt{\frac{8mg}{\pi\rho C_{D,z}v_t^2}}.
+\end{equation}
+The area convention used with a quoted coefficient must match the convention
+in this formula. Neither a numerical $C_D$ nor a finished canopy diameter is
+established by the proposal.
+
+If $v_{\min}\leq v_t\leq v_{\max}$ is a specified design band, then
+\begin{equation}
+ \frac{2mg}{\rho v_{\max}^2}\leq D_z
+ \leq\frac{2mg}{\rho v_{\min}^2}.
+\end{equation}
+For uncertain $m,\rho,D_z$, the slowest terminal speed occurs at smallest
+$m$ and largest $\rho D_z$, and the fastest at the opposite corner of the
+uncertainty set. First-order fractional sensitivity is
+\begin{equation}
+ \frac{\delta v_t}{v_t}
+ =\frac12\left(\frac{\delta m}{m}-\frac{\delta\rho}{\rho}
+ -\frac{\delta C_D}{C_D}-\frac{\delta A}{A}\right).
+\end{equation}
+This is a differential identity; root-sum-square uncertainty requires
+uncorrelated errors or the appropriate covariance terms.
+
+\subsection{Transient and variable descent speed}
+
+For constant parameters and release from rest, separating variables gives
+\begin{align}
+ \int_0^{v_d/v_t}\frac{dq}{1-q^2}&=\frac{gt}{v_t},\\
+ v_d(t)&=v_t\tanh(gt/v_t),\\
+ s(t)&=\frac{v_t^2}{g}\ln\cosh(gt/v_t).
+\end{align}
+Thus a $300\,\mathrm m$ descent at a constant
+$10.5\,\mathrm{m\,s^{-1}}$ takes $28.57\,\mathrm s$, whereas the ideal
+fully deployed release-from-rest model gives
+\begin{equation}
+ t(H)=\frac{v_t}{g}\operatorname{arcosh}
+       \left[\exp\left(\frac{gH}{v_t^2}\right)\right]
+ \simeq29.31\,\mathrm s\quad(H=300\,\mathrm m).
+\end{equation}
+The latter assumes instantaneous deployment and is not an inflation model.
+Linearization around $v_t$ gives
+\begin{equation}
+ \delta\dot v=-\frac{2g}{v_t}\delta v,
+ \qquad \tau_z=\frac{v_t}{2g}.
+\end{equation}
+The vertical relaxation time is half the horizontal time in the isotropic
+drag approximation derived below.
+
+For variable density or drag, integrate the dynamical equation with
+$\dot z=-v_d$ instead of imposing instantaneous terminal equilibrium.
+If quasi-steady descent is justified, then
+\begin{equation}
+ t_{\rm remaining}=\int_0^h\frac{dz}{v_d(z)},\qquad
+ \Delta\boldsymbol x=\int_0^h\frac{\boldsymbol u(z)}{v_d(z)}\,dz.
+\end{equation}
+Quasi-steady tracking requires the fractional equilibrium-speed change
+over $\tau_z$ to be small. A vertical air velocity $w_z$, positive upwards,
+changes the air-relative downward speed to $v_d+w_z$; ground-relative
+descent speed cannot then be substituted indiscriminately in drag.
+Perturbing the first integral yields
+\begin{equation}
+ \delta t=\frac{\delta h}{v_d(h)}
+ -\int_0^h\frac{\delta v_d(z)}{v_d(z)^2}\,dz.
+\end{equation}
+Altitude and descent-model uncertainty therefore both enter touchdown time.
+
+\subsection{Pressure altitude: the precise hypsometric equation}
+
+Hydrostatic balance $dp/dz=-\rho g$ and the ideal gas relation give
+\begin{equation}
+ dz=-\frac{R_dT_v}{g}\,d\ln p.
+\end{equation}
+With approximately constant $g$ over the layer,
+\begin{align}
+ z_2-z_1&=\frac{R_d}{g}\int_{p_2}^{p_1}T_v(p)\,d\ln p\\
+ &=\frac{R_d\overline T_v^{\ln p}}{g}\ln(p_1/p_2),\\
+ \overline T_v^{\ln p}&=
+ \frac{\int_{p_2}^{p_1}T_v(p)\,d\ln p}{\ln(p_1/p_2)}.
+\end{align}
+The exact mean is weighted in log pressure, rather than an unspecified
+arithmetic mean. In the isothermal case,
+$p(z)=p_1\exp[-g(z-z_1)/(R_dT_v)]$; substitution recovers $z-z_1$
+exactly. Differentiation of the constant-temperature form gives
+\begin{equation}
+ \delta h=\frac{R_d}{g}\left[
+  \ln(p_1/p_2)\delta T_v+
+  T_v\left(\frac{\delta p_1}{p_1}-\frac{\delta p_2}{p_2}\right)\right].
+\end{equation}
+A common pressure bias may largely cancel in a pressure difference; treating
+all samples as independent can therefore give the wrong uncertainty.
+For air density, the dry-air differential is
+\begin{equation}
+ \frac{\delta\rho}{\rho}=\frac{\delta p}{p}-\frac{\delta T_v}{T_v},
+ \qquad
+ \frac{\operatorname{Var}(\rho)}{\rho^2}\simeq
+ \frac{\operatorname{Var}(p)}{p^2}
+ +\frac{\operatorname{Var}(T_v)}{T_v^2}
+ -\frac{2\operatorname{Cov}(p,T_v)}{pT_v}.
+\end{equation}
+Humidity uncertainty enters through $T_v$. In the same ideal-gas,
+hydrostatic model,
+\begin{equation}
+ \frac{d\ln\rho}{dz}=-\frac{g}{R_dT_v}
+                         -\frac{1}{T_v}\frac{dT_v}{dz}.
+\end{equation}
+An uncertain assigned height consequently perturbs a prescribed density
+profile by $\delta\rho\simeq\rho_z\delta z$. Do not add that term again
+if the density is already estimated directly from the same uncertain
+pressure--temperature observations in a joint model: their covariance
+must be propagated together.
+Pressure altitude needs a reference pressure and a ground elevation to
+become altitude above ground. Dynamic pressure at a sensor inlet, thermal
+offsets, and non-hydrostatic motions are separate errors, not removed by
+the algebra.
+
+\subsection{Horizontal lag: what follows from isotropic drag}
+
+Let $\boldsymbol q=(\boldsymbol u-\boldsymbol w,-v_d)$ denote air-relative
+velocity with zero vertical wind. Suppose the total aerodynamic force is
+the isotropic vector model
+\begin{equation}
+ \boldsymbol F_a=-b\lvert\boldsymbol q\rvert\boldsymbol q,
+ \qquad b=\tfrac12\rho C_DA.
+\end{equation}
+For $\lvert\boldsymbol u-\boldsymbol w\rvert\ll v_d$,
+$\lvert\boldsymbol q\rvert=v_d+O(\lvert\boldsymbol u-\boldsymbol w\rvert^2/v_d)$.
+The horizontal equation is consequently
+\begin{equation}
+ m\dot{\boldsymbol u}=-bv_d(\boldsymbol u-\boldsymbol w).
+\end{equation}
+At vertical terminal equilibrium $bv_d^2=mg$, so
+\begin{equation}
+ \tau_h=\frac{m}{bv_d}=\frac{v_d}{g},\qquad
+ \ell_h=v_d\tau_h=\frac{v_d^2}{g}.
+\end{equation}
+At $v_d=10.5\,\mathrm{m\,s^{-1}}$ this gives
+$\tau_h=1.07070\,\mathrm s$ and $\ell_h=11.2424\,\mathrm m$.
+Because $d/dt=v_d\,d/ds$, the first-order model implies
+\begin{equation}
+ \boldsymbol w(s)=\boldsymbol u(s)+\ell_h(s)
+                       \frac{d\boldsymbol u}{ds}.
+\end{equation}
+There is no derivative of $\ell_h$ in this algebraic inversion. A
+time-dependent coefficient does prevent the use of a single global Fourier
+transfer function.
+
+\subsection{Why canopy terminal speed does not identify horizontal lag}
+
+A real canopy has an orientation and different axial, normal, and rotational
+responses. Define its local horizontal force Jacobian by
+\begin{equation}
+ \boldsymbol F_{a,h}\simeq
+ -K_h(\boldsymbol u-\boldsymbol w)+\boldsymbol F_0,
+ \qquad
+ M_h\dot{\boldsymbol u}
+ =-K_h(\boldsymbol u-\boldsymbol w)+\boldsymbol F_0.
+\end{equation}
+Here $M_h$ may include an effective added-mass contribution when justified,
+and $\boldsymbol F_0$ represents trim or coupling forces. Provided $K_h$ is
+invertible, the conditional local inverse is
+\begin{equation}
+ \boldsymbol w=\boldsymbol u+K_h^{-1}M_h\dot{\boldsymbol u}
+                            -K_h^{-1}\boldsymbol F_0.
+\end{equation}
+Neither $K_h$ nor $\boldsymbol F_0$ follows from $F_{a,z}=mg$.
+As an explicit counterexample, parameterize one axis by
+$K_h=rmg/v_d$, $M_h=m$, $\boldsymbol F_0=0$, with $r>0$.
+Every value of $r$ is consistent with the same prescribed vertical
+terminal balance, while
+\begin{equation}
+ \tau_h=\frac{v_d}{rg},\qquad \ell_h=\frac{v_d^2}{rg}.
+\end{equation}
+The illustrative ratios $r=0.5,1,2$ give relaxation times
+$2.14140,1.07070,0.535351\,\mathrm s$. These are sensitivity cases, not
+measured coefficients. Thus Appendix F.3 is a valid derivation within its
+isotropic model, but the claimed physical lag length is not established for
+the chosen canopy. Identification from instrumented drops is needed.
+
+Primary-source context: the NASA study by Pei et al., \emph{Modal Analysis
+of the Orion Capsule Two Parachute System}, uses separate axial and normal
+force coefficients, entrapped-air mass, and canopy-dependent oscillation
+parameters. Its multi-canopy configuration is not this CanSat; it demonstrates
+why a single drag coefficient cannot establish all lateral dynamics.
+\url{https://ntrs.nasa.gov/api/citations/20200002721/downloads/20200002721.pdf}
+
+\subsection{Frequency response, resolution and pendulum contamination}
+
+For constant $\ell_h$, a wind Fourier component $w(s)=W e^{iks}$ gives
+\begin{equation}
+ \frac{U}{W}=\frac{1}{1+ik\ell_h},\qquad
+ \lvert H^{-1}\rvert=\sqrt{1+(k\ell_h)^2},\quad k=2\pi/\lambda.
+\end{equation}
+This verifies the inversion-amplification factor. At wavelength
+$\lambda=20\,\mathrm m$ and $\ell_h=11.2424\,\mathrm m$, amplification
+is approximately $3.670$. A $20\,\mathrm m$ bin is not automatically a
+resolved $20\,\mathrm m$ Fourier structure. Resolution must be read from
+the retrieval's averaging kernels and error covariance.
+
+If suspension motion adds velocity $u_p$ to the canopy or system-reference
+velocity $u_c$, then applying the same inverse to $u=u_c+u_p$ adds
+the false wind term $u_p+\tau_h\dot u_p$.
+The required correction is a translational suspension or lever-arm velocity,
+not merely a camera rotation correction. For a measured rigid displacement
+$\boldsymbol r=R\boldsymbol r_b$ from the reference point,
+\begin{equation}
+ \boldsymbol v_{\rm sensor}=\boldsymbol v_{\mathrm{ref}}
+                  +R(\boldsymbol\omega_b\times\boldsymbol r_b).
+\end{equation}
+A flexible suspension needs its own configuration estimate. GPS and image
+sensors can share this physical bias; agreement between their inferred winds
+does not by itself validate absolute wind accuracy.
+
+\subsection{Pendulum specific force and the limits of gyro acceleration}
+
+For a point payload, let $\boldsymbol e$ point from a moving pivot to the
+payload, $\boldsymbol r=\boldsymbol r_P+L_p\boldsymbol e$, and let tension
+be $-T\boldsymbol e$. With gravity $\boldsymbol g$ and other force
+$\boldsymbol F_o$,
+\begin{equation}
+ \boldsymbol a=\boldsymbol g-\frac{T}{m}\boldsymbol e
+                         +\frac{\boldsymbol F_o}{m},\qquad
+ \boldsymbol f=\boldsymbol a-\boldsymbol g
+             =-\frac{T}{m}\boldsymbol e+\frac{\boldsymbol F_o}{m}.
+\end{equation}
+Thus the ideal accelerometer measures tension direction, rather than gravity
+direction. Lateral \emph{body-frame} readings vanish only when the measured
+body axis is aligned with the suspension, the sensor is at the modeled
+point, and other forces vanish. Body rotation relative to the line and
+rotational lever-arm accelerations violate that special case. Appendix
+F.4's statement that residuals are necessarily too small to help is not
+supported by a measurement or model.
+
+In a planar model with $x$ horizontal and $z$ up,
+$\boldsymbol e=(\sin\theta,-\cos\theta)$ and
+$\boldsymbol e_\theta=(\cos\theta,\sin\theta)$.
+Projecting acceleration onto $\boldsymbol e_\theta$ eliminates tension:
+\begin{equation}
+ L_p\ddot\theta=-g\sin\theta
+ -a_{P,x}\cos\theta-a_{P,z}\sin\theta
+ +\frac{\boldsymbol F_o\cdot\boldsymbol e_\theta}{m}.
+\end{equation}
+After small-angle linearization and an assumed viscous damping law,
+\begin{equation}
+ \ddot\theta+2\zeta_p\omega_0\dot\theta+\omega_0^2\theta=F(t),
+ \qquad \omega_0^2=\frac{g+a_{P,z}}{L_p},
+\end{equation}
+when $a_{P,z}$ is sufficiently constant and the remaining forcing is
+collected into $F$, with units $\mathrm{s^{-2}}$.
+$\omega_0^2=g/L_p$ is the fixed-pivot limit. Aerodynamic canopy motion can
+change both effective pivot and restoring dynamics.
+
+Rearrangement gives the exact linear-model diagnostic
+\begin{equation}
+ \theta=\frac{F-\ddot\theta-2\zeta_p\omega_0\dot\theta}{\omega_0^2}.
+\end{equation}
+The proposed $\theta\simeq-\ddot\theta/\omega_0^2$ follows only when
+forcing and damping contributions are negligible. Constant forcing admits
+$\theta=F/\omega_0^2$ with zero angular velocity and acceleration: a
+direct counterexample to unconditional tilt observability from gyro
+acceleration. Differentiating a noisy gyro also amplifies high-frequency
+noise. This can be a calibrated model diagnostic, not an independent
+absolute attitude measurement without additional assumptions.
+
+For a stable, constant-coefficient linear oscillator with stationary
+forcing and transients removed, Fourier transformation gives
+\begin{equation}
+ H_p(\omega)=\frac{1}{\omega_0^2-\omega^2+2i\zeta_p\omega_0\omega},
+ \qquad S_\theta(\omega)=|H_p(\omega)|^2S_F(\omega).
+\end{equation}
+This verifies F.5's spectrum relation under those conditions. Measured
+swing growth alone cannot distinguish changing forcing from changing
+canopy damping or natural frequency.
+
+\subsection{Shear, the sampling path, and a conditional frozen field}
+
+For perfect local mean-wind tracking, $U(z)=U_0+Sz$ and
+$z(t)=z_0-v_dt$ imply
+\begin{align}
+ x(t)-x(0)&=\int_0^tU(z(t'))\,dt',\\
+ \xi(t)&=x(t)-x(0)-tU(z(t))\\
+ &=\int_0^t[U(z(t'))-U(z(t))]\,dt'
+ =\frac{Sv_dt^2}{2}=\frac{S(\Delta z)^2}{2v_d}.
+\end{align}
+The subtraction compares the trajectory to uniform advection at the
+current layer's speed. It is not a single global frame comoving with
+every sheared layer. For $S=0.05\,\mathrm{s^{-1}}$, $v_d=10.5\,\mathrm{m\,s^{-1}}$
+and $\Delta z=100\,\mathrm m$, $\xi=23.81\,\mathrm m$, or $23.8\%$
+of the vertical separation. At $\Delta z=10\,\mathrm m$, $\xi=0.2381\,\mathrm m$,
+or $2.38\%$. F.6's arithmetic is correct at $100\,\mathrm m$, but its
+``few percent'' conclusion fails at that separation.
+
+With finite lag, $\tau_h\dot u+u=U(t)$ and
+$U(t)=U(0)-Sv_dt$ have solution
+\begin{equation}
+ u(t)=U(t)+\tau_hSv_d+
+ [u(0)-U(0)-\tau_hSv_d]e^{-t/\tau_h}.
+\end{equation}
+The locally air-relative path slope after the transient is
+$|u-U|/v_d=|S|\tau_h$, which is $0.05354$ in the isotropic numerical
+example. It is distinct from the finite-separation offset above.
+An approximately vertical covariance model needs both effects, suspension
+motion, turbulence and vertical wind to be small on the separations used.
+
+If an eddy has crossing scale $L$, characteristic internal velocity
+$\sigma$, and turnover estimate $t_e\sim L/\sigma$, then
+\begin{equation}
+ \frac{t_{\mathrm{cross}}}{t_e}\sim\frac{\sigma}{v_d},\qquad
+ |S|t_{\mathrm{cross}}\sim\frac{|S|L}{v_d}.
+\end{equation}
+The first estimate being small is helpful, but not sufficient: shear
+deformation, anisotropic eddy scales, scale-dependent sweeping, evolution,
+nonstationarity and nonvertical sampling also matter. The ratio is
+scale-independent only if the same $L$ and a scale-independent $\sigma$
+describe both estimates. Values $0.05$--$0.1$ are hypotheses until measured.
+F.7's claim of validity at every height is therefore not proved.
+Direct atmospheric measurements and simulations have found failures of the
+frozen-field assumption at some scales: Cheng et al. (2017),
+\url{https://doi.org/10.1002/2017GL073499}.
+
+\section{Thermodynamic stability and surface-layer inference}
+\label{sec:boundary}
+
+\subsection{Potential temperature from the first law}
+
+For a dry ideal gas, $h=c_pT$ and specific volume $\alpha=R_dT/p$.
+Reversible adiabatic motion satisfies $dh-\alpha\,dp=0$, hence
+\begin{equation}
+ c_p\,dT-R_dT\frac{dp}{p}=0,
+ \qquad d\ln T=\frac{R_d}{c_p}d\ln p.
+\end{equation}
+Integration defines the conserved potential temperature
+\begin{equation}
+ \theta=T\left(\frac{p_0}{p}\right)^{R_d/c_p},
+ \qquad p_0=1000\,\mathrm{hPa},\quad R_d/c_p\simeq0.286.
+\end{equation}
+The pressure ratio must use consistent units. Under hydrostatic balance,
+\begin{equation}
+ \frac{d\ln\theta}{dz}
+ =\frac{1}{T}\frac{dT}{dz}+\frac{g}{c_pT},
+ \qquad
+ \frac{d\theta}{dz}=\frac{\theta}{T}
+                    \left(\frac{dT}{dz}+\frac{g}{c_p}\right).
+\end{equation}
+For $c_p=1004\,\mathrm{J\,kg^{-1}K^{-1}}$, the dry-adiabatic lapse
+is $g/c_p=9.7676\,\mathrm{K\,km^{-1}}$, or $2.9303\,\mathrm K$
+over $300\,\mathrm m$. A temperature decrease with altitude can still
+have increasing $\theta$, and therefore stable dry stratification.
+
+A parcel displaced upwards by $\delta z$ approximately preserves its
+$\theta$ while ambient $\theta$ changes by $\theta_z\delta z$.
+Its buoyancy is $-(g/\theta)\theta_z\delta z$, so
+\begin{equation}
+ \delta\ddot z=-N^2\delta z,\qquad
+ N^2=\frac{g}{\theta}\frac{d\theta}{dz}.
+\end{equation}
+$N^2>0$ gives restoring buoyancy; $N^2<0$ gives local dry static
+instability. Unsaturated moist-air buoyancy uses virtual potential
+temperature; saturated parcel stability needs moist thermodynamics.
+The dry expressions do not settle those cases.
+
+Temperature and pressure uncertainty propagate as
+\begin{equation}
+ \frac{\delta\theta}{\theta}
+ =\frac{\delta T}{T}-\frac{R_d}{c_p}\frac{\delta p}{p},
+ \qquad \operatorname{Var}(\theta)\simeq
+ \boldsymbol J_\theta\Sigma_{T,p}\boldsymbol J_\theta^{\mathsf T}.
+\end{equation}
+Differences between levels require their cross-covariances. A first-order
+thermistor model obeys
+\begin{equation}
+ \tau_T\dot T_m+T_m=T_{\rm air},\qquad
+ T_{\rm air}=T_m+v_d\tau_T\frac{dT_m}{ds}.
+\end{equation}
+Its spatial lag length is $v_d\tau_T$, equal to $10.5\,\mathrm m$ if
+$\tau_T=1\,\mathrm s$ and the proposal speed applies. Differentiation
+again needs regularization; shielding does not determine response time or
+eliminate all radiation and self-heating error.
+
+\subsection{MOST: integration with displacement and the lower boundary}
+
+Monin--Obukhov similarity theory (MOST) describes ensemble or suitable
+time-averaged profiles over approximately homogeneous terrain in a
+stationary, constant-flux surface layer. Let $d_0$ be displacement height,
+$h_e=z-d_0>0$, $z_0$ aerodynamic roughness length, and
+\begin{equation}
+ u_*=[(\overline{u'w'})^2+(\overline{v'w'})^2]^{1/4},\qquad
+ L_O=-\frac{u_*^3\overline\theta_v}
+            {\kappa g\overline{w'\theta_v'}}.
+\end{equation}
+For an aligned mean wind $U$, the assumed flux-gradient relationship is
+\begin{equation}
+ \frac{dU}{dz}=\frac{u_*}{\kappa h_e}\phi_m(h_e/L_O).
+\end{equation}
+Define $\psi_m(0)=0$ and
+\begin{equation}
+ \psi_m'(\zeta)=\frac{1-\phi_m(\zeta)}{\zeta}.
+\end{equation}
+Integrating from the aerodynamic reference $h_e=z_0$, where the
+extrapolated profile has $U=0$, yields
+\begin{equation}
+ U(z)=\frac{u_*}{\kappa}
+ \left[\ln\frac{z-d_0}{z_0}-\psi_m\left(\frac{z-d_0}{L_O}\right)
+                         +\psi_m\left(\frac{z_0}{L_O}\right)\right].
+\end{equation}
+The lower-boundary term and displacement height are absent from K.2.
+Dropping the former requires $|z_0/L_O|\ll1$; dropping the latter
+requires justification from terrain. The zero condition is an extrapolated
+aerodynamic definition, not a literal measurement at a plant surface.
+Avoid the logarithmic singularity and avoid extrapolating MOST to touchdown.
+A reference-height difference can be fitted without specifying zero wind
+at ground:
+\begin{equation}
+ U(z_2)-U(z_1)=\frac{u_*}{\kappa}
+ \left[\ln\frac{z_2-d_0}{z_1-d_0}
+ -\psi_m\left(\frac{z_2-d_0}{L_O}\right)
+ +\psi_m\left(\frac{z_1-d_0}{L_O}\right)\right].
+\end{equation}
+
+\subsection{Checking the empirical stability corrections}
+
+The frequently used Dyer choices are
+\begin{equation}
+ \phi_m(\zeta)=
+ \begin{cases}
+  1+5\zeta,&\zeta\geq0,\\
+  (1-16\zeta)^{-1/4},&\zeta<0.
+ \end{cases}
+\end{equation}
+The constants are empirical, not first-principles consequences of MOST.
+For the stable branch integration gives $\psi_m=-5\zeta$.
+For the unstable branch put $x=(1-16\zeta)^{1/4}$; then
+$d\zeta=-x^3dx/4$. Substitution into $d\psi_m=(1-1/x)d\zeta/\zeta$
+gives
+\begin{equation}
+ d\psi_m=\frac{4x^2}{(x+1)(x^2+1)}\,dx
+ =\left(\frac{2}{x+1}+\frac{2x-2}{x^2+1}\right)dx.
+\end{equation}
+Integrating from $x=1$ enforces $\psi_m(0)=0$:
+\begin{equation}
+ \psi_m=2\ln\frac{1+x}{2}+\ln\frac{1+x^2}{2}
+        -2\arctan x+\frac\pi2.
+\end{equation}
+Differentiation recovers $1-\zeta\psi_m'=\phi_m$, checking the
+normalization and signs. In the neutral limit $L_O\to\pm\infty$,
+$\psi_m\to0$ and the logarithmic law is recovered. Positive heat flux
+gives negative $L_O$ under the convention above.
+
+The original field experiment is Businger et al. (1971),
+\url{https://journals.ametsoc.org/view/journals/atsc/28/2/1520-0469_1971_028_0181_fprita_2_0_co_2.xml}.
+The specific $5$ and $16$ choices and their empirical status are discussed
+by Dyer (1974), primary paper available at
+\url{https://gibbs.science/efd/handouts/dyer_1974.pdf}.
+No fixed $50$--$100\,\mathrm m$ layer is guaranteed to meet the
+constant-flux, homogeneous-surface assumptions on launch day. A single
+short descent through different air parcels is not automatically a mean
+wind profile: drift, temporal variability and heterogeneous fetch can
+confound the fit.
+
+\subsection{Richardson numbers and what the quarter threshold means}
+
+Comparing stratification with vector shear gives
+\begin{equation}
+ Ri_g=\frac{N^2}{S^2},\qquad
+ S^2=\left(\frac{d\overline u}{dz}\right)^2
+       +\left(\frac{d\overline v}{dz}\right)^2.
+\end{equation}
+Approximating both derivatives across a layer of thickness $\Delta z>0$
+gives the proposal's bulk quantity
+\begin{equation}
+ Ri_b=\frac{g}{\overline\theta}
+ \frac{\Delta\theta\,\Delta z}
+      {(\Delta\overline u)^2+(\Delta\overline v)^2}.
+\end{equation}
+It is dimensionless. Negative $\Delta\theta$ diagnoses dry static
+instability under the earlier assumptions. A nearly zero denominator
+makes this ratio poorly determined; report shear and stratification
+uncertainties rather than forcing a classification. Turning wind requires
+both velocity components, not speed differences alone.
+
+For explicit uncertainty propagation, set $A=g/\overline\theta$,
+$q=\Delta\theta$, $h=\Delta z$, $a=\Delta\overline u$,
+$b=\Delta\overline v$, and $D=a^2+b^2$. With $r=Ri_b=Aqh/D$, the
+nonzero partial derivatives are
+\begin{align}
+ r_q&=Ah/D,& r_h&=Aq/D,\\
+ r_a&=-2Aqha/D^2,&r_b&=-2Aqhb/D^2,\\
+ r_{\overline\theta}&=-r/\overline\theta.
+\end{align}
+Thus $\operatorname{Var}(r)\simeq\boldsymbol J_r\Sigma
+\boldsymbol J_r^{\mathsf T}$ for the joint level-difference, mean-temperature
+and height covariance. This expression remains well behaved at $q=0$
+when $D>0$, whereas fractional-error formulas do not. Near $D=0$, even
+this linearization can fail and a joint Monte Carlo or interval treatment
+is required. Adjacent layers share sensor samples, pressure-derived
+heights, thermistor lag and retrieved wind errors, so neither their
+$Ri_b$ values nor the errors in numerator and denominator are generally
+independent.
+
+The Miles--Howard theorem is a statement about infinitesimal normal-mode
+stability of steady, parallel, inviscid, nondiffusive, stably stratified
+flow. The sufficient condition is $Ri_g>1/4$ everywhere, not a condition
+on a coarse $Ri_b$, and not a guarantee that existing turbulence vanishes.
+A compact independent algebra check follows. For the two-dimensional
+Taylor--Goldstein problem with perturbation $\varphi(z)e^{ik(x-ct)}$,
+\begin{equation}
+ \varphi''+\left[\frac{N^2}{(U-c)^2}
+ -\frac{U''}{U-c}-k^2\right]\varphi=0.
+\end{equation}
+Suppose $c_i=\operatorname{Im}c>0$, so $U-c$ has no real zero, and set
+$\varphi=(U-c)^{1/2}F$. Differentiation gives
+\begin{equation}
+ [(U-c)F']'+\left[\frac{N^2-U'^2/4}{U-c}
+              -\frac{U''}{2}-k^2(U-c)\right]F=0.
+\end{equation}
+Multiply by $F^*$, integrate with homogeneous boundary values (or
+adequate decay), and take the imaginary part. The result is
+\begin{equation}
+ c_i\int\left[|F'|^2+k^2|F|^2+
+       \frac{N^2-U'^2/4}{|U-c|^2}|F|^2\right]dz=0.
+\end{equation}
+For a nonzero mode with $k>0$, $N^2-U'^2/4\geq0$ makes the integral
+positive, contradicting $c_i>0$. Conversely, violating this sufficient
+condition does not prove instability. Finite amplitude, viscosity,
+diffusion, forcing, time dependence and coarse averaging require separate
+analysis. Howard's original \emph{Note on a paper of John W. Miles},
+\emph{Journal of Fluid Mechanics} 10(4), 509--512 (1961), is
+\url{https://doi.org/10.1017/S0022112061000317}; the conditions and distinctions
+are also stated in the primary research of Liu, Thorpe and Smyth (2012),
+\url{https://www.pmf.unizg.hr/_download/repository/Liu_Thorpe_Smyth_turb-stratif-shearJFM2012.pdf}.
+Consequently K.3's claim that bulk values above $0.25$ establish insufficient
+shear to sustain turbulence must be weakened to a conditional stability
+diagnostic.
+
+\subsection{Why a temperature lapse does not determine Obukhov length}
+
+$L_O$ contains momentum and buoyancy \emph{fluxes}; a temperature gradient
+alone does not measure either. A model-dependent relation can be derived
+if MOST applies and both gradients are measured. With
+$\theta_*=-\overline{w'\theta'}/u_*$ and
+\begin{equation}
+ \frac{d\theta}{dz}=\frac{\theta_*}{\kappa h_e}\phi_h(\zeta),
+ \qquad \zeta=h_e/L_O,
+\end{equation}
+substitution into $Ri_g$ for aligned shear gives
+\begin{equation}
+ Ri_g=\zeta\frac{\phi_h(\zeta)}{\phi_m(\zeta)^2}.
+\end{equation}
+For the assumed stable Dyer choice $\phi_h=\phi_m=1+5\zeta$,
+\begin{equation}
+ Ri_g=\frac{\zeta}{1+5\zeta},\qquad
+ \zeta=\frac{Ri_g}{1-5Ri_g}\quad(0\leq Ri_g<0.2).
+\end{equation}
+The $0.2$ limit is a property of these closures; it is different from the
+Miles--Howard quarter threshold. Inversion is ill-conditioned near it.
+Replacing gradient $Ri_g$ with bulk $Ri_b$ without integrated profile
+relationships is not an exact derivation. S2 can test consistency between
+joint wind--temperature profiles and a fitted stability model; it cannot
+claim that temperature lapse alone fixes the relevant MOST class or $L_O$.
+
+\subsection{Neutral profile fitting and roughness uncertainty}
+
+For neutral conditions, specified $d_0$, and a fixed reference length
+$h_r$ to keep logarithms dimensionless,
+\begin{equation}
+ U(z)=\alpha\ln\frac{z-d_0}{h_r}+\beta,
+ \qquad u_*=\kappa\alpha,\qquad
+ z_0=h_r\exp(-\beta/\alpha).
+\end{equation}
+For observations $\boldsymbol y=X\boldsymbol b+\boldsymbol\epsilon$,
+$\boldsymbol b=(\alpha,\beta)^{\mathsf T}$ and known covariance $\Sigma$,
+minimizing the weighted residual quadratic gives
+\begin{equation}
+ \widehat{\boldsymbol b}=(X^{\mathsf T}\Sigma^{-1}X)^{-1}
+                   X^{\mathsf T}\Sigma^{-1}\boldsymbol y,
+ \quad C_b=(X^{\mathsf T}\Sigma^{-1}X)^{-1}.
+\end{equation}
+The formula requires rank two and assumes heights and displacement are
+known; uncertain heights require errors-in-variables or a joint model.
+With $q=\ln(z_0/h_r)=-\beta/\alpha$,
+\begin{equation}
+ \nabla q=\left(\frac{\beta}{\alpha^2},-\frac1\alpha\right),
+ \qquad \operatorname{Var}(q)\simeq\nabla q\,C_b\,\nabla q^{\mathsf T}.
+\end{equation}
+A near-Gaussian $q$ produces multiplicative, asymmetric intervals for
+$z_0$. Small $\alpha$, limited height range, unknown $d_0$, changing
+stability and correlated profile errors reduce identifiability. The
+land-cover values in K.5 can be broad priors; they are not site-specific
+measurements and cannot establish a validated roughness estimate.
+
+\section{Supporting engineering arithmetic}
+\label{sec:engineering}
+
+\subsection{Footprint and exposure blur}
+
+Assume a rectilinear nadir camera over horizontal terrain, horizontal
+field of view $90^\circ$, square pixels and $1280\times800$ resolution.
+Then $f_x=f_y=640$ pixels, normalized horizontal image edge is $|x|=1$,
+and vertical edge is $|y|=0.625$. The ground width and height are
+\begin{equation}
+ W_g=2h\tan45^\circ=2h,\qquad
+ H_g=\frac{800}{1280}W_g=1.25h,
+ \quad \mathrm{GSD}=h/f=0.46875\,\mathrm{m/px}\quad(h=300\,\mathrm m).
+\end{equation}
+Thus the quoted $600\times375\,\mathrm m$ footprint is consistent with
+a \emph{horizontal}, rather than diagonal, $90^\circ$ field. A real lens
+needs distortion calibration and the actual field specification.
+
+For a stationary scene point with camera coordinates $(X,Y,Z)$,
+$x=X/Z$, $y=Y/Z$, camera translation $\boldsymbol v$ and angular velocity
+$\boldsymbol\omega$, $\dot{\boldsymbol P}=-\boldsymbol v-
+\boldsymbol\omega\times\boldsymbol P$ gives
+\begin{align}
+ \dot x&=\frac{-v_x+xv_z}{Z}+xy\omega_x-(1+x^2)\omega_y+y\omega_z,\\
+ \dot y&=\frac{-v_y+yv_z}{Z}+(1+y^2)\omega_x-xy\omega_y-x\omega_z.
+\end{align}
+For exposure $t_e$ short enough that velocity is approximately constant,
+the path length in pixels is
+\begin{equation}
+ B\simeq t_e\sqrt{(f_x\dot x)^2+(f_y\dot y)^2}.
+\end{equation}
+This is a flow approximation; the actual image is the time integral of the
+moving projection. Translation, pitch, roll, spin and descent contribute
+simultaneously, and their vectors may add or cancel.
+
+At a pitch rate $40^\circ/\mathrm s=0.698132\,\mathrm{rad/s}$ and
+$t_e=1\,\mathrm{ms}$, pure pitch gives $0.4468$ pixels at image center,
+$0.8936$ pixels at the horizontal edge, and $0.9362$ pixels at the corner.
+Pure spin at one revolution per second gives
+\begin{equation}
+ B=r_{\rm px}(2\pi)t_e,
+ \qquad r_{\rm px}=\sqrt{640^2+400^2},\qquad B=4.7420\,\mathrm{px}
+\end{equation}
+at that corner, halved for a $0.5\,\mathrm{ms}$ exposure.
+Descent adds radial flow of magnitude approximately
+$r_{\rm px}v_d/h$: at $h=80\,\mathrm m$, $v_d=10.5\,\mathrm{m/s}$
+and $1\,\mathrm{ms}$ it contributes $0.0991$ pixels at the corner.
+The proposal's subpixel swing claim is consistent with isolated pitch
+under these ideal intrinsics, but is not a bound on combined motion.
+Short exposure also requires adequate photon signal; daylight alone does
+not verify signal-to-noise ratio or shutter timing.
+
+\subsection{Frame count, storage and processing capacity}
+
+With $N_x,N_y$ pixels, stored $b$ bits per pixel and frame rate $f_c$,
+\begin{equation}
+ B_{\rm frame}=N_xN_yb/8,
+ \quad R_{\rm image}=f_cB_{\rm frame},
+ \quad S_{\rm total}=N_fB_{\rm frame}+S_{\rm metadata}+S_{\rm sensors}.
+\end{equation}
+Compression changes these numbers only if its achieved size is measured.
+At $1280\times800$, eight-bit grayscale and $5\,\mathrm{Hz}$,
+$B_{\rm frame}=1{,}024{,}000$ bytes and $R_{\rm image}=5.12$ decimal
+MB/s. A $30\,\mathrm s$ image record is $153.6$ MB; a $60\,\mathrm s$
+record is $307.2$ MB. The proposal's $300$ MB per flight therefore
+needs a longer logging window, sixteen-bit storage, or a stated allowance;
+it is not the direct result for a thirty-second eight-bit record.
+
+The mean sample spacing under constant descent is
+$\Delta s=v_d/f_c=2.1\,\mathrm m$; a $20\,\mathrm m$ layer lasts
+$1.9048\,\mathrm s$ and contains approximately $9.52$ sampling intervals.
+The exact integer frame count depends on the alignment of triggers and
+layer boundaries. Averaging $n$ correlated errors with covariance $C$
+gives
+\begin{equation}
+ \operatorname{Var}(\overline\epsilon)=\frac{\boldsymbol1^{\mathsf T}C\boldsymbol1}{n^2}.
+\end{equation}
+Only independent equal-variance errors reduce to $\sigma^2/n$; common
+bias and suspension-model error do not disappear by layer averaging.
+
+A serialized processor must satisfy $f_c\,\mathbb E[t_{\rm service}]<1$
+to avoid persistent queue growth, with margin for variability and other
+tasks. At $5\,\mathrm{Hz}$ the frame interval is $200\,\mathrm{ms}$;
+$250\,\mathrm{ms}$ per frame is too slow for one sequential worker.
+Several workers or pipelining may meet throughput, but require measured
+resource contention, queue limits and timing. Distinguish latency from
+throughput. For a logging stall of duration $T_{\mathrm{stall}}$, a sufficient
+image buffer under constant input rate is $R_{\rm image}T_{\mathrm{stall}}$,
+in addition to data already buffered; recovery requires write rate above
+the mean input rate.
+
+\subsection{Battery energy, peak current and mechanical loading}
+
+For mission phases $j$ of duration $t_j$ with load power $P_j$ and
+conversion efficiency $\eta_j$, energy conservation requires
+\begin{equation}
+ E_{\rm batt,required}=\sum_j\frac{P_jt_j}{\eta_j},\qquad
+ E_{\rm usable}=V_{\rm nominal}Q_{\rm Ah}f_{\rm usable}
+ \quad\text{in Wh if $t_j$ is in hours}.
+\end{equation}
+Hence
+\begin{equation}
+ Q_{\rm Ah}\geq\frac{\sum_j P_jt_j/\eta_j}
+                    {V_{\rm nominal}f_{\rm usable}}.
+\end{equation}
+$f_{\rm usable}$ includes justified capacity, temperature, ageing and
+cutoff effects rather than an invented universal derating. A safety or
+design margin can be applied explicitly. Ground waiting and brief camera
+operation must be represented by different phases. No numerical capacity
+or endurance can be certified without measured power and battery data.
+Peak operation also needs
+\begin{equation}
+ I_{\rm batt,peak}\simeq\frac{P_{\rm peak}}{\eta V_{\rm batt}},\qquad
+ V_{\rm loaded}=V_{\rm open}-I_{\rm batt}R_{\rm internal},
+\end{equation}
+and a demonstrated minimum rail voltage during radio, compute and storage
+peaks. A three-hour bench run tests the configured article, not every
+temperature or battery condition.
+
+For a specified equivalent acceleration $a_{\rm design}$, a mounted item
+of mass $m_i$ applies inertial load $F_i=m_i a_{\rm design}$. If the
+proposal's $20g$ is the adopted load case, $a_{\rm design}=20g$; whether
+weight is added depends on the stated test convention. Stress and bending
+checks require geometry, material allowables and load direction. A stated
+connection pull load does not follow from terminal canopy force alone:
+deployment loads require an inflation/deceleration model or measurement.
+For stopping speed change $\Delta v$ over $\Delta t$, impulse balance
+gives average net force $m\Delta v/\Delta t$, but does not bound peak force.
+The proposal's load and endurance numbers are inputs awaiting verification
+against the applicable competition rules and physical tests.
+
+\subsection{Radio airtime with explicit parameters}
+
+Payload byte count and packet rate alone do not establish airtime. For
+the Semtech SX1276 LoRa packet convention, let $\mathrm{SF}$ denote
+spreading factor, $\mathrm{BW}$ bandwidth in hertz, $P_L$ payload bytes,
+$n_{\mathrm{pre}}$ programmed preamble symbols, $C$ CRC flag, $I$ implicit-header
+flag, $D$ low-data-rate optimization flag, and $r_c=1,\ldots,4$ the coding
+rate parameter corresponding to $4/5,\ldots,4/8$.
+\begin{align}
+ T_{\rm sym}&=2^{\mathrm{SF}}/\mathrm{BW},\\
+ n_{\rm payload}&=8+\max\left\{
+ \left\lceil\frac{8P_L-4\mathrm{SF}+28+16C-20I}
+ {4(\mathrm{SF}-2D)}\right\rceil(r_c+4),\,0\right\},\\
+ T_{\rm packet}&=(n_{\mathrm{pre}}+4.25+n_{\rm payload})T_{\rm sym}.
+\end{align}
+This is protocol accounting, not a modulation law derived from the CanSat
+mechanics. For an illustrative explicit-header packet with $P_L=40$,
+$\mathrm{SF}=7$, $\mathrm{BW}=125000$, $r_c=1$, $C=1$, $I=D=0$ and
+$n_{\mathrm{pre}}=8$, the numerator is $336$, the ceiling is $12$,
+$n_{\rm payload}=68$, and $T_{\rm packet}=82.176\,\mathrm{ms}$.
+At one packet per second that example occupies $8.2176\%$ of transmission
+time before retries or acknowledgements. It is not the selected flight
+configuration or a compliance verdict. Account for all transmissions in
+the applicable assessment interval and verify current regional sub-band
+conditions for the actual settings.
+
+The formula and register meanings are verified against the manufacturer's
+datasheet, section 4.1.1.7 (Semtech document hosted by SparkFun):
+\url{https://cdn.sparkfun.com/assets/7/7/3/2/2/SX1276_Datasheet.pdf}.
+For link budgeting, a separate conditional calculation is
+\begin{equation}
+ P_{r,\rm dBm}=P_{t,\rm dBm}+G_t+G_r-L_{\rm path}-L_{\rm other},
+ \quad L_{\rm FS}=20\log_{10}(4\pi R/\lambda),\quad \lambda=c/f.
+\end{equation}
+Free-space loss assumes an unobstructed far-field path. Can orientation,
+antenna pattern, ground reflections, interference and receiver sensitivity
+must be measured or bounded before claiming range.
+
+\subsection{Numerical checks completed and remaining physical evidence}
+
+Independent in-memory calculations performed during this review checked
+the following identities. They used no flight measurements.
+The calculations are now preserved as reproducible standard-library
+unit tests in \texttt{sim/maths/test\_physics\_extra.py}; all ten tests
+passed on execution. They additionally check the radio example, neutral
+MOST limit, lower boundary, dry-adiabatic invariant, shear solution,
+pendulum counterexample, storage and blur arithmetic, and source-file
+control bytes.
+\begin{center}
+\begin{tabular}{p{0.31\linewidth}p{0.27\linewidth}p{0.30\linewidth}}
+\toprule
+Check & Method & Result\\
+\midrule
+First-order response, $r=0.5,1,2$ & RK4, $\Delta t=0.001\,\mathrm s$
+ & max. error $<1.9\times10^{-13}\,\mathrm{m/s}$\\
+Isothermal height, $300\,\mathrm m$ & pressure forward/inverse
+ & error $<6\times10^{-13}\,\mathrm m$\\
+MOST integrated correction & quadrature in log height
+ & max. residual $1.5\times10^{-14}$\\
+MOST gradient correction & central difference
+ & max. residual $1.4\times10^{-9}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+For the lag check the independently integrated equation was
+$\dot u=(5-u)/\tau_h$, $u(0)=0$, for five seconds; the analytic comparator
+was $5(1-e^{-t/\tau_h})$. For the hydrostatic check,
+$R_d=287.05\,\mathrm{J/(kg\,K)}$, $T=288.15\,\mathrm K$ and
+$p(0)=101325\,\mathrm{Pa}$. MOST checks used $\zeta=-2,-0.1,0.1,2$,
+$z_0=0.1\,\mathrm m$, $|L_O|=30\,\mathrm m$, central-difference step
+$10^{-6}$, and composite Simpson quadrature with $10000$ intervals.
+These residuals verify algebra and numerical implementation for the chosen
+models; they do not establish agreement with the real atmosphere.
+
+Physical validation still needs time-aligned drops measuring deployment,
+vertical speed, lateral response, line geometry and sensor offsets;
+temperature response tests in representative airflow; suitable independent
+wind observations; measured camera exposure and image signal quality;
+and endurance, storage-stall and radio tests in flight configuration.
+Retain measured data and report fitted coefficients and their uncertainty.
+The deterministic counterexamples above are sufficient to reject
+unconditional claims about horizontal lag, gyro-derived static tilt,
+vertical sampling at all separations, bulk Richardson thresholds, or
+Obukhov length inferred from temperature lapse alone.

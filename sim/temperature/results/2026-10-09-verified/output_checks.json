@@ -1,0 +1,9 @@
+{
+  "result": "PASS",
+  "label": "synthetic output integrity and numerical checks",
+  "hashed_artifacts": 14,
+  "source_files_checked": 3,
+  "readout_draws": 180000,
+  "fitted_step_trials": 512,
+  "maximum_adc_sigma_relative_difference": 0.013601721248243437
+}

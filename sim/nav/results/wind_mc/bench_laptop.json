@@ -1,0 +1,82 @@
+{
+ "label": "timing on the machine named here, not a flight measurement unless that machine is the Pi",
+ "machine": "AMD64",
+ "processor": "Intel64 Family 6 Model 154 Stepping 4, GenuineIntel",
+ "platform": "Windows-10-10.0.26200-SP0",
+ "python": "3.11.5",
+ "numpy": "2.4.2",
+ "error_states": 17,
+ "cases": [
+  {
+   "case": "ESKF landmark update, 8 landmarks",
+   "rate_hz": 5.0,
+   "median_ms": 0.5205999987083487,
+   "worst_ms": 1.2405000015860423,
+   "core_share": 0.0026029999935417436
+  },
+  {
+   "case": "ESKF landmark update, 12 landmarks",
+   "rate_hz": 5.0,
+   "median_ms": 0.6047499991836958,
+   "worst_ms": 3.1854999979259446,
+   "core_share": 0.003023749995918479
+  },
+  {
+   "case": "ESKF landmark update, 30 landmarks",
+   "rate_hz": 5.0,
+   "median_ms": 0.8245999979408225,
+   "worst_ms": 4.321799999161158,
+   "core_share": 0.0041229999897041125
+  },
+  {
+   "case": "ESKF propagate",
+   "rate_hz": 100.0,
+   "median_ms": 0.05894999958400149,
+   "worst_ms": 0.821699999505654,
+   "core_share": 0.005894999958400149
+  },
+  {
+   "case": "ESKF barometer update",
+   "rate_hz": 10.0,
+   "median_ms": 0.055300000894931145,
+   "worst_ms": 0.2243999988422729,
+   "core_share": 0.0005530000089493115
+  },
+  {
+   "case": "first fix, 16 matches",
+   "rate_hz": 0.0,
+   "median_ms": 1.0913000023720087,
+   "worst_ms": 67.83070000165026,
+   "core_share": null
+  },
+  {
+   "case": "drift table build (once, on the pad)",
+   "rate_hz": 0.0,
+   "median_ms": 41.00749999997788,
+   "worst_ms": 48.884499999985565,
+   "core_share": null
+  },
+  {
+   "case": "landing predictor update at 250 m",
+   "rate_hz": 15.0,
+   "median_ms": 0.2969999986817129,
+   "worst_ms": 1.0399000020697713,
+   "core_share": 0.0044549999802256934
+  },
+  {
+   "case": "landing predictor update at 20 m",
+   "rate_hz": 15.0,
+   "median_ms": 0.5999499990139157,
+   "worst_ms": 1.8497999990358949,
+   "core_share": 0.008999249985208735
+  },
+  {
+   "case": "landing predictor update at 4 m",
+   "rate_hz": 15.0,
+   "median_ms": 0.7136000003811205,
+   "worst_ms": 1.6634999992675148,
+   "core_share": 0.010704000005716807
+  }
+ ],
+ "steady_core_share_12_landmarks": 0.013926749943493633
+}

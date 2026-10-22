@@ -1,0 +1,1154 @@
+\section{Imaging, navigation, integrity, and target selection}
+\label{sec:navigation-maths}
+
+This section audits proposal Sections 10--12 and 14 and Appendices
+A--D, G, H, and L. Algebraic identities are distinguished from statistical
+claims, which require the stated noise model. Numerical checks below use
+synthetic data, not flight measurements. They verify equations and
+implementations under their assumptions; they do not establish the proposed
+flight accuracy, reliability, computation time, or terrain-match success.
+
+\subsection{Frames, signs, units, and camera model}
+
+Use a local Cartesian world frame with upward vertical coordinate $z$,
+ground plane $z=0$, and gravity $\boldsymbol g=(0,0,-g_0)^{\mathsf T}$.
+Let $R_{wb}\in SO(3)$ take body coordinates to world coordinates,
+$R_{cb}\in SO(3)$ take body coordinates to camera coordinates, and
+$\boldsymbol\ell_b$ denote the camera centre relative to the IMU origin in
+body coordinates. The navigation position $\boldsymbol p$ is the IMU
+origin. Camera depth is positive in front of the camera. Thus
+\begin{align}
+ \boldsymbol C&=\boldsymbol p+R_{wb}\boldsymbol\ell_b,
+ &R_{cw}&=R_{cb}R_{wb}^{\mathsf T},\\
+ \boldsymbol q_c&=R_{cb}\{R_{wb}^{\mathsf T}(\boldsymbol m-\boldsymbol p)
+                         -\boldsymbol\ell_b\}
+                 =R_{cw}(\boldsymbol m-\boldsymbol C),\\
+ \boldsymbol z&=\pi(K\boldsymbol q_c),
+ &\pi([a,b,c]^{\mathsf T})&=[a/c,b/c]^{\mathsf T}.
+ \label{eq:full-camera}
+\end{align}
+Here $K$ has positive focal lengths $f_x,f_y$ in pixels, principal point
+$(c_x,c_y)$, and, unless stated otherwise, zero skew. Image coordinates
+must be undistorted before using this pinhole model, or distortion must be
+included in the observation function and its derivative. All attitude
+increments and angular rates in calculations are in radians.
+
+The proposal uses $R$ for a world-to-camera rotation in Section 10 and
+a body-to-world rotation in Appendix H. Both equations can be valid, but
+the same symbol must not be passed between them without taking the
+transpose and applying the camera extrinsic rotation. Equation
+\eqref{eq:full-camera} removes that ambiguity. A camera lever arm may be
+neglected only after its magnitude and associated rotational displacement
+have been shown small relative to the error allocation.
+
+\subsection{Ground-plane rectification and field of view}
+
+Write $R_{cw}=[\boldsymbol r_1\ \boldsymbol r_2\ \boldsymbol r_3]$.
+For $\boldsymbol m=(X,Y,0)^{\mathsf T}$,
+\begin{equation}
+ K R_{cw}(\boldsymbol m-\boldsymbol C)
+ =\underbrace{K[\boldsymbol r_1\ \boldsymbol r_2\ -R_{cw}\boldsymbol C]}_H
+   [X,Y,1]^{\mathsf T}.
+ \label{eq:homography-proof}
+\end{equation}
+Homogeneous scaling does not change the pixel after division by its last
+coordinate. This proves the proposed homography directly. Rectification
+is inverse image sampling: for each desired ground-grid point, compute its
+image pixel through $H$, then interpolate the recorded image there. It
+does not require numerically inverting $H$ for every ground pixel.
+
+The map-to-image homography is invertible when the camera is not in the
+plane and $K$ is nonsingular. Indeed, because rotations preserve cross
+products,
+\begin{equation}
+ \det H=\det K\,(\boldsymbol r_1\times\boldsymbol r_2)^{\mathsf T}
+                   (-R_{cw}\boldsymbol C)
+        =-C_z\det K.
+\end{equation}
+Invertibility alone does not guarantee visibility. Require positive
+camera depth and pixels inside the valid image, and exclude rays nearly
+parallel to the ground, where division is ill-conditioned. A tilted
+camera generally produces a quadrilateral footprint, not the nadir
+rectangle. Nonplanar terrain produces parallax that a single homography
+cannot remove.
+
+For a nadir camera with \emph{horizontal} field of view $90^\circ$, image
+width $1280$, and square pixels, $f_x=f_y=640$ pixels. At height $h$ the
+ground width and height are
+\begin{equation}
+ W=\frac{1280h}{640}=2h,\qquad
+ H_g=\frac{800h}{640}=1.25h,\qquad
+ r_g=\frac h{640}\ \mathrm{m/pixel}.
+\end{equation}
+At $h=300\,\mathrm m$ these give $600\times375\,\mathrm m$ and
+$0.46875\,\mathrm{m/pixel}$. The vertical field of view is
+$2\arctan(400/640)=64.0108^\circ$. These numbers require a horizontal
+$90^\circ$ specification; a diagonal or vertical $90^\circ$ lens
+specification gives different focal lengths and footprints.
+
+For a camera height error caused by neglecting terrain elevation
+$\delta z$, an oblique ray at angle $\phi$ has horizontal intersection
+error $\delta z\tan\phi$ to first order. This is geometry, not proof that
+terrain errors are independent, Gaussian, or of fixed magnitude across
+landmarks.
+
+\subsection{Timing, exposure blur, and tilt--translation separation}
+
+\subsubsection{Timestamp error and exposure}
+
+An image observed at $t$ but assigned attitude at $t+\delta\tau$ has
+first-order attitude error $\boldsymbol\omega\delta\tau$. For a central
+nadir ray and a pitch or roll rate $\omega$, the corresponding ground
+error is $h\omega\delta\tau$. Allocating $b_t$ metres therefore gives
+\begin{equation}
+ |\delta\tau|\leq\frac{b_t}{h|\omega|}.
+\end{equation}
+For $b_t=1\,\mathrm m$, $h=300\,\mathrm m$, and
+$|\omega|=40\pi/180=0.698132\,\mathrm{rad/s}$, the limit is
+$4.77465\,\mathrm{ms}$. The proposal's $5\,\mathrm{ms}$ is a rounded
+value, not an exact upper limit. A $0.5\,\mathrm{ms}$ offset contributes
+$0.10472\,\mathrm m$ in this central-ray example.
+
+For tilt $\beta$, the nadir intersection is $h\tan\beta$ and its derivative
+is $h\sec^2\beta\,\omega$. Motion of the camera centre adds a term
+$\boldsymbol v\delta\tau$. In the full pixel model the timing derivative
+is $\dot{\boldsymbol z}=H_p\boldsymbol v+H_\theta\boldsymbol\omega$,
+with consistent frames and any lever-arm motion included. Thus the
+central-ray formula is a design approximation, not a bound for all
+pixels and attitudes. Treat unknown timing offset as a shared nuisance
+parameter if it is estimated from the same images.
+
+Exposure blur is a different effect. A pitch perturbation at normalized
+horizontal coordinate $x$ produces speed
+$f(1+x^2)|\omega|$ pixels/s; a yaw rate produces speed
+$r_{\mathrm{px}}|\omega_z|$ at image radius $r_{\mathrm{px}}$.
+With $f=640$ and $40^\circ/\mathrm s$, a $1\,\mathrm{ms}$ exposure gives
+$0.44680$ pixel at the centre and $0.89361$ pixel at the horizontal
+$45^\circ$ edge. A $1$ revolution/s yaw rate gives
+$2\pi\sqrt{640^2+400^2}(0.001)=4.74204$ pixels at a corner.
+Halving exposure halves these first-order values. Finite angle, mixed
+rotation, lens distortion, and translation can change the result; actual
+exposure feasibility requires measurements of light and sensor noise.
+
+\subsubsection{The one-dimensional separation proof}
+
+For one horizontal section of a nadir image, write
+$x_i=X_i/h=\tan\alpha_i$ and $u_i=f x_i$. A camera translation
+$\delta p_x$ gives $\delta u_i=-f\delta p_x/h$. A small pitch
+$\delta\theta$ gives
+\begin{equation}
+ \delta u_i=-f(1+x_i^2)\delta\theta.
+\end{equation}
+Choosing $\delta p_x=h\delta\theta$ matches the central shift and leaves
+$-f x_i^2\delta\theta=-f\tan^2\alpha_i\,\delta\theta$, as claimed in
+Appendix C.
+
+The useful statistical statement follows by explicitly eliminating
+unknown translation. With independent pixel noise of variance
+$\sigma_{\mathrm{px}}^2$, the Jacobian row for
+$(\delta p_x,\delta\theta)$ is
+$[-f/h,-f(1+x_i^2)]$. The Fisher information is its weighted outer-product
+sum. Its Schur complement after marginalizing translation is
+\begin{align}
+ J_{\theta\mid\mathrm{unknown}\ p_x}
+ &=\frac{f^2}{\sigma_{\mathrm{px}}^2}
+   \left\{\sum_i(1+x_i^2)^2-
+                    \frac{[\sum_i(1+x_i^2)]^2}{n}\right\}\\
+ &=\frac{f^2}{\sigma_{\mathrm{px}}^2}
+                  \sum_i(x_i^2-\overline{x^2})^2.
+ \label{eq:tilt-information}
+\end{align}
+This is positive exactly when the squared off-axis coordinates are not
+all equal. If all landmarks are at $x_i=\pm a$, even at the image edges,
+the one-dimensional tilt and translation columns are proportional and
+the information is zero. A range of off-axis distances is necessary in
+this reduced model. If translation is known rather than marginalized,
+the information is instead
+$f^2\sum_i(1+x_i^2)^2/\sigma_{\mathrm{px}}^2$.
+
+\subsubsection{Full two-dimensional geometry and observability}
+
+For $\boldsymbol q_c=Z[x,y,1]^{\mathsf T}$, with local camera attitude
+increment, the normalized-image rotational derivative is
+\begin{equation}
+ \frac{\partial(x,y)}{\partial\delta\boldsymbol\theta_c}
+ =\begin{bmatrix}
+ xy&-(1+x^2)&y\\
+ 1+y^2&-xy&-x
+ \end{bmatrix}.
+ \label{eq:full-image-rotation}
+\end{equation}
+Multiplying rows by $f_x,f_y$ gives the pixel derivative. The normalized
+translation derivative in camera coordinates is
+\begin{equation}
+ \frac1Z\begin{bmatrix}-1&0&x\\0&-1&y\end{bmatrix}.
+\end{equation}
+These follow by differentiating $X/Z,Y/Z$, so the signs are tied to
+\eqref{eq:full-camera}. The $xy$ cross terms and the second image
+coordinate contain additional information. Appendix C's residual is
+therefore the separating information in its one-dimensional example,
+not the only information in the full camera model.
+
+For an actual set of landmarks, form the full weighted pose Jacobian.
+Partition translation and other nuisance parameters from attitude,
+then inspect the Schur complement and its eigenvalues. Wide angular
+coverage can improve conditioning, but cannot guarantee a desired
+attitude accuracy regardless of feature geometry, unknown height,
+extrinsic calibration, terrain relief, or measurement noise. A known
+metric planar map and nondegenerate correspondences can locally constrain
+pose; finite planar pose ambiguities, association ambiguities, and
+weak conditioning still require handling. Velocity and IMU biases require
+information over time, not just a single image.
+
+Specific force is not a gravity direction during general acceleration.
+The identity $\boldsymbol f_b=R_{wb}^{\mathsf T}
+(\ddot{\boldsymbol p}-\boldsymbol g)$ shows that without a model or
+additional measurements, arbitrary acceleration can compensate a change
+in tilt. For the ideal aligned pendulum, line tension is the only
+nongravitational force and its measured direction is fixed in body
+coordinates: an accelerometer alone then supplies no instantaneous swing
+angle. Swing averaging becomes a useful initialization only under
+additional dynamical assumptions, not an observability theorem.
+
+\subsection{Landmark correlation, peak uncertainty, and consensus}
+
+\subsubsection{Normalized cross-correlation and its fast evaluation}
+
+For a template containing $M$ pixels define
+$T_0(\boldsymbol x)=T(\boldsymbol x)-\overline T$,
+$E_T=\sum T_0^2$, and, at shift $\boldsymbol d$,
+\begin{align}
+ S_I(\boldsymbol d)&=\sum_{\boldsymbol x}I(\boldsymbol x+\boldsymbol d),
+ &S_{I^2}(\boldsymbol d)&=\sum_{\boldsymbol x}I^2(\boldsymbol x+\boldsymbol d),\\
+ E_I(\boldsymbol d)&=S_{I^2}(\boldsymbol d)-S_I(\boldsymbol d)^2/M,\\
+ C(\boldsymbol d)&=\sum_{\boldsymbol x}T_0(\boldsymbol x)
+                                      I(\boldsymbol x+\boldsymbol d).
+\end{align}
+Because $\sum T_0=0$, subtracting the local image mean in the numerator
+does not change $C$. Hence
+\begin{equation}
+ \gamma(\boldsymbol d)=\frac{C(\boldsymbol d)}{
+                         \sqrt{E_T E_I(\boldsymbol d)}}.
+ \label{eq:ncc-fast}
+\end{equation}
+Cauchy--Schwarz proves $|\gamma|\leq1$ when both energies are positive.
+Constant patches have zero energy and must be rejected or specially
+handled; assigning them a high-confidence match is undefined.
+
+The correlation theorem gives
+\begin{equation}
+ C=\mathcal F^{-1}\{\overline{\mathcal F(T_0)}\,\mathcal F(I)\}.
+\end{equation}
+The arrays must be padded for linear correlation, at least to the sum
+of image and template dimensions minus one on each axis, unless an
+equivalent overlap-save scheme is used. Otherwise wrap-around creates
+spurious matches. Crop to valid overlap with a documented lag convention.
+Integral images of $I$ and $I^2$ give each rectangular sum with four
+lookups after linear-time preparation. Thus the padded numerator costs
+$O(N\log N)$ for $N$ padded pixels, while normalization costs $O(N)$;
+this does not imply FFTs always beat direct correlation for small
+templates. Masks, missing pixels, or shift-dependent template support
+require corresponding weighted sums rather than the fixed-support
+formula. The fast normalization construction is described in the primary
+paper by Lewis.\footnote{J.~P. Lewis, \emph{Fast Normalized
+Cross-Correlation}: \url{https://www.ncorr.com/download/publications/lewisfast.pdf}.}
+
+\subsubsection{Subpixel interpolation}
+
+Fit $q(t)=a t^2+b t+c$ through samples $\gamma_{-1},\gamma_0,
+\gamma_{+1}$ at $t=-1,0,1$. Solving the three equations gives
+\begin{equation}
+ a=\frac{\gamma_{-1}-2\gamma_0+\gamma_{+1}}2,
+ \qquad b=\frac{\gamma_{+1}-\gamma_{-1}}2,
+ \qquad c=\gamma_0.
+\end{equation}
+The stationary point $-b/(2a)$ is therefore
+\begin{equation}
+ \delta=\frac{\gamma_{-1}-\gamma_{+1}}
+          {2(\gamma_{-1}-2\gamma_0+\gamma_{+1})}.
+\end{equation}
+Accept it only for a concave, sufficiently curved, isolated interior
+maximum and a plausible subpixel offset. A flat or convex fit does not
+yield a useful peak location.
+
+Independent axis fits neglect mixed curvature. For a general local fit
+$\gamma(\boldsymbol d)=c+\boldsymbol b^{\mathsf T}\boldsymbol d
+-\tfrac12\boldsymbol d^{\mathsf T}A\boldsymbol d$ with $A\succ0$,
+the joint maximum is $A^{-1}\boldsymbol b$. For example,
+$\gamma=1-(\boldsymbol d-\boldsymbol d_*)^{\mathsf T}
+Q(\boldsymbol d-\boldsymbol d_*)$ with
+\begin{equation}
+ Q=\begin{bmatrix}3&1\\1&2\end{bmatrix},\qquad
+ \boldsymbol d_*=[0.23,-0.28]^{\mathsf T},
+\end{equation}
+has separate-axis offsets $(0.136667,-0.165)$ but joint optimum
+$(0.23,-0.28)$. This is an exact quadratic counterexample to treating
+axis fits as universally exact two-dimensional interpolation.
+
+\subsubsection{What peak curvature does and does not establish}
+
+A dimensionless correlation curvature is not automatically an inverse
+covariance. Under a specified image model
+\begin{equation}
+ \boldsymbol y=a\boldsymbol T(\boldsymbol d)+b\boldsymbol 1
+                  +\boldsymbol\varepsilon,
+ \qquad\boldsymbol\varepsilon\sim N(0,\sigma_I^2 I),
+\end{equation}
+let $D=\partial\boldsymbol T/\partial\boldsymbol d$ and
+$B=[\boldsymbol T,\boldsymbol1]$. Marginalizing the unknown photometric
+gain and offset by a Schur complement gives
+\begin{equation}
+ J_d=\frac{a^2}{\sigma_I^2}D^{\mathsf T}
+ \left[I-B(B^{\mathsf T}B)^{-1}B^{\mathsf T}\right]D.
+ \label{eq:photometric-fisher}
+\end{equation}
+This follows from the Gaussian likelihood Fisher matrix
+$\sigma_I^{-2}[aD,B]^{\mathsf T}[aD,B]$. Inverse information is meaningful
+only on identifiable directions. If texture varies along one direction,
+the other may be unobservable, the usual aperture problem.
+
+The proposal's $c(-\nabla^2\gamma)^{-1}$ is a calibration model, not
+an identity. It needs positive definite negative curvature, compatible
+coordinate units, and validation against known shifts with the same
+texture, blur, resampling, and photometric mismatch. Adjacent scores,
+map pixels, and resampled image pixels are correlated. Wrong-peak errors
+are association failures and cannot be represented merely by a Gaussian
+covariance about the selected peak. A sharp aliased peak may be wrong.
+Measurements produced on a pose-rectified image should be mapped back to
+original image coordinates with the warp and covariance accounted for,
+or use an observation model that explicitly represents their dependence
+on the predicted pose.
+
+\subsubsection{RANSAC iteration count and model choice}
+
+If a trial has probability $q$ of selecting a valid all-inlier minimal
+set and independent trials are drawn, the probability all $N$ trials
+fail is $(1-q)^N$. Requiring success probability at least $p$ gives
+\begin{equation}
+ N\geq\left\lceil\frac{\log(1-p)}{\log(1-q)}\right\rceil.
+ \label{eq:ransac-ceil}
+\end{equation}
+With independent inlier labels and sample size $k$, $q=w^k$.
+With $n$ fixed correspondences, $n_I$ known inliers, and $k$ distinct
+points sampled uniformly within each independently redrawn trial,
+\begin{equation}
+ q=\frac{\binom{n_I}{k}}{\binom n k}.
+\end{equation}
+Degenerate all-inlier samples lower $q$ further. These formulas are
+sampling probabilities, not probabilities that the finally chosen model
+is correct. Structured aliases and unmodelled distortions can generate
+large wrong consensuses. The original RANSAC paper establishes the
+random-consensus framework.\footnote{Fischler and Bolles (1981):
+\url{https://doi.org/10.1145/358669.358692}.}
+
+An orientation-preserving two-dimensional similarity obeys
+$m_i=z u_i+t$ in complex coordinates. Two distinct $u_i$ determine
+\begin{equation}
+ z=\frac{m_2-m_1}{u_2-u_1},\qquad t=m_1-z u_1.
+\end{equation}
+Require distinct source points, nonzero admissible scale, and adequate
+baseline relative to noise. For $w=0.5$, $k=2$, and $p=0.999$,
+$N\geq\lceil24.011768\rceil=25$. With $24$ trials the success
+probability is $1-0.75^{24}=0.998996609$, slightly short of the target.
+Using $n=50,n_I=25$ also requires $25$ trials under the distinct-point
+formula. A general planar homography needs four point pairs in general
+position; the same independent-label assumptions give $108$ trials
+for $k=4$.
+
+The residual between two differently rectified plane images is in
+general a homography, not a similarity. Similarity consensus is an
+approximation justified only when the remaining perspective error is
+small enough for its threshold. Alternatively use a homography or a
+physical camera-pose hypothesis and its appropriate minimal solver.
+Reject geometric degeneracy explicitly and refine the selected model
+on its accepted correspondences.
+
+\subsection{Error-state navigation filter with a coherent convention}
+
+The local/right attitude convention used here agrees with the proposal's
+Appendix H and the convention analyzed by Sol\`a.\footnote{Joan Sol\`a,
+\emph{Quaternion kinematics for the error-state Kalman filter}:
+\url{https://arxiv.org/abs/1711.02508}.}
+Define $[\boldsymbol a]_\times\boldsymbol b=\boldsymbol a\times
+\boldsymbol b$, true-minus-nominal Euclidean errors, and
+\begin{equation}
+ R_{wb}=\widehat R_{wb}\operatorname{Exp}
+                      ([\delta\boldsymbol\theta]_\times).
+ \label{eq:right-attitude-error}
+\end{equation}
+For $\vartheta=\|\boldsymbol\theta\|$, Rodrigues' formula gives
+\begin{equation}
+ \operatorname{Exp}([\boldsymbol\theta]_\times)
+ =I+\frac{\sin\vartheta}{\vartheta}[\boldsymbol\theta]_\times
+  +\frac{1-\cos\vartheta}{\vartheta^2}[\boldsymbol\theta]_\times^2,
+\end{equation}
+with continuous small-angle limits. If scalar-first Hamilton quaternions
+are used with $R(q_1\otimes q_2)=R(q_1)R(q_2)$, the increment is
+$q_\delta=[\cos(\vartheta/2),
+\boldsymbol\theta\sin(\vartheta/2)/\vartheta]$ and is multiplied on the
+right. A different quaternion convention requires corresponding changes.
+
+\subsubsection{Propagation and its linearization}
+
+Let the measured specific force and angular rate be
+\begin{equation}
+ \boldsymbol a_m=\boldsymbol f_b+\boldsymbol b_a+\boldsymbol n_a,
+ \qquad\boldsymbol\omega_m=\boldsymbol\omega_b+
+                  \boldsymbol b_g+\boldsymbol n_g.
+\end{equation}
+With $\widehat{\boldsymbol f}=\boldsymbol a_m-\widehat{\boldsymbol b}_a$
+and $\widehat{\boldsymbol\omega}=\boldsymbol\omega_m-
+\widehat{\boldsymbol b}_g$, nominal propagation is
+\begin{equation}
+ \dot{\widehat{\boldsymbol p}}=\widehat{\boldsymbol v},\quad
+ \dot{\widehat{\boldsymbol v}}=\widehat R_{wb}\widehat{\boldsymbol f}
+                       +\boldsymbol g,\quad
+ \dot{\widehat R}_{wb}=\widehat R_{wb}[\widehat{\boldsymbol\omega}]_\times.
+\end{equation}
+Assume biases are random walks with independent zero-mean driving noises
+$\boldsymbol n_{ba},\boldsymbol n_{bg}$. Since
+$[\delta\boldsymbol\theta]_\times\widehat{\boldsymbol f}
+=-[\widehat{\boldsymbol f}]_\times\delta\boldsymbol\theta$,
+subtracting nominal acceleration from true acceleration and retaining
+first-order errors gives
+\begin{align}
+ \delta\dot{\boldsymbol p}&=\delta\boldsymbol v,\\
+ \delta\dot{\boldsymbol v}&=-\widehat R_{wb}
+       [\widehat{\boldsymbol f}]_\times\delta\boldsymbol\theta
+       -\widehat R_{wb}\delta\boldsymbol b_a-\widehat R_{wb}\boldsymbol n_a,\\
+ \delta\dot{\boldsymbol\theta}&=-[\widehat{\boldsymbol\omega}]_\times
+       \delta\boldsymbol\theta-\delta\boldsymbol b_g-\boldsymbol n_g,\\
+ \delta\dot{\boldsymbol b}_a&=\boldsymbol n_{ba},
+ \qquad\delta\dot{\boldsymbol b}_g=\boldsymbol n_{bg}.
+ \label{eq:eskf-dynamics}
+\end{align}
+For the attitude equation, differentiating
+$R=\widehat R(I+[\delta\boldsymbol\theta]_\times)$ and using
+$\dot R=R[\boldsymbol\omega]_\times$ leaves the commutator
+$[\delta\boldsymbol\theta]_\times[\widehat{\boldsymbol\omega}]_\times
+-[\widehat{\boldsymbol\omega}]_\times[\delta\boldsymbol\theta]_\times
+=[\delta\boldsymbol\theta\times\widehat{\boldsymbol\omega}]_\times$,
+which proves its sign.
+
+Stack the errors as $(\delta p,\delta v,\delta\theta,\delta b_a,
+\delta b_g)$ to obtain $\dot{\delta x}=F\delta x+G n$ from
+\eqref{eq:eskf-dynamics}. For continuous noise spectral covariance $Q_c$,
+\begin{equation}
+ \dot P=FP+PF^{\mathsf T}+GQ_cG^{\mathsf T}.
+\end{equation}
+For frozen $F,G,Q_c$ over $\Delta t$, the exact discretization is
+\begin{equation}
+ \Phi=e^{F\Delta t},\qquad
+ Q_d=\int_0^{\Delta t}e^{Fs}GQ_cG^{\mathsf T}e^{F^{\mathsf T}s}\,ds,
+ \qquad P^-_{k+1}=\Phi P^+_k\Phi^{\mathsf T}+Q_d.
+\end{equation}
+For example, if
+\begin{equation}
+ \exp\left(\Delta t\begin{bmatrix}F&GQ_cG^{\mathsf T}\\0&-F^{\mathsf T}
+                         \end{bmatrix}\right)
+ =\begin{bmatrix}\Phi&B_d\\0&\Phi^{-\mathsf T}\end{bmatrix},
+\end{equation}
+then $Q_d=B_d\Phi^{\mathsf T}$, as follows from the block exponential
+integral. $Q_c$ denotes a noise density, not a sampled sensor variance;
+confusing these introduces an erroneous factor of sample interval.
+The frozen-coefficient approximation must be evaluated at the actual
+motion and sampling interval. No magnetometer or accelerometer gravity
+update is implied by these equations.
+
+For the scalar-first quaternion convention above, the rotation
+kinematics also give
+\begin{equation}
+ \dot{\widehat q}=\tfrac12\widehat q\otimes
+                  [0,\widehat{\boldsymbol\omega}],\qquad
+ \widehat q_{k+1}=\widehat q_k\otimes
+ \left[\cos\frac{\|\widehat\omega\|\Delta t}{2},
+ \frac{\widehat\omega}{\|\widehat\omega\|}
+                    \sin\frac{\|\widehat\omega\|\Delta t}{2}\right]
+ \label{eq:quaternion-propagation}
+\end{equation}
+when the body angular rate is constant over the interval; take the
+continuous zero-rate limit for the vector component. To derive the
+differential equation, compose the attitude with the infinitesimal
+right increment $[1,\widehat\omega\,dt/2]+O(dt^2)$ and divide the
+quaternion difference by $dt$. For constant rate, exponentiating this
+linear differential equation gives the trigonometric increment in
+\eqref{eq:quaternion-propagation}, equivalently
+$R_{k+1}=R_k\exp([\widehat\omega]_\times\Delta t)$. For a changing
+rate, a single exponential of the rate integral is generally not exact,
+because rotations about different axes do not commute. Use adequately
+resolved integration or an appropriate coning correction, and verify
+the integration error against the expected motion. Quaternion norm
+renormalization corrects roundoff but does not correct integration bias.
+
+\subsubsection{Landmark reprojection Jacobian and its sign}
+
+At the nominal state define
+$\boldsymbol p_b=\widehat R_{wb}^{\mathsf T}(\boldsymbol m-
+\widehat{\boldsymbol p})$ and
+$\boldsymbol p_c=R_{cb}(\boldsymbol p_b-\boldsymbol\ell_b)
+=[X,Y,Z]^{\mathsf T}$. Pinhole differentiation yields
+\begin{equation}
+ J_\pi=\begin{bmatrix}f_x/Z&0&-f_xX/Z^2\\
+                        0&f_y/Z&-f_yY/Z^2\end{bmatrix}.
+\end{equation}
+From \eqref{eq:right-attitude-error},
+\begin{align}
+ R_{wb}^{\mathsf T}(\boldsymbol m-\boldsymbol p)
+ &\simeq(I-[\delta\boldsymbol\theta]_\times)
+          (\boldsymbol p_b-\widehat R_{wb}^{\mathsf T}\delta\boldsymbol p)\\
+ &=\boldsymbol p_b-\widehat R_{wb}^{\mathsf T}\delta\boldsymbol p
+                  +[\boldsymbol p_b]_\times\delta\boldsymbol\theta.
+\end{align}
+Consequently
+\begin{equation}
+ H_p=-J_\pi R_{cb}\widehat R_{wb}^{\mathsf T},\qquad
+ H_\theta=\boxed{+J_\pi R_{cb}[\boldsymbol p_b]_\times}.
+ \label{eq:reprojection-jacobian}
+\end{equation}
+The positive attitude sign in Appendix H.2 is correct for this local
+error convention. Reversing it without changing the convention would
+be an error. With a lever arm, the cross-product uses $\boldsymbol p_b$,
+not $\boldsymbol p_b-\boldsymbol\ell_b$, since the lever arm is fixed in
+the body frame. Extrinsic uncertainty needs additional Jacobian columns.
+
+For a known map point perturbation $\delta\boldsymbol m$,
+$H_m=J_\pi R_{cb}\widehat R_{wb}^{\mathsf T}$. Known independent map
+uncertainty can be propagated as $H_m\Sigma_m H_m^{\mathsf T}$ into the
+measurement covariance. Shared datum errors and inter-landmark map
+correlations require joint covariance or nuisance states.
+
+For a height-above-terrain observation
+$h(\boldsymbol p)=p_z-z_g(p_x,p_y)$, the position Jacobian is
+$[-\partial_xz_g,-\partial_yz_g,1]$. A barometric altitude relative to
+launch pressure instead measures altitude relative to that datum;
+conversion to above-ground height must account for ground elevation
+and datum uncertainty. Height bias is not removed by naming it AGL.
+
+\subsubsection{Update, injection, and covariance reset}
+
+Stack compatible measurements into an innovation $\nu=z-h(\widehat x)$
+with covariance $V$ conditional on the state. With linearized Jacobian
+$H$, independent measurement noise gives
+\begin{align}
+ S&=HP^-H^{\mathsf T}+V,&K_f&=P^-H^{\mathsf T}S^{-1},\\
+ \widehat{\delta x}&=K_f\nu,&
+ P_c&=(I-K_fH)P^-(I-K_fH)^{\mathsf T}+K_fVK_f^{\mathsf T}.
+\end{align}
+The last expression is the Joseph covariance update. For shared noise
+or dependence between the prediction and measurement errors, cross
+covariances must be included; the displayed equations assume they vanish.
+Inject the Euclidean increments by addition and attitude by
+\begin{equation}
+ \widehat R^+=\widehat R^-\operatorname{Exp}
+                     ([\widehat{\delta\boldsymbol\theta}]_\times).
+\end{equation}
+The error coordinates have now changed, so retaining $P_c$ unchanged is
+not generally correct. If $a=\widehat{\delta\boldsymbol\theta}$, the new
+attitude error is
+\begin{equation}
+ \delta\theta^+=\operatorname{Log}\{\operatorname{Exp}(-[a]_\times)
+                                \operatorname{Exp}([\delta\theta^-]_\times)\}.
+\end{equation}
+Here $\operatorname{Log}$ returns the three-vector rotation increment
+on its local principal branch, so
+$\operatorname{Log}(\operatorname{Exp}([v]_\times))=v$ for
+$\|v\|<\pi$. Differentiating at $\delta\theta^-=a$ gives the right Jacobian
+\begin{align}
+ J_r(a)&=\int_0^1\exp(-s[a]_\times)\,ds\\
+ &=I-\frac{1-\cos\|a\|}{\|a\|^2}[a]_\times
+       +\frac{\|a\|-\sin\|a\|}{\|a\|^3}[a]_\times^2
+   =I-\tfrac12[a]_\times+O(\|a\|^2).
+\end{align}
+One way to see the derivative is
+$\operatorname{Exp}([a+\varepsilon]_\times)
+=\operatorname{Exp}([a]_\times)\operatorname{Exp}([J_r(a)\varepsilon]_\times)
++O(\|\varepsilon\|^2)$; left multiplication by
+$\operatorname{Exp}(-[a]_\times)$ and the local logarithm then return
+$J_r(a)\varepsilon$. Integrating Rodrigues' formula proves the closed
+form. With true-minus-nominal Euclidean errors the reset matrix is
+\begin{equation}
+ T=\operatorname{diag}(I_3,I_3,J_r(a),I_3,I_3),\qquad
+ P^+=T P_cT^{\mathsf T}.
+\end{equation}
+This also transforms attitude cross-covariances. Set the mean error
+state back to zero after injection. Large residual rotations require
+relinearization or iteration rather than trusting a first-order update.
+
+\subsubsection{Visual odometry and its sign}
+
+After rotational compensation, a nadir camera above stationary flat
+terrain obeys $u=f(m_x-p_x)/h+c_x$. At constant height,
+\begin{equation}
+ \Delta p_x=-\frac h f\Delta u,\qquad
+ v_x\simeq-\frac h f\frac{\Delta u}{\Delta t}.
+ \label{eq:vo-sign}
+\end{equation}
+The minus sign applies when $\Delta u$ means the displacement of a
+ground feature in image coordinates. A correlation shift defined as
+the compensating image translation has the opposite sign, so code
+must document which convention it uses. Appendix H.7's unsigned
+formula is incomplete until its shift convention is specified.
+
+With changing heights the exact nadir-plane relation is
+\begin{equation}
+ \Delta p_x=\frac{h_1}{f}(u_1-c_x)-\frac{h_2}{f}(u_2-c_x).
+\end{equation}
+Thus descent produces scale change even without horizontal motion.
+Simple translation-only correlation of unscaled frames will confound
+this expansion with drift. Use plane rectification at each height or
+a scale-aware model; propagate height and attitude uncertainty.
+Consecutive displacements share images and therefore have correlated
+errors. Their velocity estimates are not independent new measurements
+of the same filter that produced the rectification unless that
+dependence is represented. Without fresh absolute map fixes, visual
+odometry drift and datum uncertainty accumulate.
+
+The temporal covariance can be derived directly. Suppose a tracked
+feature has independent zero-mean image-location errors $\eta_k$ with
+covariance $C_k$, and the known-height, known-rotation transformation to
+horizontal ground position is $B_k$ (for the aligned nadir example,
+$B_k=(h_k/f)I_2$). Its displacement error between images $k$ and $k+1$
+is $\epsilon_k=B_k\eta_k-B_{k+1}\eta_{k+1}$. Therefore
+\begin{align}
+ \operatorname{Cov}(\epsilon_k)
+ &=B_kC_kB_k^{\mathsf T}+B_{k+1}C_{k+1}B_{k+1}^{\mathsf T},\\
+ \operatorname{Cov}(\epsilon_k,\epsilon_{k+1})
+ &=-B_{k+1}C_{k+1}B_{k+1}^{\mathsf T}.
+ \label{eq:vo-temporal-covariance}
+\end{align}
+Both equalities follow by expanding products and discarding independent
+cross terms. The negative shared-image covariance is present even in
+this idealized case. Velocity covariance divides the first expression
+by $\Delta t_k^2$ and the adjacent cross-covariance by
+$\Delta t_k\Delta t_{k+1}$. Tracking errors across frames, multiple
+features, and pose-dependent rectification can add other cross terms;
+thus the independent-location derivation is a baseline, not the full
+pipeline model. Height error introduces additional derivatives of
+$B_k$ and must be propagated as well.
+
+If the prior state error $e$ and measurement noise $v$ are correlated,
+let $C=\mathbb E[e v^{\mathsf T}]$ and write $\nu=He+v$. Expansion gives
+\begin{align}
+ S&=HPH^{\mathsf T}+HC+C^{\mathsf T}H^{\mathsf T}+V,\\
+ \operatorname{Cov}(e,\nu)&=PH^{\mathsf T}+C,\\
+ K_f&=(PH^{\mathsf T}+C)S^{-1},\\
+ P_c&=P-(PH^{\mathsf T}+C)S^{-1}(HP+C^{\mathsf T}).
+ \label{eq:correlated-measurement-update}
+\end{align}
+The gain follows by minimizing the covariance of $e-K_f\nu$, or by
+Gaussian conditioning. These equations show precisely which omitted
+terms can cause double use of old visual information. For temporal
+measurement correlation, whiten the complete noise model, augment the
+state with its correlated components, or use a joint update with the
+block covariance; treating every velocity increment as independent
+does not reproduce that update.
+
+\subsection{Error budget, information bounds, and filter consistency}
+
+\subsubsection{A design sensitivity calculation is not posterior covariance}
+
+The proposal's scalar budget assumes independent source errors and a
+specified one-dimensional projection. Using $r_m$ for map metres/pixel
+to avoid confusing it with gravity, it is
+\begin{equation}
+ \sigma_p^2\simeq(h\sigma_\theta)^2+
+       \frac{r_m^2\sigma_c^2}{n}+\sigma_{\mathrm{datum}}^2+
+       (h\omega\sigma_\tau)^2+(\sigma_z\tan\phi)^2.
+ \label{eq:scalar-budget}
+\end{equation}
+This follows from a linear error $e=\sum_j a_j\eta_j$ and
+$\operatorname{Var}(e)=\sum_j a_j^2\operatorname{Var}(\eta_j)$ only when
+the source covariances vanish. In general, with $e=A\eta$,
+\begin{equation}
+ \Sigma_e=A\Sigma_\eta A^{\mathsf T}
+          =\sum_{j,k}A_j\operatorname{Cov}(\eta_j,\eta_k)A_k^{\mathsf T}.
+\end{equation}
+Matching noise averages down as $1/n$ only for independent, equal-quality,
+translation-only observations. Repeated texture, image warp, timing,
+terrain geometry, and map datum are often common across landmarks.
+For equal correlation $\rho$ between scalar matching errors, the mean
+variance is $\sigma^2\{(1-\rho)/n+\rho\}$, obtained by summing the
+$n$ diagonal and $n(n-1)$ off-diagonal covariance entries.
+
+For $r_m=0.5\,\mathrm{m/pixel}$, $\sigma_c=0.2$ pixels and $n=50$,
+the independent translation matching term is
+$0.0141421\,\mathrm m$. The assumption is much more consequential than
+its rounded value. A common map offset remains in every fix and does
+not shrink by adding landmarks or frames.
+
+The ESKF already estimates position and attitude jointly. Its posterior
+$P_{pp}$ contains the effects of marginalized attitude uncertainty and
+correlation with position. Adding $h^2P_{\theta\theta}$ to that same
+$P_{pp}$ generally double-counts uncertainty. Either use the joint
+posterior and propagate it through the desired output, or construct a
+separate, explicitly defined design estimator and its source sensitivities.
+Map datum and calibration nuisance uncertainties not in the filter
+must be added with their correct cross-covariance or included as states.
+
+The nominal attitude--datum crossover is obtained by setting
+$h\sigma_\theta=\sigma_{\mathrm{datum}}$:
+\begin{equation}
+ h^*=\frac{\sigma_{\mathrm{datum}}}{\sigma_\theta}
+      =\frac{2.5}{0.5\pi/180}=286.479\,\mathrm m.
+\end{equation}
+The units require radians. Inferring attitude precision from an observed
+crossover is not unique unless the datum, terrain, timing, correlations,
+and altitude-dependent geometry are separately controlled. If tilt is
+estimated from fixed angular geometry with fixed pixel noise, its
+posterior precision may itself vary with height and feature support.
+
+In \eqref{eq:scalar-budget}, taking the terrain contribution to be exactly
+$1\,\mathrm m$, timing $0.5\,\mathrm{ms}$ at $40^\circ/\mathrm s$, and
+the matching value above gives $2.73470$ to $6.11774\,\mathrm m$ at
+$300\,\mathrm m$ for $(\sigma_\theta,\sigma_{\mathrm{datum}})$ from
+$(0.3^\circ,2\,\mathrm m)$ to $(1^\circ,3\,\mathrm m)$. At
+$100\,\mathrm m$ the corresponding endpoints are $2.29686$ and
+$3.61215\,\mathrm m$. These are worked sensitivity estimates, not
+predictions validated on hardware. State whether an error is a
+per-axis standard deviation, horizontal RMS $\sqrt{\operatorname{tr}
+\Sigma_p}$, radial quantile, or bias bound: they are different quantities.
+
+\subsubsection{Fisher information and nuisance marginalization}
+
+For fixed correct correspondences with independent Gaussian observations
+$z_i=h_i(x)+\varepsilon_i$, covariance $V_i$ independent of $x$, the
+log-likelihood is a sum of weighted squared residuals. Taking the
+expected outer product of the score gives
+\begin{equation}
+ J_{\mathrm{lik}}=\sum_i H_i^{\mathsf T}V_i^{-1}H_i.
+\end{equation}
+For a differentiable identifiable deterministic parameter, the
+Cram\'er--Rao inequality follows by differentiating estimator
+unbiasedness and applying the covariance Schur complement to the
+estimator error and likelihood score:
+\begin{equation}
+ \operatorname{Cov}(\widehat x)\succeq J_{\mathrm{lik}}^{-1}.
+\end{equation}
+The regularity assumptions allow differentiation under the integral,
+and the unbiasedness derivative must be identity. A biased estimator,
+selected associations, wrong measurement model, or singular information
+invalidates this simple statement.
+
+With a Gaussian linear prior, $J_0=P_0^{-1}$ and linear measurements,
+the posterior precision is exactly $J_0+J_{\mathrm{lik}}$. In a nonlinear
+EKF it is a local linearized posterior approximation. Adding a prior
+does not turn this into a frequentist bound for \emph{any} unbiased
+estimator without specifying a Bayesian bound and its assumptions.
+For correlated observations, stack $H$ and use $J=H^{\mathsf T}V^{-1}H$;
+the independent sum is not valid unless conditional independence holds.
+
+Partition information between parameters of interest $x$ and nuisance
+$b$. If $J_{bb}$ is invertible, the effective information is
+\begin{equation}
+ J_{x,\mathrm{eff}}=J_{xx}-J_{xb}J_{bb}^{-1}J_{bx}.
+\end{equation}
+Block Gaussian elimination proves this formula and
+$(J^{-1})_{xx}=J_{x,\mathrm{eff}}^{-1}$. It explicitly shows why
+pretending tilt, datum, or calibration is known overstates accuracy.
+If a gauge direction is unobservable, restrict to an identifiable
+subspace or add a justified independent datum measurement. A
+pseudoinverse alone must not be reported as a finite error bound in an
+unobservable direction.
+
+\subsubsection{Innovation gates and consistency against imperfect truth}
+
+For an unselected correct landmark with Gaussian innovation
+$\nu\sim N(0,S)$ and rank two covariance, whitening gives
+\begin{equation}
+ \nu^{\mathsf T}S^{-1}\nu\sim\chi_2^2,\qquad
+ \chi_2^2(0.997)=-2\log(0.003)=11.618286.
+\end{equation}
+The equality uses the radial squared length of two independent unit
+normal variables: in polar coordinates its density is
+$\tfrac12e^{-q/2}$ for $q\geq0$. A threshold rejects an inlier with
+probability $0.003$ under this model. It does not bound acceptance of
+a bad association. Searching many candidate peaks, consensus selection,
+and prior dependence can alter the distribution. Validate the complete
+selection and gating pipeline, including rejected cases. Several
+landmarks with shared noise should be gated jointly or treated with
+their joint covariance.
+
+For true state error $e\sim N(0,P)$ in an $n$-dimensional observable
+state, $\epsilon=e^{\mathsf T}P^{-1}e\sim\chi_n^2$. For $N$ independent
+realizations at a comparable epoch,
+\begin{equation}
+ \sum_{r=1}^N\epsilon_r=N\overline\epsilon\sim\chi_{nN}^2.
+\end{equation}
+A two-sided significance level $\alpha$ gives average bounds
+$[\chi_{nN}^2(\alpha/2)/N,
+\chi_{nN}^2(1-\alpha/2)/N]$. High values indicate excess error relative
+to stated covariance; low values can indicate conservative covariance,
+dependence, or selection effects. Successive flight epochs are correlated
+and are not $N$ independent realizations. One flight cannot be turned
+into many independent trials merely by increasing sample rate.
+
+GPS position cannot supply the true full 15-dimensional ESKF state.
+For the horizontal difference $d=\widehat p_{\mathrm{TRN}}-
+\widehat p_{\mathrm{GPS}}$, use the observed dimension and
+\begin{equation}
+ \Sigma_d=\Sigma_{\mathrm{TRN}}+\Sigma_{\mathrm{GPS}}
+               -C_{TG}-C_{TG}^{\mathsf T},
+\end{equation}
+where $C_{TG}$ is the cross-covariance of the two estimation errors.
+Even with GPS excluded from navigation, datum survey, time alignment,
+or calibration can make errors correlated. Include map datum uncertainty
+if it is not already in $\Sigma_{\mathrm{TRN}}$, and distinguish a measured
+bias from random error. Then $d^{\mathsf T}\Sigma_d^{-1}d$ tests
+consistency of the difference model; it is not pure navigation NEES
+unless the truth is sufficiently accurate and independent.
+
+\subsection{Horizontal protection level and integrity limitations}
+
+Assume horizontal error $e\sim N(0,\Sigma_p)$ with
+$\Sigma_p\succ0$. Write $e=\Sigma_p^{1/2}\xi$,
+$\xi\sim N(0,I_2)$, and let
+$q_\alpha=\chi_2^2(1-\alpha)=-2\log\alpha$.
+The ellipsoid
+\begin{equation}
+ \mathcal E_\alpha=\{e:e^{\mathsf T}\Sigma_p^{-1}e\leq q_\alpha\}
+\end{equation}
+has probability $1-\alpha$. Since
+$\|e\|^2\leq\lambda_{\max}(\Sigma_p)\|\xi\|^2$, the circle
+\begin{equation}
+ \mathrm{PL}=\sqrt{-2\log\alpha}\,
+                          \sqrt{\lambda_{\max}(\Sigma_p)}
+ \label{eq:PL-proof}
+\end{equation}
+contains that ellipsoid and has exceedance probability at most
+$\alpha$. The circle probability is exactly $1-\alpha$ for isotropic
+covariance; for anisotropic covariance it can be conservative.
+At $95\%$ containment $k=\sqrt{-2\log0.05}=2.44774683$.
+Using $k=3$ in isotropic two-dimensional error gives tail
+$e^{-9/2}=0.011108997$, not the one-dimensional ``three sigma'' tail.
+
+If an unknown deterministic bias has a justified bound $\|b\|\leq B$,
+the triangle inequality gives $\mathrm{PL}=B+
+\sqrt{q_\alpha\lambda_{\max}}$. If there is an unmodelled failure
+probability $p_f$, a conditional Gaussian bound provides, at best,
+total exceedance bound $p_f+\alpha$ by a union bound. A covariance
+circle alone supplies no protection against unbounded datum error,
+systematic model error, or wrong matches.
+
+Empirical exceedance counts require uncertainty on their estimated
+rate. With $M$ independent trials and zero exceedances, the one-sided
+$1-\beta$ binomial upper bound is
+\begin{equation}
+ p_{\mathrm{exceed}}\leq1-\beta^{1/M},
+\end{equation}
+because the probability of zero under rate $p$ is $(1-p)^M$. Correlated
+epochs do not meet this independence assumption. Comparing against GPS
+also measures the error of the difference, not exact true TRN error.
+Report integrity as a model and an experimental diagnostic; the
+proposal does not establish an aviation certification claim.
+
+\subsection{Map gauge, robust registration, and certification}
+
+\subsubsection{The map datum gauge}
+
+If all map coordinates and the camera position are shifted by the same
+$d$, then $(m_i+d)-(C+d)=m_i-C$, so every predicted pixel is unchanged.
+More generally, changing map/world coordinates by a rigid transform
+$m_i'=Qm_i+d$, $C'=QC+d$, and $R_{cw}'=R_{cw}Q^{\mathsf T}$ leaves
+the projection unchanged. Gravity and other references can constrain
+some frame rotations, but imagery alone cannot determine an unknown
+absolute map origin. An external surveyed datum is required.
+Represent its uncertainty as a shared quantity across images and
+landmarks. A fixed known map removes the gauge algebraically; its
+georeferencing accuracy remains a separate physical uncertainty.
+
+\subsubsection{Exact truncated-least-squares reformulation}
+
+Let $q=[a,b,t_x,t_y]^{\mathsf T}$ represent complex scale-rotation
+$z=a+ib$ and translation. For point $u_i=(u_{ix},u_{iy})$, define
+\begin{equation}
+ A_i=\begin{bmatrix}u_{ix}&-u_{iy}&1&0\\
+                       u_{iy}&u_{ix}&0&1\end{bmatrix},\qquad
+ r_i=m_i-A_iq.
+\end{equation}
+The similarity residual is affine, but the robust objective
+\begin{equation}
+ F(q)=\sum_i\min\left(\frac{\|r_i\|^2}{\sigma_i^2},c_i^2\right)
+\end{equation}
+is nonconvex. Exactly,
+\begin{equation}
+ F(q)=\min_{w_i\in\{0,1\}}\sum_i
+       \left[w_i\frac{\|r_i\|^2}{\sigma_i^2}+(1-w_i)c_i^2\right].
+\end{equation}
+For fixed $q$ each independent switch chooses the smaller term. However,
+$w_i\|m_i-A_iq\|^2$ has total polynomial degree three in $(w_i,q)$.
+Thus the proposal's statement that binary switches immediately give a
+quadratic programme is incomplete.
+
+An explicit exact quadratic lifting introduces $v_i=w_iq$ and constraints
+\begin{equation}
+ w_i^2-w_i=0,\qquad v_{ij}-w_iq_j=0\quad(j=1,\ldots,4).
+\end{equation}
+Then solve the quadratically constrained quadratic programme
+\begin{equation}
+ \min_{q,w,v}\sum_i\left[
+  \frac{\|w_im_i-A_iv_i\|^2}{\sigma_i^2}+(1-w_i)c_i^2\right].
+ \label{eq:lifted-TLS}
+\end{equation}
+When $w_i=0$ the constraint forces $v_i=0$, giving $c_i^2$.
+When $w_i=1$, $v_i=q$ and the cost is the original squared residual.
+These two cases prove equivalence in both directions. Additional
+physically justified scale constraints may be imposed through
+$s_{\min}^2\leq a^2+b^2\leq s_{\max}^2$; translation/search bounds
+must also be stated if used. Without a nonzero scale restriction,
+$z=0$ is allowed algebraically although it is a collapsed transformation,
+not an invertible similarity.
+
+\subsubsection{What an SDP certificate requires}
+
+Collect the variables and a homogeneous leading $1$ into $x$.
+Every objective and quadratic constraint can be written as
+$x^{\mathsf T}Qx$ and $x^{\mathsf T}A_jx=b_j$, including linear terms
+through the leading entry. Set $X=xx^{\mathsf T}$, enforce
+$X_{00}=1$, and replace quadratic forms by traces. Dropping
+$\operatorname{rank}X=1$ gives an SDP with $X\succeq0$, linear
+trace constraints, and linear objective. Any exact original feasible
+point generates an SDP feasible matrix with the same objective, so
+\begin{equation}
+ L_{\mathrm{SDP}}\leq F_{\mathrm{global}}.
+\end{equation}
+If a globally optimal SDP solution has rank one and its factor with
+$x_0=1$ satisfies every original constraint, it provides an original
+feasible point with cost $L_{\mathrm{SDP}}$. Therefore
+\begin{equation}
+ L_{\mathrm{SDP}}\leq F_{\mathrm{global}}\leq F(x)=L_{\mathrm{SDP}},
+\end{equation}
+which proves global optimality. This is the mathematical content of a
+lossless relaxation certificate. The primary work by Yang and Carlone
+develops semidefinite approaches to robust geometric estimation.\footnote{
+Heng Yang and Luca Carlone, \emph{Certifiably Optimal Outlier-Robust
+Geometric Perception}: \url{https://arxiv.org/abs/2109.03349}.}
+
+Rank one \emph{by itself} is insufficient: a suboptimal rank-one feasible
+point is just a candidate. A floating-point eigenvalue ratio is a
+numerical diagnostic, not a proof of exact rank, feasibility, or
+optimality. A practical claim must report primal constraint residuals,
+original-variable feasibility, recovered original objective, and a
+valid dual lower bound. For an equality-constrained SDP, a dual vector
+$y$ satisfying $Q-\sum_j y_jA_j\succeq0$ gives the lower bound
+$\sum_jy_jb_j$. Together with a feasible candidate of cost $U$, it
+certifies suboptimality at most $U-L$. Inequality constraints require
+the corresponding sign restrictions on multipliers. Tolerance-based
+claims must be named numerical certificates; exact certificates require
+validated arithmetic or exact bounds. A relaxation need not be tight,
+and a rank-one optimum need not be returned even when one exists.
+Finally, global optimality of the stated robust cost does not prove
+that the map correspondence is physically correct.
+
+\subsection{Landmark selection: normalized objective and greedy proof}
+
+Assume a fixed observable parameterization, a positive definite baseline
+information matrix $J_0$, and fixed positive semidefinite per-landmark
+information $J_i$. Define
+\begin{equation}
+ J_S=J_0+\sum_{i\in S}J_i,\qquad
+ f(S)=\log\det J_S-\log\det J_0.
+ \label{eq:normalized-information}
+\end{equation}
+Then $f(\varnothing)=0$. The subtraction is essential for the
+approximation guarantee and removes the arbitrary log-determinant
+constant arising from coordinate units.
+
+For $i\notin S$, the determinant identity gives
+\begin{equation}
+ \Delta_i(S)=f(S\cup\{i\})-f(S)
+ =\log\det\{I+J_i^{1/2}J_S^{-1}J_i^{1/2}\}\geq0.
+\end{equation}
+The equality follows from $\det(I+AB)=\det(I+BA)$ and factorization by
+$J_S$. If $A\subseteq B$, then $J_A\preceq J_B$ and inversion reverses
+the positive definite order, $J_A^{-1}\succeq J_B^{-1}$.
+Congruence with $J_i^{1/2}$ preserves that order. The log determinant
+is increasing on positive definite matrices: along a PSD increment
+$D$, its derivative is $\operatorname{tr}[(M+tD)^{-1}D]\geq0$.
+Therefore
+\begin{equation}
+ \Delta_i(A)\geq\Delta_i(B),
+\end{equation}
+proving diminishing returns, hence submodularity and monotonicity.
+
+For a cardinality constraint $|S|\leq k$, let $O$ be optimal and
+$S_t$ the greedy set after $t$ additions. By monotonicity and repeated
+diminishing returns,
+\begin{align}
+ f(O)-f(S_t)&\leq f(O\cup S_t)-f(S_t)\\
+ &\leq\sum_{i\in O\setminus S_t}\Delta_i(S_t)
+ \leq k\{f(S_{t+1})-f(S_t)\}.
+\end{align}
+Thus the remaining gap contracts by at least $1-1/k$ at each addition:
+\begin{equation}
+ f(S_k)\geq[1-(1-1/k)^k]f(O)\geq(1-1/e)f(O).
+\end{equation}
+This is the normalized gain guarantee, not a guarantee that the raw
+$\log\det J_{S_k}$ is at least $(1-1/e)$ times the raw optimum.
+The original approximation theorem is due to Nemhauser, Wolsey, and
+Fisher.\footnote{\emph{An analysis of approximations for maximizing
+submodular set functions--I} (1978):
+\url{https://thibaut.horel.org/submodularity/papers/nemhauser1978.pdf}.}
+
+Independent observations conditional on an augmented state can supply
+fixed additive $J_i$. Correlated measurement noise, selection-dependent
+linearization, or optimizing a pose-only determinant after marginalizing
+shared nuisance states need not meet that additive model; do not assert
+this proof then applies without a separate argument. A singular $J_0$
+makes the normalized log determinant undefined. Remove gauge directions
+or use a justified prior; a fictitious prior conceals an unobservable
+mode. Unequal landmark costs require a different budget-constrained
+algorithm and guarantee. Greedy can prefer outer features in the simple
+tilt model, but maximizing full pose information can also select inner
+features, directions that fill a weak mode, or lower-noise landmarks.
+``Always chooses edge landmarks'' is not a theorem.
+
+\subsection{Uncertainty-aware notional safe-target selection}
+
+Let $c(p)$ be a bounded nonnegative map cost and let terminal displacement
+error have distribution $e\sim N(0,\Sigma_{\mathrm{land}})$ under the
+specified predictor. If $p$ is the intended mean target, expected cost is
+\begin{equation}
+ c_\Sigma(p)=\mathbb E[c(p+e)]
+ =\int_{\mathbb R^2}c(p+e)\,
+                      \mathcal N(e;0,\Sigma_{\mathrm{land}})\,de.
+ \label{eq:expected-target-cost}
+\end{equation}
+For the indicator of a hazard set $\mathcal H$, this equals the modeled
+probability of landing in a hazard. It is a convolution, not merely
+an unspecified inflation radius. Use terminal covariance, map uncertainty,
+and actuator/model uncertainty appropriate to the target decision;
+current position covariance alone need not equal terminal uncertainty.
+
+A robust alternative uses the confidence error ellipsoid
+$\mathcal E_\alpha$ defined above. Require
+\begin{equation}
+ (p+\mathcal E_\alpha)\cap\mathcal H=\varnothing
+ \quad\Longleftrightarrow\quad
+ p\notin\mathcal H\oplus(-\mathcal E_\alpha),
+\end{equation}
+where $\oplus$ is Minkowski addition. Then all errors in the ellipsoid
+avoid hazards, yielding modeled hazard probability at most $\alpha$.
+For a centered symmetric ellipse $-\mathcal E_\alpha=\mathcal E_\alpha$.
+Add a bounded datum/hazard-boundary uncertainty set by another Minkowski
+sum. Gaussian support is unbounded, so finite inflation is a probability
+statement, not zero-risk clearance. Map completeness remains an
+unverified assumption until inspected.
+
+For a notional controllable canopy, let available horizontal
+air-relative control speed be $u_{\max}(t)$. The triangle inequality
+gives a displacement bound
+\begin{equation}
+ \|\Delta p_{\mathrm{control}}\|
+ \leq\int_t^{t_{\mathrm{impact}}}u_{\max}(t')\,dt'.
+\end{equation}
+If $u_{\max}=\kappa v_d$, vertical descent is monotone with
+$dh/dt=-v_d$, and control can point freely in the plane without delay,
+then the bound is $R_{\mathrm{div}}=\kappa h$. Under those idealized
+conditions every point in the disc can be generated by suitable bounded
+control. At $\kappa=0.3$ this gives $90\,\mathrm m$ at $300\,\mathrm m$
+and $30\,\mathrm m$ at $100\,\mathrm m$. If turn-rate limits,
+deployment transients, directional constraints, or spatially varying
+wind affect the control path, this disc can overstate reachability.
+
+Define the compact, nonempty modeled feasible set $\mathcal D$ and choose
+\begin{equation}
+ p^*\in\operatorname*{arg\,min}_{p\in\mathcal D}c_\Sigma(p).
+\end{equation}
+A continuous cost on a compact set attains a minimum. On a finite
+raster, search all admissible cells and specify a deterministic tie
+rule; quantify discretization and boundary handling. If no acceptable
+cell exists, report infeasibility rather than outputting a falsely
+safe target. The actual passive CanSat has no commanded divert, so
+$\kappa=0.3$ describes a hypothetical decision experiment, not its
+physical reachable set. Agreement between TRN- and GPS-driven decisions
+tests sensitivity to navigation, not proof that an unflown control
+would reach the target.
+
+\subsection{Executed numerical checks and remaining validation}
+
+The following checks were executed with NumPy and Python, using
+$\texttt{default\_rng}(20260930)$ for random inputs. No SciPy, SDP solver,
+flight imagery, or flight measurements were used. The random rotations
+were generated with Rodrigues' formula. The reproducible module
+\texttt{sim/maths/test\_navigation\_extra.py} prints the numerical report
+and executes thirteen unit tests; its derivatives, rotations, and FFT
+checks also use the adjacent mathematical reference models. Reprojection tests used
+$K=(f_x=f_y=640,c_x=640,c_y=400)$, nominal camera height $300\,\mathrm m$,
+100 random ground points and attitude perturbations, a nonidentity
+camera extrinsic rotation, and body lever arm $(0.04,-0.03,0.015)\,\mathrm m$.
+Symmetric finite differences used step $10^{-5}$ for projection, with
+rotations perturbed on the right. These are algebraic consistency checks.
+
+\begin{center}
+\begin{tabular}{@{}p{0.55\linewidth}p{0.36\linewidth}@{}}
+\toprule
+Executed check & Result\\
+\midrule
+Homography versus direct projection, maximum pixel difference
+ & $2.03\times10^{-13}$ pixels\\
+Position reprojection derivative, maximum component error
+ & $1.02\times10^{-8}$ pixels/m\\
+Local attitude reprojection derivative, maximum component error
+ & $6.96\times10^{-8}$ pixels/rad\\
+Exact reset derivative at $a=(0.3,-0.2,0.1)$ rad,
+step $10^{-6}$, versus $J_r(a)$
+ & $3.07\times10^{-11}$ maximum component error\\
+FFT NCC versus direct NCC, all 117 valid windows of a
+$13\times16$ random image and $5\times4$ random template
+ & $4.45\times10^{-16}$ maximum score difference\\
+Gaussian radial $95\%$ circle, 200000 independent draws
+ & Observed containment $0.9492$; specified probability $0.95$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For the Gaussian circle experiment, the binomial standard deviation of
+the sample proportion under the specified model is
+$\sqrt{0.95(0.05)/200000}=0.0004873$. The observed difference $-0.0008$
+is about $-1.64$ such standard deviations. This is compatible with
+sampling variation and verifies the simulated distribution; it gives
+no evidence for the Gaussianity of real matching errors.
+
+For \eqref{eq:tilt-information}, with $f=640$ and
+$\sigma_{\mathrm{px}}=0.2$, the normalized landmark sets
+$(-0.02,-0.01,0,0.01,0.02)$,
+$(-1,-1,1,1)$, and $(-1,-0.5,0,0.5,1)$ gave marginalized attitude
+information $1.4336$, $0$, and $8.96\times10^6$ rad$^{-2}$,
+respectively. These confirm strong near-centre ill-conditioning and
+the equal-radius degeneracy in the one-dimensional model. They are not
+full-camera attitude performance predictions.
+
+A separate normalized-logdet check generated eight fixed PSD landmark
+matrices $J_i=H_i^{\mathsf T}H_i$ from $2\times3$ normal matrices and
+used $J_0=\operatorname{diag}(0.2,0.4,0.6)$. All diminishing-return
+comparisons between a subset and a one-element larger subset were
+checked; the maximum positive violation was zero in floating-point
+arithmetic. Greedy selection of three landmarks gave normalized value
+$8.573753638$, while exhaustive search over all $\binom83=56$ triples
+gave $8.598882151$, a ratio $0.997077700$. This is a numerical example
+of the proved guarantee, not a proof for every matrix set or a statement
+about real image landmarks.
+
+Additional passing tests compare constant-rate quaternion propagation
+against an independent matrix exponential and Runge--Kutta integration,
+the right Jacobian against numerical integration of
+$\int_0^1\exp(-s[a]_\times)ds$, and the shared-image covariance
+\eqref{eq:vo-temporal-covariance} against $300000$ independently generated
+triples of image errors. They also check signed odometry with changing
+height, undefined constant-template NCC, the two-dimensional quadratic
+peak counterexample, integer RANSAC counts, the exact two binary cases
+of the TLS lifting, and the Gaussian innovation gate. The latter
+rejected $0.00314$ of the $200000$ synthetic Gaussian innovations at
+the specified $0.003$ nominal rate. No test substitutes for the proof
+of the corresponding general identity, and no test claims an SDP solve.
+
+No semidefinite certificate has been computed here; the exact lifted
+formulation and certificate conditions above specify what would need
+to be checked. Before interpreting navigation simulations as physical
+validation, run the same pipeline on independently rendered terrain
+with elevation, calibration error, timing offset, motion blur, shared
+map datum error, and repetitive textures. Retain failed associations
+and rejected updates. Then validate with surveyed ground imagery and
+independent attitude and position references. The required flight
+accuracy, tilt observability under real swing, covariance consistency,
+and match integrity remain hypotheses until such evidence exists.

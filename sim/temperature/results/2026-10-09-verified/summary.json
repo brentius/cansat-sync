@@ -1,0 +1,355 @@
+{
+  "label": "SYNTHETIC and CALCULATED; no measurements",
+  "seed": 20261009,
+  "python": "3.12.14",
+  "numpy": "2.3.5",
+  "source_urls": {
+    "te": "https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocFormat=pdf&DocLang=English&DocNm=GA10K3MCD1&DocType=Data+Sheet&PartCntxt=GA10K3MCD1",
+    "ads1115": "https://www.ti.com/lit/ds/symlink/ads1115.pdf",
+    "opa333": "https://www.ti.com/lit/ds/symlink/opa333.pdf"
+  },
+  "assumptions": {
+    "thermal_tau_s": [
+      0.1,
+      0.2,
+      0.3,
+      0.5,
+      1.0,
+      3.0
+    ],
+    "lead_coupling": "sensitivity ratios only; not fitted",
+    "step_noise_sd_k": 0.02,
+    "step_amplitude_k": 5.0,
+    "thermal_model": "one node, imposed air/body, nominal R interpolation",
+    "fit_intervals": "conditional Monte Carlo spread, not real-data confidence intervals",
+    "adc_noise": "TI table RMS as Gaussian noise-equivalent scenario; no added quantization variance"
+  },
+  "sh_coefficients": [
+    0.0011291196841907397,
+    0.00023412878418660953,
+    8.766095467110891e-08
+  ],
+  "sh_fit_temperature_c": [
+    -20.0,
+    25.0,
+    50.0
+  ],
+  "heldout_max_sh_bias_k": 0.00013763860511062376,
+  "table_max_beta_bias_k": 1.5949716995519907,
+  "raw_mixed_pga_error_at25_k": -16.53154318842678,
+  "readout": [
+    {
+      "temperature_c": -20.0,
+      "resistance_ohm": 97006.9,
+      "divider_v": 1.1781885445305373,
+      "power_on_uw": 14.309582580857505,
+      "continuous_still_air_rise_k": 0.04769860860285836,
+      "beta_bias_k": 1.5949716995519907,
+      "nominal_sh_bias_k": 2.6147972675971687e-12,
+      "adc_noise_equivalent_sigma_k": 0.0019134641028590396,
+      "synthetic_adc_rms_k": 0.0019177737545339048,
+      "synthetic_adc_mean_k": -1.661033364364499e-05,
+      "reference_plus_0p1pct_k": -0.01721661670899266,
+      "ntc_channel_plus_3lsb_k": -0.004514141402921723,
+      "exc_channel_plus_3lsb_k": 0.0035455021441919143,
+      "range_mismatch_plus_0p1pct_k": -0.02835894842294806,
+      "sequential_exc_change_plus_0p1pct_k": 0.02834592409982406
+    },
+    {
+      "temperature_c": -10.0,
+      "resistance_ohm": 55303.9,
+      "divider_v": 0.8081273663091642,
+      "power_on_uw": 11.80874839166471,
+      "continuous_still_air_rise_k": 0.03936249463888237,
+      "beta_bias_k": 1.1093072379021578,
+      "nominal_sh_bias_k": -3.332687919055388e-05,
+      "adc_noise_equivalent_sigma_k": 0.002210556789111475,
+      "synthetic_adc_rms_k": 0.002206838393688743,
+      "synthetic_adc_mean_k": 1.0398493544920484e-05,
+      "reference_plus_0p1pct_k": -0.0183744929245222,
+      "ntc_channel_plus_3lsb_k": -0.005837750150362808,
+      "exc_channel_plus_3lsb_k": 0.003145149122303792,
+      "range_mismatch_plus_0p1pct_k": -0.02515312256832658,
+      "sequential_exc_change_plus_0p1pct_k": 0.0251479175325926
+    },
+    {
+      "temperature_c": 0.0,
+      "resistance_ohm": 32650.9,
+      "divider_v": 0.5362836974797278,
+      "power_on_uw": 8.80833925504437,
+      "continuous_still_air_rise_k": 0.029361130850147903,
+      "beta_bias_k": 0.7007645539208056,
+      "nominal_sh_bias_k": -3.5803109938115085e-05,
+      "adc_noise_equivalent_sigma_k": 0.0029520999795186057,
+      "synthetic_adc_rms_k": 0.0029555565483723556,
+      "synthetic_adc_mean_k": 8.456768321676123e-06,
+      "reference_plus_0p1pct_k": -0.019577222442194397,
+      "ntc_channel_plus_3lsb_k": -0.008337987860102203,
+      "exc_channel_plus_3lsb_k": 0.002981304347827063,
+      "range_mismatch_plus_0p1pct_k": -0.023840924977037048,
+      "sequential_exc_change_plus_0p1pct_k": 0.023839295522577686
+    },
+    {
+      "temperature_c": 10.0,
+      "resistance_ohm": 19903.2,
+      "divider_v": 0.35143305129038177,
+      "power_on_uw": 6.205293095545846,
+      "continuous_still_air_rise_k": 0.020684310318486155,
+      "beta_bias_k": 0.3667098400562736,
+      "nominal_sh_bias_k": -3.596079358203497e-05,
+      "adc_noise_equivalent_sigma_k": 0.004311071442629142,
+      "synthetic_adc_rms_k": 0.004264630116294399,
+      "synthetic_adc_mean_k": -6.76532605857858e-06,
+      "reference_plus_0p1pct_k": -0.02082519232857294,
+      "ntc_channel_plus_3lsb_k": -0.012588833884535688,
+      "exc_channel_plus_3lsb_k": 0.002950034879404484,
+      "range_mismatch_plus_0p1pct_k": -0.023589811288275087,
+      "sequential_exc_change_plus_0p1pct_k": 0.02359007842784422
+    },
+    {
+      "temperature_c": 20.0,
+      "resistance_ohm": 12493.3,
+      "divider_v": 0.230655048546617,
+      "power_on_uw": 4.25842262813206,
+      "continuous_still_air_rise_k": 0.014194742093773532,
+      "beta_bias_k": 0.10476963128195393,
+      "nominal_sh_bias_k": 4.797254564437026e-05,
+      "adc_noise_equivalent_sigma_k": 0.006572676952835051,
+      "synthetic_adc_rms_k": 0.006518185805142811,
+      "synthetic_adc_mean_k": -1.0199080414560058e-05,
+      "reference_plus_0p1pct_k": -0.022118753980862493,
+      "ntc_channel_plus_3lsb_k": -0.019480579523246888,
+      "exc_channel_plus_3lsb_k": 0.002996642855976006,
+      "range_mismatch_plus_0p1pct_k": -0.023961861797204165,
+      "sequential_exc_change_plus_0p1pct_k": 0.02396328461537678
+    },
+    {
+      "temperature_c": 25.0,
+      "resistance_ohm": 10000.0,
+      "divider_v": 0.18749999999999997,
+      "power_on_uw": 3.5156249999999996,
+      "continuous_still_air_rise_k": 0.01171875,
+      "beta_bias_k": 0.0,
+      "nominal_sh_bias_k": 2.2168933355715126e-12,
+      "adc_noise_equivalent_sigma_k": 0.008168187355780936,
+      "synthetic_adc_rms_k": 0.008153910078529855,
+      "synthetic_adc_mean_k": -1.4902925689796121e-06,
+      "reference_plus_0p1pct_k": -0.022782710236754156,
+      "ntc_channel_plus_3lsb_k": -0.024302258974728375,
+      "exc_channel_plus_3lsb_k": 0.003039241395924819,
+      "range_mismatch_plus_0p1pct_k": -0.024302258974728375,
+      "sequential_exc_change_plus_0p1pct_k": 0.024304112166703362
+    },
+    {
+      "temperature_c": 30.0,
+      "resistance_ohm": 8056.1,
+      "divider_v": 0.15290963145364211,
+      "power_on_uw": 2.902316926464251,
+      "continuous_still_air_rise_k": 0.009674389754880837,
+      "beta_bias_k": -0.08767918071316672,
+      "nominal_sh_bias_k": -0.00011730482248140106,
+      "adc_noise_equivalent_sigma_k": 0.010161332484127684,
+      "synthetic_adc_rms_k": 0.010130356742910776,
+      "synthetic_adc_mean_k": 7.450305150412078e-05,
+      "reference_plus_0p1pct_k": -0.02345816039513693,
+      "ntc_channel_plus_3lsb_k": -0.030306582630942103,
+      "exc_channel_plus_3lsb_k": 0.003091333858037615,
+      "range_mismatch_plus_0p1pct_k": -0.024718608829459754,
+      "sequential_exc_change_plus_0p1pct_k": 0.024720831083641315
+    },
+    {
+      "temperature_c": 40.0,
+      "resistance_ohm": 5325.0,
+      "divider_v": 0.10284886528247224,
+      "power_on_uw": 1.9864580450501639,
+      "continuous_still_air_rise_k": 0.00662152681683388,
+      "beta_bias_k": -0.21211922282009255,
+      "nominal_sh_bias_k": 0.00013763860511062376,
+      "adc_noise_equivalent_sigma_k": 0.015678846262648743,
+      "synthetic_adc_rms_k": 0.015465236600224324,
+      "synthetic_adc_mean_k": 3.349788120851258e-05,
+      "reference_plus_0p1pct_k": -0.02484376188897386,
+      "ntc_channel_plus_3lsb_k": -0.04687892318679587,
+      "exc_channel_plus_3lsb_k": 0.003217369788671931,
+      "range_mismatch_plus_0p1pct_k": -0.02572610763945704,
+      "sequential_exc_change_plus_0p1pct_k": 0.025728948119763118
+    },
+    {
+      "temperature_c": 50.0,
+      "resistance_ohm": 3601.1,
+      "divider_v": 0.07033348068470864,
+      "power_on_uw": 1.3736909569926643,
+      "continuous_still_air_rise_k": 0.004578969856642214,
+      "beta_bias_k": -0.2713413585639728,
+      "nominal_sh_bias_k": 2.2737367544323206e-13,
+      "adc_noise_equivalent_sigma_k": 0.02394971582341154,
+      "synthetic_adc_rms_k": 0.023954477930240164,
+      "synthetic_adc_mean_k": 0.00040476181987630184,
+      "reference_plus_0p1pct_k": -0.026275672610381662,
+      "ntc_channel_plus_3lsb_k": -0.07166286772945796,
+      "exc_channel_plus_3lsb_k": 0.0033650524141535243,
+      "range_mismatch_plus_0p1pct_k": -0.02690675734402248,
+      "sequential_exc_change_plus_0p1pct_k": 0.026910121794855968
+    }
+  ],
+  "schedules": [
+    {
+      "data_rate_sps": 8,
+      "sample_hz": 1.0,
+      "on_s": 0.2798277777777778,
+      "duty": 0.2798277777777778,
+      "feasible": true,
+      "maximum_pair_hz": 3.573626635430523,
+      "conversion_midpoint_gap_s": 0.1389138888888889
+    },
+    {
+      "data_rate_sps": 8,
+      "sample_hz": 10.0,
+      "on_s": 0.2798277777777778,
+      "duty": 2.798277777777778,
+      "feasible": false,
+      "maximum_pair_hz": 3.573626635430523,
+      "conversion_midpoint_gap_s": 0.1389138888888889
+    },
+    {
+      "data_rate_sps": 128,
+      "sample_hz": 1.0,
+      "on_s": 0.019411111111111115,
+      "duty": 0.019411111111111115,
+      "feasible": true,
+      "maximum_pair_hz": 51.51688609044074,
+      "conversion_midpoint_gap_s": 0.008705555555555557
+    },
+    {
+      "data_rate_sps": 128,
+      "sample_hz": 10.0,
+      "on_s": 0.019411111111111115,
+      "duty": 0.19411111111111115,
+      "feasible": true,
+      "maximum_pair_hz": 51.51688609044074,
+      "conversion_midpoint_gap_s": 0.008705555555555557
+    },
+    {
+      "data_rate_sps": 860,
+      "sample_hz": 1.0,
+      "on_s": 0.004633979328165375,
+      "duty": 0.004633979328165375,
+      "feasible": true,
+      "maximum_pair_hz": 215.79725095491676,
+      "conversion_midpoint_gap_s": 0.0013169896640826875
+    },
+    {
+      "data_rate_sps": 860,
+      "sample_hz": 10.0,
+      "on_s": 0.004633979328165375,
+      "duty": 0.046339793281653746,
+      "feasible": true,
+      "maximum_pair_hz": 215.79725095491676,
+      "conversion_midpoint_gap_s": 0.0013169896640826875
+    }
+  ],
+  "profiles": [
+    {
+      "tau_s": 0.2,
+      "t90_s": 0.4605170185988092,
+      "smoothing_length_m": 2.1,
+      "steady_ramp_lag_k": 0.021,
+      "profile_rms_k": 0.037955069479271034,
+      "profile_peak_abs_k": 0.17708865560984677
+    },
+    {
+      "tau_s": 0.5,
+      "t90_s": 1.151292546497023,
+      "smoothing_length_m": 5.25,
+      "steady_ramp_lag_k": 0.0525,
+      "profile_rms_k": 0.0894411010097386,
+      "profile_peak_abs_k": 0.3696854923289692
+    },
+    {
+      "tau_s": 1.0,
+      "t90_s": 2.302585092994046,
+      "smoothing_length_m": 10.5,
+      "steady_ramp_lag_k": 0.105,
+      "profile_rms_k": 0.16636552147713726,
+      "profile_peak_abs_k": 0.579215686263538
+    },
+    {
+      "tau_s": 3.0,
+      "t90_s": 6.907755278982138,
+      "smoothing_length_m": 31.5,
+      "steady_ramp_lag_k": 0.315,
+      "profile_rms_k": 0.43407002398675704,
+      "profile_peak_abs_k": 1.0213161748898614
+    }
+  ],
+  "lead_coupling": [
+    {
+      "lead_to_air_g_ratio": 0.0,
+      "body_excess_k": 20.0,
+      "equilibrium_bias_k": 0.0
+    },
+    {
+      "lead_to_air_g_ratio": 0.001,
+      "body_excess_k": 20.0,
+      "equilibrium_bias_k": 0.019980019980019983
+    },
+    {
+      "lead_to_air_g_ratio": 0.005,
+      "body_excess_k": 20.0,
+      "equilibrium_bias_k": 0.09950248756218907
+    },
+    {
+      "lead_to_air_g_ratio": 0.01,
+      "body_excess_k": 20.0,
+      "equilibrium_bias_k": 0.19801980198019803
+    },
+    {
+      "lead_to_air_g_ratio": 0.05,
+      "body_excess_k": 20.0,
+      "equilibrium_bias_k": 0.9523809523809523
+    }
+  ],
+  "fit_mc": [
+    {
+      "sample_hz": 1.0,
+      "true_tau_s": 0.3,
+      "trials": 128,
+      "noise_sd_k": 0.02,
+      "fitted_tau_median_s": 0.29874641299565696,
+      "fitted_tau_p025_s": 0.2854065503615614,
+      "fitted_tau_p975_s": 0.3137261800681757,
+      "fitted_tau_rms_error_s": 0.007850951338974734
+    },
+    {
+      "sample_hz": 1.0,
+      "true_tau_s": 1.0,
+      "trials": 128,
+      "noise_sd_k": 0.02,
+      "fitted_tau_median_s": 0.9997901744990064,
+      "fitted_tau_p025_s": 0.9821463411038306,
+      "fitted_tau_p975_s": 1.017116694416937,
+      "fitted_tau_rms_error_s": 0.009415816160732704
+    },
+    {
+      "sample_hz": 10.0,
+      "true_tau_s": 0.3,
+      "trials": 128,
+      "noise_sd_k": 0.02,
+      "fitted_tau_median_s": 0.2999910967993017,
+      "fitted_tau_p025_s": 0.2971317378041107,
+      "fitted_tau_p975_s": 0.3026470542359536,
+      "fitted_tau_rms_error_s": 0.0014435466612464235
+    },
+    {
+      "sample_hz": 10.0,
+      "true_tau_s": 1.0,
+      "trials": 128,
+      "noise_sd_k": 0.02,
+      "fitted_tau_median_s": 0.9997785521023047,
+      "fitted_tau_p025_s": 0.9944363818708744,
+      "fitted_tau_p975_s": 1.0060999541557363,
+      "fitted_tau_rms_error_s": 0.0030390081544879495
+    }
+  ],
+  "worst_assumed_pulse_peak_k": 0.03994002807223996
+}

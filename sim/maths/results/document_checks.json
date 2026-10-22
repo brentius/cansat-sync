@@ -1,0 +1,12 @@
+{
+  "source": "C:\\Users\\b_yee23\\Documents\\projects\\cansat\\wiki\\cansat_mathematics.tex",
+  "bytes": 168283,
+  "lines": 2837,
+  "labels": 29,
+  "reference_uses": 14,
+  "numbered_math_environments": 207,
+  "standalone": true,
+  "structural_checks_passed": true,
+  "compilation": "UNVERIFIED: built-in compiler fails: Unable to find standard directories for platform",
+  "limitation": "Structure and label checks do not verify TeX macro availability, line/page layout or PDF rendering."
+}

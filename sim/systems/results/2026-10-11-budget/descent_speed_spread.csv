@@ -1,0 +1,9 @@
+canopy,basis,area_m2,dimension_m,speed_p05,speed_p50,speed_p95,p_below_10,p_above_15
+round_flat,"cut from handbook Cd, never dropped",0.0649,0.287,9.66,10.39,11.25,0.2055,0.0
+round_flat,trimmed to 10.5 m/s at standard density,0.0649,0.287,10.04,10.38,10.75,0.0324,0.0
+cruciform,"cut from handbook Cd, never dropped",0.0676,0.364,9.7,10.37,11.11,0.1962,0.0
+cruciform,trimmed to 10.5 m/s at standard density,0.0676,0.364,10.04,10.38,10.75,0.0324,0.0
+annular,"cut from handbook Cd, never dropped",0.0541,0.262,9.99,10.39,10.8,0.0551,0.0
+annular,trimmed to 10.5 m/s at standard density,0.0541,0.262,10.04,10.38,10.75,0.0324,0.0
+square_cone,"cut from handbook Cd, never dropped",0.1014,0.318,9.8,10.42,11.14,0.14,0.0
+square_cone,trimmed to 10.5 m/s at standard density,0.1014,0.318,10.04,10.38,10.75,0.0324,0.0

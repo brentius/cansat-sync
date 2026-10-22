@@ -1,0 +1,8 @@
+check,current_a,limit_a,limit_over_current,limit_source
+3.3 V rail vs TPS62162 1 A,0.566,1.0,1.77,datasheet
+5.1 V rail vs TPS62130 3 A,1.441,3.0,2.08,datasheet
+5.1 V rail vs TPS22965 load switch (6 A per the BOM),1.441,6.0,4.16,datasheet
+5.1 V rail vs three JST GH contacts at 1 A,1.441,3.0,2.08,datasheet
+Pack current at 6.0 V vs 5 A fuse,1.908,5.0,2.62,datasheet
+Pack current at 6.0 V vs 5.2 A pack rating,1.908,5.2,2.72,vendor
+Pack current at 6.0 V vs 10 A lowest protection trip,1.908,10.0,5.24,vendor

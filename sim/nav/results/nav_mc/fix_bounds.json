@@ -1,0 +1,241 @@
+{
+ "label": "SYNTHETIC, analytic",
+ "camera": {
+  "image_px": [
+   1456,
+   1088
+  ],
+  "focal_px": 724.6376811594203
+ },
+ "assumptions": "30 landmarks on a 6 x 5 image grid, 0.3 px floor plus 0.15 m on the ground, camera tilted 8 degrees, flat ground, known correspondences",
+ "single_image_bounds": [
+  {
+   "height_m": 300.0,
+   "full": {
+    "position_sigma_free_attitude_m": 0.20317736166877348,
+    "position_sigma_attitude_prior_0p1deg_m": 0.19873728065933652,
+    "position_sigma_known_attitude_m": 0.050662015132285694,
+    "tilt_sigma_deg": 0.030636468229510185,
+    "yaw_sigma_deg": 0.009740587617634234,
+    "height_times_tilt_sigma_m": 0.16041217253627715
+   },
+   "half": {
+    "position_sigma_free_attitude_m": 0.6904921537694744,
+    "position_sigma_attitude_prior_0p1deg_m": 0.5162094597918018,
+    "position_sigma_known_attitude_m": 0.052216582868977165,
+    "tilt_sigma_deg": 0.12485757289265041,
+    "yaw_sigma_deg": 0.020271839491466482,
+    "height_times_tilt_sigma_m": 0.6537527229076711
+   },
+   "third": {
+    "position_sigma_free_attitude_m": 1.497614152816997,
+    "position_sigma_attitude_prior_0p1deg_m": 0.6765513544844949,
+    "position_sigma_known_attitude_m": 0.05496405168584856,
+    "tilt_sigma_deg": 0.2795676495823028,
+    "yaw_sigma_deg": 0.03181874743541998,
+    "height_times_tilt_sigma_m": 1.4638127901818803
+   },
+   "full_with_1m_relief_m": 0.6959016045301053,
+   "full_with_5m_relief_m": 2.7364732807308
+  },
+  {
+   "height_m": 250.0,
+   "full": {
+    "position_sigma_free_attitude_m": 0.18987787426469488,
+    "position_sigma_attitude_prior_0p1deg_m": 0.18471259651025373,
+    "position_sigma_known_attitude_m": 0.04739372691454038,
+    "tilt_sigma_deg": 0.03434940915823895,
+    "yaw_sigma_deg": 0.010917174884707542,
+    "height_times_tilt_sigma_m": 0.1498775714814909
+   },
+   "half": {
+    "position_sigma_free_attitude_m": 0.6455061710357026,
+    "position_sigma_attitude_prior_0p1deg_m": 0.4577188949427956,
+    "position_sigma_known_attitude_m": 0.04884899925450289,
+    "tilt_sigma_deg": 0.14006607612030939,
+    "yaw_sigma_deg": 0.022732125017694546,
+    "height_times_tilt_sigma_m": 0.611153549662101
+   },
+   "third": {
+    "position_sigma_free_attitude_m": 1.4001552271223368,
+    "position_sigma_attitude_prior_0p1deg_m": 0.5767554215082981,
+    "position_sigma_known_attitude_m": 0.051416892524216294,
+    "tilt_sigma_deg": 0.31364948105680107,
+    "yaw_sigma_deg": 0.0356850823376035,
+    "height_times_tilt_sigma_m": 1.3685540354031904
+   },
+   "full_with_1m_relief_m": 0.6912980062260419,
+   "full_with_5m_relief_m": 2.7348425910054863
+  },
+  {
+   "height_m": 200.0,
+   "full": {
+    "position_sigma_free_attitude_m": 0.17824552442756325,
+    "position_sigma_attitude_prior_0p1deg_m": 0.1716890632894371,
+    "position_sigma_known_attitude_m": 0.04453782217926018,
+    "tilt_sigma_deg": 0.04029640264288844,
+    "yaw_sigma_deg": 0.01280263095415184,
+    "height_times_tilt_sigma_m": 0.1406609805655496
+   },
+   "half": {
+    "position_sigma_free_attitude_m": 0.606209797626445,
+    "position_sigma_attitude_prior_0p1deg_m": 0.3951536646647635,
+    "position_sigma_known_attitude_m": 0.04590940517883999,
+    "tilt_sigma_deg": 0.16442217246676366,
+    "yaw_sigma_deg": 0.02667394113677237,
+    "height_times_tilt_sigma_m": 0.5739416545653986
+   },
+   "third": {
+    "position_sigma_free_attitude_m": 1.3150443203965192,
+    "position_sigma_attitude_prior_0p1deg_m": 0.47349079295861274,
+    "position_sigma_known_attitude_m": 0.048320966577309714,
+    "tilt_sigma_deg": 0.36822982586237035,
+    "yaw_sigma_deg": 0.041879172028686455,
+    "height_times_tilt_sigma_m": 1.285364573068746
+   },
+   "full_with_1m_relief_m": 0.6874923785292939,
+   "full_with_5m_relief_m": 2.733505385377964
+  },
+  {
+   "height_m": 150.0,
+   "full": {
+    "position_sigma_free_attitude_m": 0.16863056587036543,
+    "position_sigma_attitude_prior_0p1deg_m": 0.15912122730458442,
+    "position_sigma_known_attitude_m": 0.04217943525400612,
+    "tilt_sigma_deg": 0.05081777057407222,
+    "yaw_sigma_deg": 0.01613986526296945,
+    "height_times_tilt_sigma_m": 0.13304061225609737
+   },
+   "half": {
+    "position_sigma_free_attitude_m": 0.5737772204265151,
+    "position_sigma_attitude_prior_0p1deg_m": 0.32421693006827246,
+    "position_sigma_known_attitude_m": 0.04348500035946148,
+    "tilt_sigma_deg": 0.20749822119830108,
+    "yaw_sigma_deg": 0.033648459348919926,
+    "height_times_tilt_sigma_m": 0.5432290727912772
+   },
+   "third": {
+    "position_sigma_free_attitude_m": 1.2448203676298064,
+    "position_sigma_attitude_prior_0p1deg_m": 0.3652994151382894,
+    "position_sigma_known_attitude_m": 0.04576807565544407,
+    "tilt_sigma_deg": 0.46475510130386977,
+    "yaw_sigma_deg": 0.052837630750619244,
+    "height_times_tilt_sigma_m": 1.2167260099788477
+   },
+   "full_with_1m_relief_m": 0.6845073218105707,
+   "full_with_5m_relief_m": 2.732463438933338
+  },
+  {
+   "height_m": 100.0,
+   "full": {
+    "position_sigma_free_attitude_m": 0.16140180033999002,
+    "position_sigma_attitude_prior_0p1deg_m": 0.14436792934642073,
+    "position_sigma_known_attitude_m": 0.040407851215045705,
+    "tilt_sigma_deg": 0.07294317165174563,
+    "yaw_sigma_deg": 0.023160354261936307,
+    "height_times_tilt_sigma_m": 0.1273098512170352
+   },
+   "half": {
+    "position_sigma_free_attitude_m": 0.5494316566219276,
+    "position_sigma_attitude_prior_0p1deg_m": 0.23851345214877398,
+    "position_sigma_known_attitude_m": 0.04166631982117606,
+    "tilt_sigma_deg": 0.29803794834035535,
+    "yaw_sigma_deg": 0.04831372171995217,
+    "height_times_tilt_sigma_m": 0.5201743494427971
+   },
+   "third": {
+    "position_sigma_free_attitude_m": 1.1921227960612102,
+    "position_sigma_attitude_prior_0p1deg_m": 0.2512209319171846,
+    "position_sigma_known_attitude_m": 0.04385338462802975,
+    "tilt_sigma_deg": 0.6676208336903641,
+    "yaw_sigma_deg": 0.07587703904598365,
+    "height_times_tilt_sigma_m": 1.1652181702806337
+   },
+   "full_with_1m_relief_m": 0.682361314131278,
+   "full_with_5m_relief_m": 2.731718162415132
+  },
+  {
+   "height_m": 80.0,
+   "full": {
+    "position_sigma_free_attitude_m": 0.15925698065454255,
+    "position_sigma_attitude_prior_0p1deg_m": 0.13581636439162578,
+    "position_sigma_known_attitude_m": 0.03988248354753435,
+    "tilt_sigma_deg": 0.0899609649514297,
+    "yaw_sigma_deg": 0.028561159714782822,
+    "height_times_tilt_sigma_m": 0.12560920293389352
+   },
+   "half": {
+    "position_sigma_free_attitude_m": 0.5422157526033724,
+    "position_sigma_attitude_prior_0p1deg_m": 0.19869231020728487,
+    "position_sigma_known_attitude_m": 0.041127491986280434,
+    "tilt_sigma_deg": 0.3676534042126104,
+    "yaw_sigma_deg": 0.05959211064439069,
+    "height_times_tilt_sigma_m": 0.5133409927740513
+   },
+   "third": {
+    "position_sigma_free_attitude_m": 1.176506691016655,
+    "position_sigma_attitude_prior_0p1deg_m": 0.20410000662496686,
+    "position_sigma_known_attitude_m": 0.04328618882224099,
+    "tilt_sigma_deg": 0.8235943350019415,
+    "yaw_sigma_deg": 0.09359425747489436,
+    "height_times_tilt_sigma_m": 1.1499546277245647
+   },
+   "full_with_1m_relief_m": 0.6817410896369639,
+   "full_with_5m_relief_m": 2.7315033624267366
+  }
+ ],
+ "proposal_budget": {
+  "300.0": {
+   "0.3": {
+    "attitude": 1.5707963267948966,
+    "matching": 0.01414213562373095,
+    "georeferencing": 2.5,
+    "timing": 0.10471975511965977,
+    "relief": 0.9326153163099972,
+    "total": 3.098118567066254
+   },
+   "0.5": {
+    "attitude": 2.6179938779914944,
+    "matching": 0.01414213562373095,
+    "georeferencing": 2.5,
+    "timing": 0.10471975511965977,
+    "relief": 0.9326153163099972,
+    "total": 3.7396295940278983
+   },
+   "1.0": {
+    "attitude": 5.235987755982989,
+    "matching": 0.01414213562373095,
+    "georeferencing": 2.5,
+    "timing": 0.10471975511965977,
+    "relief": 0.9326153163099972,
+    "total": 5.877627526147952
+   }
+  },
+  "100.0": {
+   "0.3": {
+    "attitude": 0.5235987755982988,
+    "matching": 0.01414213562373095,
+    "georeferencing": 2.5,
+    "timing": 0.03490658503988659,
+    "relief": 0.9326153163099972,
+    "total": 2.719438448596177
+   },
+   "0.5": {
+    "attitude": 0.8726646259971648,
+    "matching": 0.01414213562373095,
+    "georeferencing": 2.5,
+    "timing": 0.03490658503988659,
+    "relief": 0.9326153163099972,
+    "total": 2.807620584652049
+   },
+   "1.0": {
+    "attitude": 1.7453292519943295,
+    "matching": 0.01414213562373095,
+    "georeferencing": 2.5,
+    "timing": 0.03490658503988659,
+    "relief": 0.9326153163099972,
+    "total": 3.1886304263370238
+   }
+  }
+ }
+}

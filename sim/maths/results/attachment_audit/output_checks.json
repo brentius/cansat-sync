@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "equations_indexed": 249,
+  "image_trials": 144,
+  "image_match_records": 1296,
+  "baseline_scenario_reproduction": "exact equality",
+  "finite_raw_arrays": true,
+  "linear15state_consistency": "all five comparable epochs within five standard errors",
+  "scope": "data/file/regression QA, not additional independent experimental trials"
+}

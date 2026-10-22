@@ -1,0 +1,480 @@
+\section{Turbulence along a descending path}
+\label{sec:turbulence}
+
+\subsection{What is being derived, and what is being assumed?}
+The algebra below constructs a valid Gaussian random-field prior. It does not establish that a particular atmosphere has that prior. The physical assumptions are a locally vertical sampling path, frozen turbulence over the crossing time, and local isotropy and incompressibility before introducing the height-dependent deformation. The shear and crossing-time calculations in the preceding physics section are tests of those assumptions, not proofs that they always hold.
+
+Write the wind as a mean plus a fluctuation,
+\begin{equation}
+ w(z)=\mu(z)+\widetilde w(z),\qquad \operatorname{E}\widetilde w(z)=0.
+\end{equation}
+The standard deviation $\sigma(z)$ has units of $\mathrm{m\,s^{-1}}$; the length scale $L(z)$ has units of metres. Here $L$ is the exponential decay parameter. It is not automatically the integral length scale of every component.
+
+\subsection{Why a horizontal wind component uses the transverse covariance}
+In an isotropic field the correlation tensor at separation $\mathbf r=r\mathbf n$ has the form
+\begin{equation}
+ R_{ij}(\mathbf r)=\sigma^2\{g(r)\delta_{ij}+[f(r)-g(r)]n_i n_j\}.
+\end{equation}
+Here $f$ describes a component parallel to the separation and $g$ a component perpendicular to it. Incompressibility requires $\partial R_{ij}/\partial r_j=0$. Using $\partial n_i/\partial r_j=(\delta_{ij}-n_i n_j)/r$ and summing over three spatial dimensions gives
+\begin{equation}
+ f'(r)+\frac{2}{r}[f(r)-g(r)]=0,
+ \qquad \boxed{g(r)=f(r)+\frac r2 f'(r).}
+\end{equation}
+Choose the model $f(r)=e^{-r/L}$. Differentiating and substituting yields
+\begin{equation}
+ \boxed{g(r)=\left(1-\frac{r}{2L}\right)e^{-r/L}.}
+\end{equation}
+For a vertical separation, the vertical wind is longitudinal and both horizontal winds are transverse. This relabelling follows from the tensor geometry. Boundary-layer anisotropy is a reason to compare alternative priors, rather than to assume this relabelling remains an exact physical law.
+
+The covariance becomes negative when $r>2L$. Negative covariance does not mean negative variance: it means that fluctuations at two points tend to have opposite signs. Its integral is
+\begin{equation}
+ \int_0^\infty g(r)\,dr=L\int_0^\infty (1-q/2)e^{-q}\,dq=\frac L2.
+\end{equation}
+Thus the transverse integral length is $L/2$. Confusing it with $L$ changes an inferred eddy scale by a factor of two.
+
+\subsection{Positive definiteness: a direct spectral proof}
+Set $q=r/L$, and use the two-sided Fourier convention
+\begin{equation}
+ S(\omega)=\int_{-\infty}^{\infty}g(|q|)e^{-i\omega q}\,dq,
+ \qquad g(|q|)=\frac1{2\pi}\int_{-\infty}^{\infty}S(\omega)e^{i\omega q}\,d\omega.
+\end{equation}
+Since $g$ is even, only the cosine term remains. The two needed integrals are
+\begin{align}
+ \int_0^\infty e^{-q}\cos(\omega q)\,dq&=\frac1{1+\omega^2},\\
+ \int_0^\infty q e^{-q}\cos(\omega q)\,dq&=\frac{1-\omega^2}{(1+\omega^2)^2}.
+\end{align}
+The first follows by integrating $e^{-(1-i\omega)q}$ and taking its real part. The second follows by differentiating that integral with respect to its decay coefficient. Therefore
+\begin{equation}
+ \boxed{S(\omega)=\frac{1+3\omega^2}{(1+\omega^2)^2}\geq0.}
+\end{equation}
+For any finite set of points and real coefficients $a_j$,
+\begin{equation}
+ \sum_{j,k}a_j a_k g(|q_j-q_k|)
+ =\frac1{2\pi}\int S(\omega)\left|\sum_j a_j e^{i\omega q_j}\right|^2 d\omega\geq0.
+\end{equation}
+This proves that $g$ is a valid covariance kernel on the line, even though some of its off-diagonal entries are negative. In physical distance, the spectrum is
+\begin{equation}
+ S_w(k)=\sigma^2 L\frac{1+3(kL)^2}{[1+(kL)^2]^2}.
+\end{equation}
+Its units are wind variance times metres; integrating $S_w(k)\,dk/(2\pi)$ gives $\sigma^2$.
+
+\subsection{Deriving the exact two-state stochastic model}
+Let $W_q$ be Brownian motion, with $\operatorname{Var}(dW_q)=dq$. Define
+\begin{equation}
+ d\mathbf x=F\mathbf x\,dq+B\,dW_q,
+ \quad F=\begin{bmatrix}0&1\\-1&-2\end{bmatrix},
+ \quad B=\begin{bmatrix}0\\1\end{bmatrix},
+ \quad c=\begin{bmatrix}1&\sqrt3\end{bmatrix},
+ \quad \widetilde w=\sigma c\mathbf x.
+\end{equation}
+The state is dimensionless. The matrix has the repeated eigenvalue $-1$, so the process is stable. To determine its stationary covariance, put
+\begin{equation}
+ P=\begin{bmatrix}a&b\\b&d\end{bmatrix}
+ \quad\hbox{in}\quad FP+PF^{\mathsf T}+BB^{\mathsf T}=0.
+\end{equation}
+The $(1,1)$ entry gives $2b=0$; the off-diagonal entry gives $d-a-2b=0$; the $(2,2)$ entry gives $-2b-4d+1=0$. Hence
+\begin{equation}
+ \boxed{P_\infty=\tfrac14 I_2,\qquad \operatorname{Var}(\widetilde w)=\sigma^2 cP_\infty c^{\mathsf T}=\sigma^2.}
+\end{equation}
+Write $F=-I+N$, where $N^2=0$. The exponential series then terminates after the linear term in $N$:
+\begin{equation}
+ e^{Fq}=e^{-q}(I+qN)
+ =e^{-q}\begin{bmatrix}1+q&q\\-q&1-q\end{bmatrix}.
+\end{equation}
+For a stationary initial state independent of future increments,
+\begin{align}
+ \operatorname{Cov}[\widetilde w(q),\widetilde w(q+r)]
+ &=\sigma^2 cP_\infty e^{F^{\mathsf T}r}c^{\mathsf T}\\
+ &=\frac{\sigma^2 e^{-r}}4\{1+r+3(1-r)\}\\
+ &=\boxed{\sigma^2(1-r/2)e^{-r}}.
+\end{align}
+The $\sqrt3\,r$ cross terms cancel. This proves the exact covariance identity, rather than merely fitting a simulated curve. Equivalently the transfer function is $(1+\sqrt3,i\omega)/(1+i\omega)^2$, whose squared modulus is the spectrum above.
+
+\subsection{Making the scale vary with height, without a sign error}
+Height $z$ increases upward and distance descended $s$ increases downward: $z=z_{\rm start}-s$. Define the increasing descent coordinate
+\begin{equation}
+ \boxed{q(z)=\int_z^{z_{\rm start}}\frac{d\xi}{L(\xi)},\quad
+ \frac{dq}{ds}=\frac1{L(z)}>0,\quad \frac{dq}{dt}=\frac{v_d}{L(z)}>0.}
+\end{equation}
+The proposal instead defined an upward-increasing coordinate while assigning it a positive descent derivative. Using $q$ corrects the sign and keeps the stochastic dynamics stable; it is not valid simply to run the stable forward system backwards with the same noise.
+
+For a deterministic non-negative amplitude $\sigma(z)$, the warped covariance is
+\begin{equation}
+ R(z_1,z_2)=\sigma(z_1)\sigma(z_2)g(|q(z_1)-q(z_2)|).
+\end{equation}
+For any coefficients $a_i$, its quadratic form equals the valid stationary quadratic form with coefficients $a_i\sigma(z_i)$. Positive semidefiniteness is therefore preserved. The deformation defines a model along a line; it does not prove a globally isotropic, incompressible three-dimensional field after deformation.
+
+Three useful cases follow by integration:
+\begin{align}
+ L(z)=L_0 &: \quad |\Delta q|=|z_2-z_1|/L_0,\\
+ L(z)=az &: \quad |\Delta q|=|\ln(z_2/z_1)|/a,\\
+ L(z)=\frac{az}{1+az/L_\infty} &: \quad |\Delta q|=
+ \left|\frac1a\ln\frac{z_2}{z_1}+\frac{z_2-z_1}{L_\infty}\right|.
+\end{align}
+The coefficient $a$ is dimensionless. In the attached-eddy case, equal ratios of height give equal \emph{normalised correlation}. They do not necessarily give equal information: sensor noise, probe lag, changing intensity, and sampling rate still matter.
+
+\subsection{Changing the independent variable and handling the ground}
+A Brownian increment over distance $ds$ has variance $ds/L$, while over time $dt$ it has variance $v_d dt/L$. Therefore
+\begin{align}
+ d\mathbf x&=\frac FL\mathbf x\,ds+\frac B{\sqrt L}\,dW_s,\\
+ d\mathbf x&=\frac{v_d}{L}F\mathbf x\,dt+\sqrt{\frac{v_d}{L}}B\,dW_t.
+\end{align}
+The square roots are essential: multiplying the noise by $v_d/L$ would give the wrong variance. There is no derivative of $\sigma$ in the latent-state equation because $\widetilde w(z)=\sigma(z)c\mathbf x(z)$ is evaluated as the output. Its covariance already contains the changing amplitude.
+
+With $L=az$, $q$ diverges at $z=0$. A stationary process at infinite $q$ has no unique limiting realisation at the ground; the formula cannot be used as an unexamined endpoint boundary condition. One must terminate above the ground and specify a final-layer model, or introduce a measured scale floor or taper. The simulations use $L=0.5\max(z,z_c)$ with $z_c=1$ m and test $z_c=0.5$ and $2$ m. This is an explicit numerical scenario, not a choice of flight physics.
+
+If $L\approx az$ and lag length is $\ell$, the ratio $\ell/L$ becomes order one at $z\approx\ell/a$. For $\ell=11.24$ m and $a=0.5$ the crossover is $22.5$ m. This is a heuristic conditioning scale. It does not by itself prove that every retrieval below that height is prior-dominated; averaging kernels test that claim.
+
+\subsection{Intensity models are competing empirical priors}
+The historical low-altitude MIL model quoted in the proposal uses height $h$ in feet and reference wind at 20 ft, namely $6.096$ m, not exactly $6$ m:
+\begin{equation}
+ \sigma_w=0.1W_{20},\qquad
+ \sigma_u=\sigma_v=\frac{\sigma_w}{(0.177+0.000823h)^{0.4}}.
+\end{equation}
+These are empirical aviation-model intensity prescriptions. Relabelling a spectrum according to a vertical path does not erase their anisotropy or establish their accuracy during a CanSat descent. The numerical coefficients for neutral surface-layer intensity quoted in the proposal are also empirical, rather than consequences of Gaussian-process algebra. Test intensities against the mast data and retrieval uncertainty, and rotate along-wind/cross-wind components when applying directional surface-layer models. NASA's implementation/testing report provides a primary reference for numerical Dryden implementations.\footnote{\url{https://ntrs.nasa.gov/citations/19980028448}}
+
+\section{Wind retrieval, smoothing, and information content}
+\label{sec:retrieval}
+
+\subsection{The forward lag equation, including its initial condition}
+Consider one horizontal component, with known positive lag length $\ell$:
+\begin{equation}
+ \ell\frac{du}{ds}+u=w(s).
+\end{equation}
+Multiply by $e^{s/\ell}$ and integrate from $0$ to $s$. This gives
+\begin{equation}
+ \boxed{u(s)=e^{-s/\ell}u_0+
+ \int_0^s\frac1\ell e^{-(s-r)/\ell}w(r)\,dr.}
+\end{equation}
+Thus velocity is a smoothed version of wind, plus memory of the initial velocity. For piecewise-constant wind $w_j$ on cells of width $\Delta s$, put $a=e^{-\Delta s/\ell}$:
+\begin{equation}
+ u_j=au_{j-1}+(1-a)w_j,\qquad
+ K_{ji}=(1-a)a^{j-i}\quad(1\leq i\leq j).
+\end{equation}
+Then $\mathbf u=K\mathbf w+\mathbf b u_0$ with $b_j=a^j$. An uncertain $u_0$ must be jointly estimated or marginalised. If it is correlated with the wind, as it is under a stationary coupled prior, adding an independent initial-error variance is insufficient.
+
+For constant coefficients a Fourier mode $e^{iks}$ is attenuated by
+\begin{equation}
+ H_{uw}(k)=\frac1{1+ik\ell},\qquad |H_{uw}|=\frac1{\sqrt{1+(k\ell)^2}}.
+\end{equation}
+The formal inverse amplifies velocity noise by $\sqrt{1+(k\ell)^2}$. A 20 m sinusoidal wavelength has $k=2\pi/20$, so $\ell=11.24$ m gives amplification $3.67$. A 20 m bin average is not the same as resolving all 20 m wavelength fluctuations. Differentiating noisy velocities is therefore a poor substitute for a regularised inverse.
+
+\subsection{Deriving the Gaussian inverse by completing the square}
+On a chosen grid suppose
+\begin{equation}
+ \mathbf y=K\mathbf w+\boldsymbol\varepsilon,
+ \quad \mathbf w\sim\mathcal N(\boldsymbol\mu,S_a),
+ \quad \boldsymbol\varepsilon\sim\mathcal N(0,S_\varepsilon),
+\end{equation}
+with independent wind and measurement errors and positive-definite covariances. The negative log posterior, ignoring constants, is
+\begin{equation}
+ \frac12(\mathbf y-K\mathbf w)^{\mathsf T}S_\varepsilon^{-1}(\mathbf y-K\mathbf w)
+ +\frac12(\mathbf w-\boldsymbol\mu)^{\mathsf T}S_a^{-1}(\mathbf w-\boldsymbol\mu).
+\end{equation}
+Differentiating with respect to $\mathbf w$ gives a linear equation. Collect the quadratic and linear terms to obtain
+\begin{align}
+ P_{\rm post}&=(K^{\mathsf T}S_\varepsilon^{-1}K+S_a^{-1})^{-1},\\
+ \widehat{\mathbf w}&=\boldsymbol\mu+
+ \underbrace{P_{\rm post}K^{\mathsf T}S_\varepsilon^{-1}}_G
+ (\mathbf y-K\boldsymbol\mu).
+\end{align}
+The same answer can be evaluated without explicitly inverting $S_a$:
+\begin{align}
+ G&=S_aK^{\mathsf T}(KS_aK^{\mathsf T}+S_\varepsilon)^{-1},\\
+ P_{\rm post}&=S_a-GKS_a.
+\end{align}
+Both expressions follow from the same normal equation. In numerical code, solve linear systems instead of forming inverse matrices. A singular prior can be handled through the joint Gaussian conditioning expression; the precision expression above requires invertibility.
+
+\subsection{Averaging kernels: what did the observations actually resolve?}
+Holding the prior and hyperparameters fixed,
+\begin{equation}
+ \boxed{A=GK=\frac{\partial\operatorname E(\widehat{\mathbf w}\mid\mathbf w)}{\partial\mathbf w},
+ \qquad \mathrm{DFS}=\operatorname{tr}A.}
+\end{equation}
+The expectation removes random measurement noise. A row of $A$ gives the response to true wind at every grid cell. Rows need not be positive or integrate to one, so quoting a single positive ``width'' can be misleading if there are negative lobes. Report the whole row, sensitivity sum, and an explicitly defined width statistic.
+
+To see why $0\leq\mathrm{DFS}\leq n$, whiten the prior and measurement noise and set $M=S_\varepsilon^{-1/2}KS_a^{1/2}$. Then $A$ is similar to
+\begin{equation}
+ (I+M^{\mathsf T}M)^{-1}M^{\mathsf T}M.
+\end{equation}
+If $\lambda_i\geq0$ are the eigenvalues of $M^{\mathsf T}M$, the eigenvalues of this expression are $\lambda_i/(1+\lambda_i)$. Each lies between zero and one. DFS counts partially resolved modes, not necessarily a count of distinct non-overlapping layers.
+
+\subsection{A continuous state model for both wind and drift}
+For one axis take $\mathbf X=[x_1,x_2,u,I]^{\mathsf T}$, where $I$ is horizontal drift in metres. The dynamics in distance descended are
+\begin{equation}
+ d\mathbf X=\mathcal A(z)\mathbf X\,ds+\mathbf b(z)\,ds+\mathcal B(z)dW_s,
+\end{equation}
+where
+\begin{equation}
+ \mathcal A=\begin{bmatrix}
+ 0&1/L&0&0\\
+ -1/L&-2/L&0&0\\
+ \sigma/\ell&\sqrt3\sigma/\ell&-1/\ell&0\\
+ 0&0&1/v_d&0
+ \end{bmatrix},\qquad
+ \mathbf b=\begin{bmatrix}0\\0\\\mu/\ell\\0\end{bmatrix},\qquad
+ \mathcal B=\begin{bmatrix}0\\1/\sqrt L\\0\\0\end{bmatrix}.
+\end{equation}
+The final row follows from $dI/dt=u$ and $ds/dt=v_d$. Therefore $dI/ds=u/v_d$ has units metres per metre. The velocity observation is $y=H\mathbf X+\varepsilon$, $H=[0\;0\;1\;0]$. Two independent copies model two horizontal axes only if that independence is an accepted prior; otherwise use a coupled covariance.
+
+\subsection{Discretisation: transition, noise covariance, and forcing}
+For coefficients constant over a step $\Delta s$, variation of constants gives
+\begin{align}
+ \mathbf X_{k+1}&=\Phi_k\mathbf X_k+\mathbf d_k+\mathbf q_k,\\
+ \Phi_k&=e^{\mathcal A\Delta s},\qquad
+ \mathbf d_k=\int_0^{\Delta s}e^{\mathcal A r}\mathbf b\,dr,\\
+ Q_k&=\operatorname{Cov}(\mathbf q_k)
+ =\int_0^{\Delta s}e^{\mathcal A r}\mathcal B\mathcal B^{\mathsf T}e^{\mathcal A^{\mathsf T}r}\,dr.
+\end{align}
+Using $Q\approx\mathcal B\mathcal B^{\mathsf T}\Delta s$ omits propagated within-step noise in velocity and drift. The exact constant-step block formula is
+\begin{equation}
+ \exp\!\left(\begin{bmatrix}\mathcal A&D\\0&-\mathcal A^{\mathsf T}\end{bmatrix}\Delta s\right)
+ =\begin{bmatrix}\Phi&E\\0&\Phi^{-\mathsf T}\end{bmatrix},
+ \quad D=\mathcal B\mathcal B^{\mathsf T},\quad Q=E\Phi^{\mathsf T}.
+\end{equation}
+An affine forcing is handled by adding one constant state: the last column of the exponential of $\left[\begin{smallmatrix}\mathcal A&\mathbf b\\0&0\end{smallmatrix}\right]\Delta s$ gives $\mathbf d$.
+
+For the two turbulence states alone, $\Phi=e^{F\Delta q}$ and $Q=P_\infty-\Phi P_\infty\Phi^{\mathsf T}$ are exact even with a varying $L$, because $q$ absorbs the variation. For the augmented lag/drift system, midpoint freezing is an approximation when $L,\sigma,\ell$ or $v_d$ vary. Subdividing each step and checking convergence is required. The reference implementation compares the block formula with independent Runge--Kutta integration of $\dot\Phi=\mathcal A\Phi$ and $\dot Q=\mathcal A Q+Q\mathcal A^{\mathsf T}+D$.
+
+\subsection{Kalman update derived from joint Gaussian conditioning}
+Suppose the predicted state is $\mathcal N(m^-,P^-)$ and the observation error is independent. The joint covariance of state and observation is
+\begin{equation}
+ \begin{bmatrix}P^-&P^-H^{\mathsf T}\\HP^-&HP^-H^{\mathsf T}+R\end{bmatrix}.
+\end{equation}
+Completing its joint quadratic form, or taking its Schur complement, gives
+\begin{align}
+ \nu&=y-Hm^-,\quad S=HP^-H^{\mathsf T}+R,\quad K_f=P^-H^{\mathsf T}S^{-1},\\
+ m^+&=m^-+K_f\nu,\qquad
+ P^+=P^--K_fSK_f^{\mathsf T}.
+\end{align}
+Prediction uses $m^-_{k+1}=\Phi_k m^+_k+\mathbf d_k$ and $P^-_{k+1}=\Phi_kP^+_k\Phi_k^{\mathsf T}+Q_k$. In finite precision use the Joseph covariance expression
+\begin{equation}
+ P^+=(I-K_fH)P^-(I-K_fH)^{\mathsf T}+K_fRK_f^{\mathsf T}
+\end{equation}
+and symmetrise to remove round-off asymmetry. These expressions are exact for the linear Gaussian model with fixed known coefficients. They are approximations for nonlinear navigation or fitted random hyperparameters. The state-space/GP equivalence is established in the primary work of Hartikainen and S\"arkk\"a.\footnote{\url{https://users.aalto.fi/~ssarkka/pub/gp-ts-kfrts.pdf}}
+
+\subsection{Why a post-flight smoother improves the whole profile}
+Filtering estimates the present state from past observations. Smoothing also uses later observations. Conditional on the filtered state, the one-step predicted covariance is $P^-_{k+1}$ and the cross covariance is $P^+_k\Phi_k^{\mathsf T}$. A second Gaussian conditioning step gives the Rauch--Tung--Striebel gain
+\begin{equation}
+ J_k=P^+_k\Phi_k^{\mathsf T}(P^-_{k+1})^{-1}.
+\end{equation}
+Starting at the last filtered state and working backwards,
+\begin{align}
+ m^s_k&=m^+_k+J_k(m^s_{k+1}-m^-_{k+1}),\\
+ P^s_k&=P^+_k+J_k(P^s_{k+1}-P^-_{k+1})J_k^{\mathsf T}.
+\end{align}
+The output wind is $\mu_k+\sigma_k c\mathbf x^s_k$. Its point variance is $\sigma_k^2 cP^s_{xx,k}c^{\mathsf T}$. Layer-average uncertainty requires the \emph{cross-height} smoother covariances as well as the diagonal variances; simply averaging individual standard deviations is incorrect.
+
+\subsection{Correlated errors, layer averages, and the S1 comparison}
+If velocities are differences of independent position errors of variance $\sigma_p^2$, then
+\begin{equation}
+ \varepsilon_{v,k}=\frac{\varepsilon_{p,k}-\varepsilon_{p,k-1}}{\Delta t},\quad
+ \operatorname{Var}(\varepsilon_{v,k})=\frac{2\sigma_p^2}{\Delta t^2},\quad
+ \operatorname{Cov}(\varepsilon_{v,k},\varepsilon_{v,k+1})=-\frac{\sigma_p^2}{\Delta t^2}.
+\end{equation}
+Navigation-filter outputs may instead have positive, long-lived correlations and correlations with the predictor's states. A scalar noise variance alone cannot represent either case. Use a joint estimator, augment the coloured-error states, or use the full measurement covariance in a batch calculation.
+
+For $n$ correlated errors with covariance $S$,
+\begin{equation}
+ \operatorname{Var}(\bar\varepsilon)=\frac1{n^2}\mathbf1^{\mathsf T}S\mathbf1.
+\end{equation}
+If all have variance $\sigma^2$ and lag correlation $\rho_j$, this is
+\begin{equation}
+ \frac{\sigma^2}{n}\left[1+2\sum_{j=1}^{n-1}\left(1-\frac jn\right)\rho_j\right].
+\end{equation}
+The familiar $\sigma/\sqrt n$ standard deviation is valid only for uncorrelated errors. With $\rho_j=0.85^j$ and $n=10$, the bracket is about $6.27$; ten samples act like about $1.60$ independent samples.
+
+For image and GPS wind retrievals, the difference covariance is
+\begin{equation}
+ S_{\rm diff}=S_{\rm image}+S_{\rm GPS}-S_{\rm cross}-S_{\rm cross}^{\mathsf T}.
+\end{equation}
+Shared attitude corrections, lag parameters and priors create cross covariance. Agreement against GPS tests mutual consistency; a common canopy-model bias can make both agree while both misestimate the air's wind. Score vector RMS explicitly: if each independent component has RMS $r$, the vector RMS is $\sqrt2\,r$. The proposal's ``$\pm0.5$ m/s RMS'' should specify component or vector, and a tolerance rather than a plus/minus confidence interval.
+
+\subsection{Worked remedy: explicitly track correlated velocity error}
+The preceding correlation warning has a constructive solution. Suppose a velocity observation has an error $e_k$ with a stationary first-order autoregressive model,
+\begin{equation}
+ e_{k+1}=\rho e_k+\eta_k,\qquad
+ \eta_k\sim\mathcal N(0,\sigma_e^2(1-\rho^2)),\qquad |\rho|<1.
+\end{equation}
+The innovations $\eta_k$ are independent of one another, the wind process and the initial state. Choose $e_0\sim\mathcal N(0,\sigma_e^2)$. Direct variance propagation gives
+\begin{equation}
+ \Var(e_{k+1})=\rho^2\sigma_e^2+\sigma_e^2(1-\rho^2)=\sigma_e^2.
+\end{equation}
+Applying the recurrence $j$ times and using independence of the intervening innovations gives $\Cov(e_k,e_{k+j})=\sigma_e^2\rho^j$. This proves both stationarity and the desired coloured covariance.
+
+Append $e$ to the four-dimensional wind/velocity/drift state. The physical state transition remains the one already derived. At each observation interval,
+\begin{equation}
+ \begin{bmatrix}\mathbf X_{k+1}\\e_{k+1}\end{bmatrix}
+ =\begin{bmatrix}\Phi_k&0\\0&\rho\end{bmatrix}
+ \begin{bmatrix}\mathbf X_k\\e_k\end{bmatrix}
+ +\begin{bmatrix}\mathbf d_k\\0\end{bmatrix}+\mathbf q^a_k,
+ \qquad
+ \Cov(\mathbf q^a_k)=\begin{bmatrix}Q_k&0\\0&\sigma_e^2(1-\rho^2)\end{bmatrix}.
+\end{equation}
+The observation is now
+\begin{equation}
+ \boxed{y_k=\begin{bmatrix}0&0&1&0&1\end{bmatrix}
+ \begin{bmatrix}\mathbf X_k\\e_k\end{bmatrix}.}
+\end{equation}
+There is no additional white-noise variance in this example: the entire observation error is already in $e_k$. Adding $\sigma_e^2$ again to the measurement covariance would double count it. A genuinely separate white component may be added with its own variance. Although wind and error are independent initially, conditioning on a shared observation makes their posterior estimates correlated. Keeping the full augmented covariance preserves those correlations.
+
+This is a stochastic observation-error state; it does not apply an additional aerodynamic force to the CanSat. The coefficient $\rho$ is per observation interval. If a continuous-time correlation decay $T_e$ is assumed, use $\rho_k=\exp(-\Delta t_k/T_e)$ and $\Var(\eta_k)=\sigma_e^2(1-\rho_k^2)$ for varying intervals. A fitted $\rho$ with substantial uncertainty is not a known constant; parameter uncertainty needs sensitivity analysis or joint/marginal inference.
+
+An independent check compares this augmented Kalman/RTS implementation with the direct batch inverse having
+\begin{equation}
+ [S_\varepsilon]_{ij}=\sigma_e^2\rho^{|i-j|}.
+\end{equation}
+All posterior wind means and the entire cross-height covariance matrix agree within $3\times10^{-13}$ in the test case. The independent formulations verify the remedy itself, rather than only demonstrating a failure of the independent-noise assumption.
+
+\subsection{Deriving the covariance of a layer average}
+The quantity required by a wind profile is often a layer average, not an instantaneous wind sample. For layer $[z_a,z_b]$ of thickness $\Delta z=z_b-z_a>0$,
+\begin{equation}
+ \overline w_{ab}=\frac1{\Delta z}\int_{z_a}^{z_b}w(z)\,dz.
+\end{equation}
+Given observations $D$, linearity of expectation gives its posterior mean. Bilinearity of covariance gives its posterior variance:
+\begin{equation}
+ \boxed{\Var(\overline w_{ab}\mid D)=\frac1{\Delta z^2}
+ \int_{z_a}^{z_b}\int_{z_a}^{z_b}\Cov(w(z),w(z')\mid D)\,dz\,dz'.}
+\end{equation}
+On a finite grid let $\overline w\approx\sum_i a_iw_i$. The weights are determined by the chosen quadrature or cell-overlap rule and sum to one for an average of a constant field. Then
+\begin{equation}
+ \Var(\overline w\mid D)=\sum_{i,j}a_i a_j[S^w_{\rm post}]_{ij}
+ =\mathbf a^{\mathsf T}S^w_{\rm post}\mathbf a.
+\end{equation}
+For uniform point samples one may use $a_i=1/n$ as a discrete sample-average metric; that is not automatically the exact integral over a 20 m bin. To represent a physical layer average, clip cells at the bin boundaries and use overlap lengths divided by the layer thickness, or refine a quadrature until its error is negligible relative to retrieval error.
+
+In a state-space smoother the cross-height terms can be recovered without a dense batch inverse. The filtered joint Gaussian law for $\mathbf X_i$ and $\mathbf X_{i+1}$ implies the regression
+\begin{equation}
+ \mathbf X_i=m_i^++J_i(\mathbf X_{i+1}-m_{i+1}^-)+\mathbf r_i,
+ \qquad J_i=P_i^+\Phi_i^{\mathsf T}(P_{i+1}^-)^{-1}.
+\end{equation}
+Conditional on past observations, the residual $\mathbf r_i$ is independent of $\mathbf X_{i+1}$ and of later states and observations, by the Markov model. Thus, for $j>i$, conditioning on all observations yields
+\begin{align}
+ P^s_{ij}&=J_iP^s_{i+1,j},\\
+ \boxed{P^s_{ij}}&=\boxed{J_iJ_{i+1}\cdots J_{j-1}P_j^s},\qquad
+ P^s_{ji}=(P^s_{ij})^{\mathsf T}.
+\end{align}
+For wind output row $h_i=[\sigma_i c\;0\;0]$, with another final zero if the observation-error state is present,
+\begin{equation}
+ [S^w_{\rm post}]_{ij}=h_iP^s_{ij}h_j^{\mathsf T}.
+\end{equation}
+The recursion assumes the correct augmented Markov model. Applying it to a filter that silently ignores coloured noise cannot reconstruct the missing correlations.
+
+Keeping only the diagonal changes the variance to $\sum_i a_i^2[S^w_{\rm post}]_{ii}$. This is generally wrong. The error can have either sign: positive cross-height covariance makes the diagonal-only calculation too small; negative covariance can make it too large. The numerical examples below show both behaviours in different synthetic measurement channels. The covariance matrix, not intuition about the sign, determines the answer.
+
+\paragraph{A two-sample example you can check by hand.}
+Suppose two posterior wind errors each have standard deviation $\sigma=0.3$ m/s and correlation $r$. Their mean is $(w_1+w_2)/2$. Expanding its variance gives
+\begin{equation}
+ \Var\left(\frac{w_1+w_2}{2}\right)
+ =\frac14(\sigma^2+\sigma^2+2r\sigma^2)
+ =\frac{\sigma^2}{2}(1+r).
+\end{equation}
+If $r=0$, the mean has standard deviation $0.3/\sqrt2=0.212$ m/s. If $r=0.8$, it is $0.3\sqrt{0.9}=0.285$ m/s: the two errors tend to move together and averaging helps little. If $r=-0.5$, it is $0.3\sqrt{0.25}=0.150$ m/s: the errors partly cancel. All three covariance matrices are valid because their eigenvalues are $\sigma^2(1+r)$ and $\sigma^2(1-r)$, both non-negative for $|r|\leq1$. The diagonal-only value $0.212$ m/s misses the answer in both correlated cases.
+
+\subsection{Worked initial-condition marginalisation}
+The lag operator retains release-velocity memory. For zero-mean perturbations, write
+\begin{equation}
+ \mathbf y=K\mathbf w+\mathbf b u_0+\boldsymbol\varepsilon,
+ \quad b_j=e^{-j\Delta s/\ell},\qquad
+ \Cov\begin{bmatrix}\mathbf w\\u_0\end{bmatrix}
+ =\begin{bmatrix}S_a&\mathbf c_0\\\mathbf c_0^{\mathsf T}&\sigma_0^2\end{bmatrix}.
+\end{equation}
+Assume the measurement noise is independent of the joint wind/initial-velocity prior. Expand the observation covariance term by term:
+\begin{align}
+ S_y={}&KS_aK^{\mathsf T}+S_\varepsilon+\sigma_0^2\mathbf b\mathbf b^{\mathsf T}\\
+ &+(K\mathbf c_0)\mathbf b^{\mathsf T}+\mathbf b(K\mathbf c_0)^{\mathsf T},\\
+ S_{wy}={}&S_aK^{\mathsf T}+\mathbf c_0\mathbf b^{\mathsf T}.
+\end{align}
+The cross terms are necessary when $u_0$ and wind are correlated. Gaussian conditioning now gives the marginal wind posterior directly:
+\begin{equation}
+ \boxed{\widehat{\mathbf w}=S_{wy}S_y^{-1}\mathbf y,\qquad
+ P_w=S_a-S_{wy}S_y^{-1}S_{wy}^{\mathsf T}.}
+\end{equation}
+For nonzero means, centre $\mathbf y$ by $K\boldsymbol\mu_w+\mathbf b\mu_0$ and add $\boldsymbol\mu_w$ to the resulting posterior mean. Equivalently, augment the unknown vector by $u_0$, use the joint block prior and forward matrix $[K\;\mathbf b]$, then take the wind block of its posterior. The two implementations agree numerically. If $u_0$ is exactly known, its centred variance and cross covariance are zero and the earlier inverse is recovered.
+
+The joint prior must be positive semidefinite. A transparent constructive example is $u_0=0.7w_1+\eta_0$, with independent $\eta_0\sim\mathcal N(0,0.8^2)$ m/s and unit wind variance. Then
+\begin{equation}
+ \mathbf c_0=0.7S_a[:,1],\qquad \sigma_0^2=0.7^2+0.8^2=1.13\;\mathrm{m^2\,s^{-2}}.
+\end{equation}
+This is a synthetic boundary-condition example, not a fitted canopy law. A useful memory-length check is $b=e^{-s/\ell}$: the initial contribution falls below 5\% after $s>\ell\ln20\approx33.7$ m for $\ell=11.24$ m. Its variance contribution decays as $e^{-2s/\ell}$, while a poor initial estimate may influence a smoothed profile farther through covariance coupling.
+
+\subsection{Marginal likelihood and what model selection can establish}
+The innovation distribution is $\nu_k\sim\mathcal N(0,S_k)$ under the model. The sequential likelihood factors as a product of these conditional densities, so
+\begin{equation}
+ \log p(\mathbf y\mid\mathcal M,\vartheta)
+ =-\frac12\sum_k\left[d_k\log(2\pi)+\log\det S_k+\nu_k^{\mathsf T}S_k^{-1}\nu_k\right].
+\end{equation}
+Here $d_k$ is the observation dimension and $\vartheta$ denotes fixed hyperparameters. This is the likelihood, not a Bayes factor after hyperparameters have been optimised. A Bayes factor integrates $p(\mathbf y\mid\vartheta,\mathcal M)p(\vartheta\mid\mathcal M)$ over $\vartheta$. Alternatives are held-out predictive scores or an explicitly justified complexity penalty.
+
+Compare exponential and transverse correlations crossed with constant, attached-eddy and saturating scales. A single short descent, correlated retrieval errors, and a drifting horizontal path limit identification. Fit uncertainty and profile likelihoods, not only the best-fit $a$. A ratio-dependent preferred covariance is evidence for that statistical description; it is not a direct observation of attached eddies.
+
+\section{Landing prediction and the question of shrinking ellipses}
+\label{sec:landing}
+
+\subsection{The landing point must include uncertainty in the current position}
+Let $\mathbf p$ be the current horizontal position and $\mathbf I$ the remaining drift. Resetting the integrator means setting its current mean to zero and its initial variance and cross covariance to zero; the \emph{position, velocity and wind} covariance must still be retained in the augmented predictor. Propagate the copied state to touchdown without treating imagined future velocity measurements as data.
+\begin{equation}
+ \boxed{\mathbf p_{\rm land}=\mathbf p+\mathbf I,\qquad
+ \Sigma_{\rm land}=P_{pp}+P_{II}+P_{pI}+P_{Ip}.}
+\end{equation}
+Adding only $P_{II}$ makes the landing ellipse too small whenever current position is uncertain. Adding an independent position term also fails when $\mathbf p$ and drift are correlated through the same navigation history. For a fixed linear model, prediction remains Gaussian; uncertain drag, uncertain touchdown time, nonlinear geometry and a mixture of weather models can make the true distribution non-Gaussian.
+
+An anemometer observation at 6.096 m can constrain the spatial wind prior if it is available at prediction time and the mast measures representative wind. Its error covariance must include instrument error and spatial/time representativeness. A simulated future mast reading is not an observation. The reference Monte Carlo does not assimilate a mast reading, so it makes no claim for that improvement.
+
+\subsection{Touchdown time and its uncertainty}
+Since $dt=-dz/v_d(z)$ for positive downward speed,
+\begin{equation}
+ \boxed{t_{\rm land}=t_{\rm now}+\int_0^h\frac{dz}{v_d(z)}.}
+\end{equation}
+If $v_d$ is constant, the remaining time is $h/v_d$. Its derivatives are $\partial t/\partial h=1/v_d$ and $\partial t/\partial v_d=-h/v_d^2$. Linear uncertainty propagation gives
+\begin{equation}
+ \sigma_t^2\approx\frac{\sigma_h^2}{v_d^2}+\frac{h^2\sigma_{v_d}^2}{v_d^4}
+ -\frac{2h}{v_d^3}\operatorname{Cov}(h,v_d).
+\end{equation}
+For $h=300$ m, $v_d=10.5$ m/s, independent $\sigma_h=0.5$ m and $\sigma_{v_d}=0.3$ m/s, this gives $\sigma_t\approx0.82$ s. The speed uncertainty dominates. These are illustrative input uncertainties, not sensor measurements.
+
+For variable speed $v_d(z;\vartheta)$, the gradient is
+\begin{equation}
+ \frac{\partial t}{\partial\vartheta_j}
+ =-\int_0^h\frac{1}{v_d(z;\vartheta)^2}
+ \frac{\partial v_d(z;\vartheta)}{\partial\vartheta_j}\,dz.
+\end{equation}
+The joint $(x,y,t)$ covariance must also include wind--speed, height--position and drag-parameter correlations. A mean time without this uncertainty is not a calibrated time prediction.
+
+\subsection{Calibration: a precise probability statement}
+If the landing error is unbiased Gaussian with positive-definite $2\times2$ covariance $\Sigma$, whitening gives two independent standard normals. Hence
+\begin{equation}
+ d^2=(\mathbf p_{\rm true}-\widehat{\mathbf p})^{\mathsf T}\Sigma^{-1}
+ (\mathbf p_{\rm true}-\widehat{\mathbf p})\sim\chi^2_2.
+\end{equation}
+Since $\Pr(\chi^2_2\leq x)=1-e^{-x/2}$, the 95\% ellipse uses $d^2\leq-2\ln0.05=5.991$. Its semiaxes are $\sqrt{5.991\lambda_1}$ and $\sqrt{5.991\lambda_2}$. Across $N$ independent drops the coverage count is binomial. Its approximate standard error at nominal 95\% is $\sqrt{0.95(0.05)/N}$, which is $0.00487$ at $N=2000$. Many predictions from one drop are correlated and do not constitute many independent landings.
+
+\subsection{A theorem for a fixed landing point}
+Let $P$ be the \emph{same final landing point} throughout the descent, and $D$ the observations already collected. In a fixed linear Gaussian model, condition on one more observation $Y$. Gaussian conditioning gives
+\begin{equation}
+ \operatorname{Cov}(P\mid D,Y)
+ =\operatorname{Cov}(P\mid D)-C S^{-1}C^{\mathsf T},
+\end{equation}
+where $C=\operatorname{Cov}(P,Y\mid D)$ and $S=\operatorname{Cov}(Y\mid D)$. The subtracted term is positive semidefinite. Thus the absolute landing covariance cannot increase as valid data is added, regardless of negative transverse correlations. With no new information it remains unchanged. This theorem concerns a fixed random endpoint, fixed model parameters, nested observations, and correct propagation of all cross covariances. Parameter refitting, EKF linearisation, model changes, and observation-dependent rejection can invalidate the theorem's conditions.
+
+\subsection{Why remaining-drift variance need not shrink}
+The random variable ``drift still to come'' changes with height. Write the old remaining drift as $A+B$, with $B$ the slab just traversed. For the same conditioning data,
+\begin{equation}
+ \operatorname{Var}(A+B)-\operatorname{Var}(A)
+ =\operatorname{Var}(B)+2\operatorname{Cov}(A,B).
+\end{equation}
+This is the proposal's sufficient condition for shrinkage. It is not automatically positive. For example, a valid Gaussian covariance
+\begin{equation}
+ \operatorname{Cov}\begin{bmatrix}A\\B\end{bmatrix}
+ =\begin{bmatrix}1&-0.2\\-0.2&0.05\end{bmatrix}
+\end{equation}
+has positive determinant $0.01$ but $\operatorname{Var}(A+B)=0.65<1=\operatorname{Var}(A)$. Removing $B$ increases the variance. This is a rigorous counterexample to an unconditional theorem for arbitrary Gaussian remaining drifts.
+
+There is also a counterexample on a two-cell quadrature of the permitted warped-transverse family. Choose $a=0.5$, heights $1$ and $e^{1.5}=4.482$ m, intensity standard deviations $100$ and $1$ m/s, and drift weights $0.1/10.5$ s. The eddy-coordinate separation is $3$ and $g(3)=-0.0248935$. The covariance is positive definite, but removing the upper weighted cell increases the remaining variance from $0.906669$ to $0.907029$ m$^2$. This extreme intensity contrast is a mathematical example, not a plausible flight atmosphere, and the two-cell calculation is not a claim about a continuous, realistic descent. A proof or counterexample under measured realistic intensity, lag and observation restrictions remains a narrower question.
+
+For an unconditioned constant-intensity, constant-$L$ transverse prior, the integral covariance actually is positive:
+\begin{equation}
+ \operatorname{Cov}\left(\int_0^h w(z)\,dz,w(h)\right)
+ =\frac{\sigma^2 L}{2}\left[1+\left(\frac hL-1\right)e^{-h/L}\right]>0\quad(h>0).
+\end{equation}
+The bracket is zero at $h=0$, increases up to $h=2L$, and then decreases to $1$, so it remains positive. Negative lobes alone therefore do not prove increasing variance. Moreover, actual drift uses the lagged velocity $u/v_d$, rather than raw wind. The condition must be evaluated for that forward model and its posterior.

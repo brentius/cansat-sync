@@ -1,0 +1,1086 @@
+{
+ "statement": "SYNTHETIC procedural terrain. Not derived from, fitted to, or validated against any real aerial image. Results on it say nothing certain about real imagery.",
+ "seed": 2027,
+ "size_m": 1600.0,
+ "res_m": 0.5,
+ "parameters": [
+  {
+   "parameter": "tramline spacing",
+   "value": "24 m and 36 m dominant; 12, 18, 30 m also drawn",
+   "basis": "source + assumed",
+   "reference": "profi.co.uk says UK tramline widths are mostly 24 m or 36 m (https://profi.co.uk/test-centre/spreading-granular-fertiliser-wider-spread-wide-gain-acres). The 12/18/30 m values and all the weights are assumed."
+  },
+  {
+   "parameter": "tramline wheel gauge",
+   "value": "1.8 to 2.0 m",
+   "basis": "source",
+   "reference": "Hardi Alpha Varitrack track width adjustable from 1.80 m to 2.25 m (https://www.fwi.co.uk/machinery/hardi-launches-a-smaller-alpha-self-propelled-with-stepless-track-width-adjustment); the brief gives 1.8 to 2 m."
+  },
+  {
+   "parameter": "wheel-track width",
+   "value": "about 0.45 m (Gaussian, sigma 0.19 m)",
+   "basis": "assumed",
+   "reference": "The same article quotes 270 mm row-crop tyres; the visible rut is assumed wider."
+  },
+  {
+   "parameter": "tramline contrast",
+   "value": "median 22 grey levels (42 in the tramline style), 80 % darker than crop",
+   "basis": "assumed",
+   "reference": ""
+  },
+  {
+   "parameter": "tramline headland",
+   "value": "one circuit half a spacing inside the boundary",
+   "basis": "assumed",
+   "reference": ""
+  },
+  {
+   "parameter": "hedge width",
+   "value": "median 2.0 m (2.5 m pasture), log-normal sd 0.3",
+   "basis": "source + assumed",
+   "reference": "Countryside Survey 2000: about 68 % of hedges 1 to 2 m wide (https://nora.nerc.ac.uk/id/eprint/4798/1/M03_hedgerows_final_report.pdf). Spread assumed."
+  },
+  {
+   "parameter": "hedge height",
+   "value": "median 2.2 m (2.6 m pasture), log-normal sd 0.3",
+   "basis": "source + assumed",
+   "reference": "UKCEH/Natural England 2007-2023 comparison: most hedges now taller than 2 m (reported via https://hedgelink.org.uk/?p=5058). Spread assumed."
+  },
+  {
+   "parameter": "hedge gaps",
+   "value": "about 10 % of hedge length missing, plus gateways every ~220 m",
+   "basis": "source + assumed",
+   "reference": "Countryside Survey 2000: gaps very rarely exceed 10 % of length (https://nora.nerc.ac.uk/id/eprint/4798/1/M03_hedgerows_final_report.pdf). The open and tramline styles deliberately use gappier hedges. Gateway spacing and the gappy-run model are assumed."
+  },
+  {
+   "parameter": "boundary trees",
+   "value": "0.4 to 2.2 per 100 m of hedge, crown diameter 4 to 12 m, height 9 to 19 m",
+   "basis": "assumed",
+   "reference": "Crown range from the brief; no density source found."
+  },
+  {
+   "parameter": "field area",
+   "value": "median 9 ha arable, 4 ha mixed, 2 ha pasture, 30 ha open, 10 ha tramline",
+   "basis": "assumed",
+   "reference": "No published mean field size found. Crude anchor (derived, not sourced): about 2.6 million RPA land parcels in England (https://www.data.gov.uk/dataset/ed6f8d0e-df4f-4027-b4e3-ee43d7cebf35/rpa-parcel-points-england) over roughly 9 million ha of farmland gives about 3.5 ha per parcel. Regional contrast is supported only qualitatively: East of England is 80 % arable, the west mostly pasture (https://www.gov.uk/government/statistics/agricultural-facts-england-regional-profiles/agricultural-facts-summary)."
+  },
+  {
+   "parameter": "field shape",
+   "value": "convex, almost all 4-sided, split jitter 4 to 10 deg, boundary warp 3 to 7 m",
+   "basis": "assumed",
+   "reference": ""
+  },
+  {
+   "parameter": "boundary type mix",
+   "value": "hedge / fence-or-ditch margin / bare crop line, per style",
+   "basis": "assumed",
+   "reference": ""
+  },
+  {
+   "parameter": "road and track width",
+   "value": "lane 3.2 to 5.5 m, track 2.4 to 3.6 m, verge 1 to 2.5 m",
+   "basis": "assumed",
+   "reference": ""
+  },
+  {
+   "parameter": "buildings",
+   "value": "12-32 m by 8-18 m, eaves 4-6.5 m, ridge +1.5-3 m, yard 50-75 m by 38-50 m",
+   "basis": "assumed",
+   "reference": ""
+  },
+  {
+   "parameter": "woods and ponds",
+   "value": "copse radius 15-45 m, canopy about 14 m; pond radius 5-16 m",
+   "basis": "assumed",
+   "reference": ""
+  },
+  {
+   "parameter": "grey levels",
+   "value": "fields 92-172 by cover, hedge 58, tree 55, wood 52, road 120, track 168 or 88, roof 185 or 75, yard 150, water 32, verge 108",
+   "basis": "assumed",
+   "reference": "No orthophoto radiometry source found. These are guesses on a 0..255 scale."
+  },
+  {
+   "parameter": "within-field variation",
+   "value": "patches sd 6 at 18 and 60 m scales, per-pixel texture sd 3.5, drill stripes sd 1.5",
+   "basis": "assumed",
+   "reference": ""
+  },
+  {
+   "parameter": "shadow depth",
+   "value": "55 % darkening in full shadow, 0.5 m soft edge",
+   "basis": "assumed",
+   "reference": ""
+  },
+  {
+   "parameter": "sun positions",
+   "value": "map (180, 55) deg, flight (150, 35) deg",
+   "basis": "assumed",
+   "reference": "Defaults from the brief."
+  }
+ ],
+ "limitations": [
+  "Fields are convex pieces of a recursive straight-line subdivision; real fields include concave shapes, curved ancient boundaries and streams.",
+  "The ground is flat: height holds only hedges, trees and buildings, so there is no relief, no relief shadow and no parallax from terrain.",
+  "Grey levels and contrasts are assumptions, not measured from orthophotos.",
+  "Field level, tramline presence and land use are drawn independently; real pasture stays pasture and has no tramlines.",
+  "A changed field keeps the same permanent soil-patch pattern (rescaled).",
+  "Shadows are cast only by objects inside the raster and are a fixed fractional darkening; there is no sky-light model and no cloud shadow.",
+  "Fine texture is per pixel, so its scale follows res_m.",
+  "No villages, rivers, railways, pylons, livestock, vehicles or bales."
+ ],
+ "styles": {
+  "arable": {
+   "generate_seconds": 6.8,
+   "peak_memory_mb_after_generate": 577.45703125,
+   "style_parameters": {
+    "name": "arable",
+    "field_area_ha": 9.0,
+    "field_area_sigma": 0.45,
+    "min_field_ha": 0.4,
+    "split_jitter_deg": 7.0,
+    "warp_m": 5.0,
+    "p_hedge": 0.5,
+    "p_fence": 0.2,
+    "hedge_width_m": 2.0,
+    "hedge_height_m": 2.2,
+    "gappy_fraction": 0.2,
+    "gateway_spacing_m": 220.0,
+    "trees_per_100m": 0.8,
+    "field_trees_per_km2": 6.0,
+    "n_roads": 1,
+    "n_tracks": 2,
+    "n_farms": 1,
+    "copses_per_km2": 1.0,
+    "wood_parcel_prob": 0.03,
+    "ponds_per_km2": 1.0,
+    "tramline_fraction": 0.85,
+    "tramline_spacings": [
+     12.0,
+     18.0,
+     24.0,
+     30.0,
+     36.0
+    ],
+    "tramline_weights": [
+     0.1,
+     0.15,
+     0.45,
+     0.15,
+     0.15
+    ],
+    "tramline_contrast": 22.0,
+    "patch_sd": 6.0,
+    "fine_sd": 3.5,
+    "stripe_sd": 1.5,
+    "shadow_depth": 0.55,
+    "map_cover": [
+     [
+      100,
+      10,
+      0.45
+     ],
+     [
+      172,
+      14,
+      0.25
+     ],
+     [
+      140,
+      12,
+      0.1
+     ],
+     [
+      115,
+      8,
+      0.1
+     ],
+     [
+      125,
+      18,
+      0.1
+     ]
+    ],
+    "flight_cover": [
+     [
+      105,
+      10,
+      0.5
+     ],
+     [
+      92,
+      16,
+      0.25
+     ],
+     [
+      150,
+      14,
+      0.1
+     ],
+     [
+      115,
+      8,
+      0.15
+     ]
+    ]
+   },
+   "default_season": {
+    "n_fields": 42,
+    "n_whole_fields": 13,
+    "field_area_ha": {
+     "median": 8.14753246307373,
+     "p10": 6.06231689453125,
+     "p90": 15.64957332611084,
+     "mean": 9.77658748626709
+    },
+    "mean_visible_field_area_ha": 5.957548141479492,
+    "kind_fraction": {
+     "field": 0.97959345703125,
+     "hedge": 0.00840009765625,
+     "tree": 0.0063,
+     "road": 0.00490927734375,
+     "building": 0.0003080078125,
+     "water": 0.00048916015625
+    },
+    "between_field_sd": 32.132333558157214,
+    "within_field_sd_median": 9.89828452786838,
+    "mean_level_by_kind": {
+     "field": 130.2131805419922,
+     "hedge": 56.60032272338867,
+     "tree": 52.336673736572266,
+     "road": 124.22698974609375,
+     "building": 163.40492248535156,
+     "water": 35.28874969482422
+    },
+    "field_mean_level": 130.29763793945312,
+    "hedge_minus_field": -73.69731521606445,
+    "road_minus_field": -6.070648193359375,
+    "field_mean_correlation_map_flight": 0.3362583577014459,
+    "gradient_correlation": {
+     "0 m": 0.4342768884034858,
+     "1 m": 0.6750378256916071,
+     "2 m": 0.687395835840822,
+     "4 m": 0.6649726059379638,
+     "8 m": 0.6179398170509351
+    },
+    "raster_correlation": 0.38392121238524307,
+    "fields_with_tramlines_map": 36,
+    "tramline_spacing_counts": {
+     "12": 5,
+     "18": 4,
+     "24": 16,
+     "30": 6,
+     "36": 5
+    },
+    "tramline_spacing_check": [
+     {
+      "field": 12,
+      "recorded_m": 18.0,
+      "measured_m": 18.0
+     },
+     {
+      "field": 8,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 37,
+      "recorded_m": 24.0,
+      "measured_m": 22.0
+     },
+     {
+      "field": 38,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 2,
+      "recorded_m": 36.0,
+      "measured_m": 36.0
+     },
+     {
+      "field": 7,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 32,
+      "recorded_m": 36.0,
+      "measured_m": 36.0
+     },
+     {
+      "field": 23,
+      "recorded_m": 30.0,
+      "measured_m": 30.0
+     },
+     {
+      "field": 16,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 9,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 10,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     }
+    ]
+   },
+   "all_fields_changed": {
+    "field_mean_correlation_map_flight": 0.017865207854456486,
+    "gradient_correlation": {
+     "0 m": 0.3658099052659941,
+     "1 m": 0.6391288657970322,
+     "2 m": 0.6376660589018119,
+     "4 m": 0.5949398225450304,
+     "8 m": 0.5193331027479533
+    },
+    "raster_correlation": 0.08530367412178025
+   }
+  },
+  "mixed": {
+   "generate_seconds": 7.2,
+   "peak_memory_mb_after_generate": 720.0390625,
+   "style_parameters": {
+    "name": "mixed",
+    "field_area_ha": 4.0,
+    "field_area_sigma": 0.45,
+    "min_field_ha": 0.4,
+    "split_jitter_deg": 7.0,
+    "warp_m": 5.0,
+    "p_hedge": 0.6,
+    "p_fence": 0.2,
+    "hedge_width_m": 2.0,
+    "hedge_height_m": 2.2,
+    "gappy_fraction": 0.2,
+    "gateway_spacing_m": 220.0,
+    "trees_per_100m": 1.2,
+    "field_trees_per_km2": 6.0,
+    "n_roads": 1,
+    "n_tracks": 2,
+    "n_farms": 1,
+    "copses_per_km2": 1.5,
+    "wood_parcel_prob": 0.04,
+    "ponds_per_km2": 1.5,
+    "tramline_fraction": 0.6,
+    "tramline_spacings": [
+     12.0,
+     18.0,
+     24.0,
+     30.0,
+     36.0
+    ],
+    "tramline_weights": [
+     0.1,
+     0.15,
+     0.45,
+     0.15,
+     0.15
+    ],
+    "tramline_contrast": 22.0,
+    "patch_sd": 6.0,
+    "fine_sd": 3.5,
+    "stripe_sd": 1.5,
+    "shadow_depth": 0.55,
+    "map_cover": [
+     [
+      100,
+      10,
+      0.35
+     ],
+     [
+      172,
+      14,
+      0.2
+     ],
+     [
+      140,
+      12,
+      0.1
+     ],
+     [
+      115,
+      8,
+      0.25
+     ],
+     [
+      125,
+      18,
+      0.1
+     ]
+    ],
+    "flight_cover": [
+     [
+      105,
+      10,
+      0.4
+     ],
+     [
+      92,
+      16,
+      0.2
+     ],
+     [
+      150,
+      14,
+      0.1
+     ],
+     [
+      115,
+      8,
+      0.3
+     ]
+    ]
+   },
+   "default_season": {
+    "n_fields": 81,
+    "n_whole_fields": 44,
+    "field_area_ha": {
+     "median": 3.0207314491271973,
+     "p10": 1.9377752542495728,
+     "p90": 6.020684719085693,
+     "mean": 3.7021324634552
+    },
+    "mean_visible_field_area_ha": 3.0456361770629883,
+    "kind_fraction": {
+     "field": 0.9666990234375,
+     "hedge": 0.00928828125,
+     "tree": 0.01836474609375,
+     "road": 0.00481376953125,
+     "building": 0.0002986328125,
+     "water": 0.000535546875
+    },
+    "between_field_sd": 27.057423220657533,
+    "within_field_sd_median": 9.980310868868532,
+    "mean_level_by_kind": {
+     "field": 119.02305603027344,
+     "hedge": 56.676082611083984,
+     "tree": 52.96208953857422,
+     "road": 119.46598052978516,
+     "building": 121.8518295288086,
+     "water": 34.240203857421875
+    },
+    "field_mean_level": 119.05813598632812,
+    "hedge_minus_field": -62.38205337524414,
+    "road_minus_field": 0.40784454345703125,
+    "field_mean_correlation_map_flight": 0.3557084288403187,
+    "gradient_correlation": {
+     "0 m": 0.46732695616537157,
+     "1 m": 0.6839269173995391,
+     "2 m": 0.7215842082659334,
+     "4 m": 0.7215424726594183,
+     "8 m": 0.680408873970247
+    },
+    "raster_correlation": 0.6538341384226145,
+    "fields_with_tramlines_map": 55,
+    "tramline_spacing_counts": {
+     "12": 5,
+     "18": 5,
+     "24": 23,
+     "30": 10,
+     "36": 12
+    },
+    "tramline_spacing_check": [
+     {
+      "field": 50,
+      "recorded_m": 30.0,
+      "measured_m": 30.0
+     },
+     {
+      "field": 13,
+      "recorded_m": 36.0,
+      "measured_m": 36.0
+     },
+     {
+      "field": 28,
+      "recorded_m": 30.0,
+      "measured_m": 30.0
+     },
+     {
+      "field": 49,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 48,
+      "recorded_m": 18.0,
+      "measured_m": 18.0
+     },
+     {
+      "field": 71,
+      "recorded_m": 18.0,
+      "measured_m": 18.0
+     },
+     {
+      "field": 2,
+      "recorded_m": 36.0,
+      "measured_m": 36.0
+     },
+     {
+      "field": 24,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 9,
+      "recorded_m": 36.0,
+      "measured_m": 36.0
+     }
+    ]
+   },
+   "all_fields_changed": {
+    "field_mean_correlation_map_flight": 0.04981955504322166,
+    "gradient_correlation": {
+     "0 m": 0.3688235387871643,
+     "1 m": 0.6212099382249,
+     "2 m": 0.6435357625196253,
+     "4 m": 0.6100050803528534,
+     "8 m": 0.509577442039158
+    },
+    "raster_correlation": 0.3408407086261942
+   }
+  },
+  "pasture": {
+   "generate_seconds": 9.9,
+   "peak_memory_mb_after_generate": 721.37890625,
+   "style_parameters": {
+    "name": "pasture",
+    "field_area_ha": 2.0,
+    "field_area_sigma": 0.45,
+    "min_field_ha": 0.25,
+    "split_jitter_deg": 10.0,
+    "warp_m": 7.0,
+    "p_hedge": 0.8,
+    "p_fence": 0.15,
+    "hedge_width_m": 2.5,
+    "hedge_height_m": 2.6,
+    "gappy_fraction": 0.2,
+    "gateway_spacing_m": 220.0,
+    "trees_per_100m": 2.2,
+    "field_trees_per_km2": 20.0,
+    "n_roads": 1,
+    "n_tracks": 3,
+    "n_farms": 2,
+    "copses_per_km2": 3.0,
+    "wood_parcel_prob": 0.06,
+    "ponds_per_km2": 3.0,
+    "tramline_fraction": 0.15,
+    "tramline_spacings": [
+     12.0,
+     18.0,
+     24.0,
+     30.0,
+     36.0
+    ],
+    "tramline_weights": [
+     0.1,
+     0.15,
+     0.45,
+     0.15,
+     0.15
+    ],
+    "tramline_contrast": 22.0,
+    "patch_sd": 7.0,
+    "fine_sd": 3.5,
+    "stripe_sd": 1.5,
+    "shadow_depth": 0.55,
+    "map_cover": [
+     [
+      115,
+      9,
+      0.7
+     ],
+     [
+      160,
+      12,
+      0.15
+     ],
+     [
+      100,
+      10,
+      0.1
+     ],
+     [
+      125,
+      18,
+      0.05
+     ]
+    ],
+    "flight_cover": [
+     [
+      115,
+      9,
+      0.8
+     ],
+     [
+      105,
+      10,
+      0.12
+     ],
+     [
+      92,
+      16,
+      0.08
+     ]
+    ]
+   },
+   "default_season": {
+    "n_fields": 144,
+    "n_whole_fields": 83,
+    "field_area_ha": {
+     "median": 1.7252531051635742,
+     "p10": 0.9745768904685974,
+     "p90": 3.1661276817321777,
+     "mean": 1.9568302631378174
+    },
+    "mean_visible_field_area_ha": 1.5768710374832153,
+    "kind_fraction": {
+     "field": 0.8897021484375,
+     "hedge": 0.02398828125,
+     "tree": 0.079416015625,
+     "road": 0.00549580078125,
+     "building": 0.0008076171875,
+     "water": 0.00059013671875
+    },
+    "between_field_sd": 18.45208484812493,
+    "within_field_sd_median": 12.923798392078108,
+    "mean_level_by_kind": {
+     "field": 115.21514129638672,
+     "hedge": 56.43305587768555,
+     "tree": 53.407005310058594,
+     "road": 119.33496856689453,
+     "building": 128.38807678222656,
+     "water": 31.66691780090332
+    },
+    "field_mean_level": 115.30867767333984,
+    "hedge_minus_field": -58.8756217956543,
+    "road_minus_field": 4.0262908935546875,
+    "field_mean_correlation_map_flight": 0.4228248325832236,
+    "gradient_correlation": {
+     "0 m": 0.46664526941003226,
+     "1 m": 0.6559938639558659,
+     "2 m": 0.7350269718135588,
+     "4 m": 0.7587895592108432,
+     "8 m": 0.7291811644329139
+    },
+    "raster_correlation": 0.7185103419900144,
+    "fields_with_tramlines_map": 23,
+    "tramline_spacing_counts": {
+     "12": 1,
+     "18": 3,
+     "24": 11,
+     "30": 6,
+     "36": 2
+    },
+    "tramline_spacing_check": []
+   },
+   "all_fields_changed": {
+    "field_mean_correlation_map_flight": 0.10892146928263576,
+    "gradient_correlation": {
+     "0 m": 0.42180814890322216,
+     "1 m": 0.6284375374084458,
+     "2 m": 0.7032111133100574,
+     "4 m": 0.7140472435362516,
+     "8 m": 0.6492650893582419
+    },
+    "raster_correlation": 0.6040416120183256
+   }
+  },
+  "open": {
+   "generate_seconds": 6.7,
+   "peak_memory_mb_after_generate": 721.58203125,
+   "style_parameters": {
+    "name": "open",
+    "field_area_ha": 30.0,
+    "field_area_sigma": 0.45,
+    "min_field_ha": 4.0,
+    "split_jitter_deg": 4.0,
+    "warp_m": 3.0,
+    "p_hedge": 0.15,
+    "p_fence": 0.25,
+    "hedge_width_m": 2.0,
+    "hedge_height_m": 2.2,
+    "gappy_fraction": 0.6,
+    "gateway_spacing_m": 220.0,
+    "trees_per_100m": 0.4,
+    "field_trees_per_km2": 1.0,
+    "n_roads": 1,
+    "n_tracks": 1,
+    "n_farms": 0,
+    "copses_per_km2": 0.4,
+    "wood_parcel_prob": 0.0,
+    "ponds_per_km2": 0.4,
+    "tramline_fraction": 0.9,
+    "tramline_spacings": [
+     12.0,
+     18.0,
+     24.0,
+     30.0,
+     36.0
+    ],
+    "tramline_weights": [
+     0.0,
+     0.05,
+     0.45,
+     0.2,
+     0.3
+    ],
+    "tramline_contrast": 22.0,
+    "patch_sd": 6.0,
+    "fine_sd": 3.5,
+    "stripe_sd": 1.5,
+    "shadow_depth": 0.55,
+    "map_cover": [
+     [
+      100,
+      10,
+      0.5
+     ],
+     [
+      172,
+      14,
+      0.3
+     ],
+     [
+      140,
+      12,
+      0.1
+     ],
+     [
+      125,
+      18,
+      0.1
+     ]
+    ],
+    "flight_cover": [
+     [
+      105,
+      10,
+      0.6
+     ],
+     [
+      92,
+      16,
+      0.3
+     ],
+     [
+      150,
+      14,
+      0.1
+     ]
+    ]
+   },
+   "default_season": {
+    "n_fields": 18,
+    "n_whole_fields": 4,
+    "field_area_ha": {
+     "median": 20.604265213012695,
+     "p10": 15.178720474243164,
+     "p90": 30.389713287353516,
+     "mean": 22.161373138427734
+    },
+    "mean_visible_field_area_ha": 14.120071411132812,
+    "kind_fraction": {
+     "field": 0.9955412109375,
+     "hedge": 0.000448828125,
+     "tree": 0.000843359375,
+     "road": 0.0031666015625,
+     "building": 0.0,
+     "water": 0.0
+    },
+    "between_field_sd": 36.93073867770167,
+    "within_field_sd_median": 9.12599451295624,
+    "mean_level_by_kind": {
+     "field": 142.1327667236328,
+     "hedge": 68.99864959716797,
+     "tree": 54.9434700012207,
+     "road": 107.91170501708984,
+     "building": null,
+     "water": null
+    },
+    "field_mean_level": 142.22633361816406,
+    "hedge_minus_field": -73.2276840209961,
+    "road_minus_field": -34.31462860107422,
+    "field_mean_correlation_map_flight": 0.5168277719094668,
+    "gradient_correlation": {
+     "0 m": 0.2773093020390639,
+     "1 m": 0.46491254225616524,
+     "2 m": 0.4869421855318128,
+     "4 m": 0.5041830149922139,
+     "8 m": 0.5017488757061537
+    },
+    "raster_correlation": 0.5536813348135795,
+    "fields_with_tramlines_map": 17,
+    "tramline_spacing_counts": {
+     "24": 10,
+     "30": 3,
+     "36": 4
+    },
+    "tramline_spacing_check": [
+     {
+      "field": 4,
+      "recorded_m": 30.0,
+      "measured_m": 30.0
+     },
+     {
+      "field": 5,
+      "recorded_m": 36.0,
+      "measured_m": 36.0
+     },
+     {
+      "field": 14,
+      "recorded_m": 30.0,
+      "measured_m": 30.0
+     },
+     {
+      "field": 16,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 11,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 12,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 1,
+      "recorded_m": 36.0,
+      "measured_m": 36.0
+     },
+     {
+      "field": 6,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 10,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 0,
+      "recorded_m": 36.0,
+      "measured_m": 36.0
+     },
+     {
+      "field": 17,
+      "recorded_m": 30.0,
+      "measured_m": 30.0
+     }
+    ]
+   },
+   "all_fields_changed": {
+    "field_mean_correlation_map_flight": 0.22415298000627074,
+    "gradient_correlation": {
+     "0 m": 0.17005608896880306,
+     "1 m": 0.41096952246218765,
+     "2 m": 0.45540121254836385,
+     "4 m": 0.4924639354128362,
+     "8 m": 0.4846190011168433
+    },
+    "raster_correlation": 0.2598603714693563
+   }
+  },
+  "tramline": {
+   "generate_seconds": 7.0,
+   "peak_memory_mb_after_generate": 721.58203125,
+   "style_parameters": {
+    "name": "tramline",
+    "field_area_ha": 10.0,
+    "field_area_sigma": 0.45,
+    "min_field_ha": 1.5,
+    "split_jitter_deg": 7.0,
+    "warp_m": 5.0,
+    "p_hedge": 0.2,
+    "p_fence": 0.3,
+    "hedge_width_m": 2.0,
+    "hedge_height_m": 2.2,
+    "gappy_fraction": 0.5,
+    "gateway_spacing_m": 220.0,
+    "trees_per_100m": 0.4,
+    "field_trees_per_km2": 2.0,
+    "n_roads": 1,
+    "n_tracks": 1,
+    "n_farms": 0,
+    "copses_per_km2": 0.5,
+    "wood_parcel_prob": 0.0,
+    "ponds_per_km2": 0.5,
+    "tramline_fraction": 1.0,
+    "tramline_spacings": [
+     12.0,
+     18.0,
+     24.0,
+     30.0,
+     36.0
+    ],
+    "tramline_weights": [
+     0.15,
+     0.2,
+     0.45,
+     0.1,
+     0.1
+    ],
+    "tramline_contrast": 42.0,
+    "patch_sd": 4.0,
+    "fine_sd": 3.5,
+    "stripe_sd": 1.5,
+    "shadow_depth": 0.55,
+    "map_cover": [
+     [
+      104,
+      6,
+      0.7
+     ],
+     [
+      112,
+      6,
+      0.3
+     ]
+    ],
+    "flight_cover": [
+     [
+      104,
+      6,
+      0.7
+     ],
+     [
+      112,
+      6,
+      0.3
+     ]
+    ]
+   },
+   "default_season": {
+    "n_fields": 37,
+    "n_whole_fields": 12,
+    "field_area_ha": {
+     "median": 9.249752044677734,
+     "p10": 6.352710247039795,
+     "p90": 16.424457550048828,
+     "mean": 10.140109062194824
+    },
+    "mean_visible_field_area_ha": 6.847177982330322,
+    "kind_fraction": {
+     "field": 0.99155517578125,
+     "hedge": 0.0038736328125,
+     "tree": 0.0012162109375,
+     "road": 0.00291845703125,
+     "building": 0.0,
+     "water": 0.0004365234375
+    },
+    "between_field_sd": 5.821681455855609,
+    "within_field_sd_median": 9.241123266501825,
+    "mean_level_by_kind": {
+     "field": 105.7607650756836,
+     "hedge": 58.76255416870117,
+     "tree": 53.741851806640625,
+     "road": 133.84817504882812,
+     "building": null,
+     "water": 30.211332321166992
+    },
+    "field_mean_level": 105.7867660522461,
+    "hedge_minus_field": -47.02421188354492,
+    "road_minus_field": 28.06140899658203,
+    "field_mean_correlation_map_flight": 0.22812546612371623,
+    "gradient_correlation": {
+     "0 m": 0.26553756434257697,
+     "1 m": 0.5880988580551493,
+     "2 m": 0.5859438396729245,
+     "4 m": 0.6634709058152495,
+     "8 m": 0.7979045568515121
+    },
+    "raster_correlation": 0.4555407988311618,
+    "fields_with_tramlines_map": 37,
+    "tramline_spacing_counts": {
+     "12": 8,
+     "18": 9,
+     "24": 15,
+     "30": 3,
+     "36": 2
+    },
+    "tramline_spacing_check": [
+     {
+      "field": 11,
+      "recorded_m": 12.0,
+      "measured_m": 12.0
+     },
+     {
+      "field": 7,
+      "recorded_m": 30.0,
+      "measured_m": 30.0
+     },
+     {
+      "field": 21,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 2,
+      "recorded_m": 36.0,
+      "measured_m": 36.0
+     },
+     {
+      "field": 13,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 22,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 31,
+      "recorded_m": 18.0,
+      "measured_m": 18.0
+     },
+     {
+      "field": 28,
+      "recorded_m": 30.0,
+      "measured_m": 30.0
+     },
+     {
+      "field": 6,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     },
+     {
+      "field": 24,
+      "recorded_m": 12.0,
+      "measured_m": 12.0
+     },
+     {
+      "field": 17,
+      "recorded_m": 12.0,
+      "measured_m": 12.0
+     },
+     {
+      "field": 14,
+      "recorded_m": 24.0,
+      "measured_m": 24.0
+     }
+    ]
+   },
+   "all_fields_changed": {
+    "field_mean_correlation_map_flight": -0.274569387940949,
+    "gradient_correlation": {
+     "0 m": 0.23696043093801797,
+     "1 m": 0.5778689383455469,
+     "2 m": 0.5737637541148073,
+     "4 m": 0.6029345254065157,
+     "8 m": 0.6492215337889885
+    },
+    "raster_correlation": 0.26582648070799664
+   }
+  }
+ }
+}

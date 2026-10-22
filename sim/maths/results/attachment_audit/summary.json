@@ -1,0 +1,288 @@
+{
+  "date": "2026-10-01",
+  "label": "SYNTHETIC except explicitly measured host timings",
+  "seed": 20261001,
+  "tests": 76,
+  "python": "3.12.14",
+  "numpy": "2.3.5",
+  "images": {
+    "scope": "640x400, focal320px, 24 independent poses per scenario, +/-8m local search; no coarse acquisition, no full nonlinear ESKF",
+    "noise_gray_sd": 2.0,
+    "assumed_peak_pixel_sd": 0.5,
+    "scenarios": {
+      "flat": {
+        "trials": 24,
+        "fixes": 24,
+        "fix_rate": 1.0,
+        "radial_rmse_m": 0.04944005314984044,
+        "local95_coverage": 1.0,
+        "mean_accepted_matches": 8.791666666666666
+      },
+      "photometric": {
+        "trials": 24,
+        "fixes": 24,
+        "fix_rate": 1.0,
+        "radial_rmse_m": 0.06494491144980404,
+        "local95_coverage": 1.0,
+        "mean_accepted_matches": 8.791666666666666
+      },
+      "relief_2m": {
+        "trials": 24,
+        "fixes": 24,
+        "fix_rate": 1.0,
+        "radial_rmse_m": 2.1700848452859827,
+        "local95_coverage": 0.6666666666666666,
+        "mean_accepted_matches": 8.791666666666666
+      },
+      "relief_5m": {
+        "trials": 24,
+        "fixes": 24,
+        "fix_rate": 1.0,
+        "radial_rmse_m": 5.358759910115977,
+        "local95_coverage": 0.3333333333333333,
+        "mean_accepted_matches": 8.791666666666666
+      },
+      "spin_blur_1ms": {
+        "trials": 24,
+        "fixes": 24,
+        "fix_rate": 1.0,
+        "radial_rmse_m": 0.0512147783690365,
+        "local95_coverage": 1.0,
+        "mean_accepted_matches": 8.791666666666666
+      },
+      "periodic_texture": {
+        "trials": 24,
+        "fixes": 0,
+        "fix_rate": 0.0,
+        "radial_rmse_m": null,
+        "local95_coverage": null,
+        "mean_accepted_matches": 0.0
+      }
+    }
+  },
+  "linear_navigation": {
+    "descents": 1000,
+    "state_dimension": 15,
+    "scope": "matched local linear reference, perfect map associations above80m, independent0.6m/s horizontal velocity updates below80m; no actual image-to-ESKF coupling",
+    "epochs": [
+      {
+        "time_s": 0.0,
+        "height_m": 300.0,
+        "full_nees_mean": 15.09329039039073,
+        "full_nees_standard_error": 0.17320508075688773,
+        "horizontal_rmse_m": 0.5906927851554551,
+        "horizontal95_coverage": 0.953
+      },
+      {
+        "time_s": 10.0,
+        "height_m": 195.0,
+        "full_nees_mean": 15.066186506209007,
+        "full_nees_standard_error": 0.17320508075688773,
+        "horizontal_rmse_m": 0.17062398488952327,
+        "horizontal95_coverage": 0.941
+      },
+      {
+        "time_s": 20.0,
+        "height_m": 90.0,
+        "full_nees_mean": 14.7076290105139,
+        "full_nees_standard_error": 0.17320508075688773,
+        "horizontal_rmse_m": 0.08387477729504607,
+        "horizontal95_coverage": 0.954
+      },
+      {
+        "time_s": 28.0,
+        "height_m": 6.0,
+        "full_nees_mean": 14.879213301702983,
+        "full_nees_standard_error": 0.17320508075688773,
+        "horizontal_rmse_m": 0.7788170183223715,
+        "horizontal95_coverage": 0.951
+      },
+      {
+        "time_s": 28.560000000000002,
+        "height_m": 0.12000000000000455,
+        "full_nees_mean": 14.762992138168817,
+        "full_nees_standard_error": 0.17320508075688773,
+        "horizontal_rmse_m": 0.8320819261392436,
+        "horizontal95_coverage": 0.953
+      }
+    ]
+  },
+  "atmosphere": {
+    "resolved_shear": {
+      "assumed_delta_wind_mps": 1.0,
+      "Ri_quantiles_2.5_50_97.5": [
+        0.000353987183679947,
+        0.06300709588999323,
+        0.2091310564729183
+      ],
+      "negative_probability": 0.02445,
+      "above_quarter_probability": 0.01315,
+      "scope": "sample quantiles only; near-zero shear gives heavy tails, not a reliable categorical stability verdict"
+    },
+    "weak_shear": {
+      "assumed_delta_wind_mps": 0.1,
+      "Ri_quantiles_2.5_50_97.5": [
+        0.03020661180212442,
+        0.9972252874357033,
+        31.324283546002714
+      ],
+      "negative_probability": 0.02075,
+      "above_quarter_probability": 0.87145,
+      "scope": "sample quantiles only; near-zero shear gives heavy tails, not a reliable categorical stability verdict"
+    },
+    "roughness": {
+      "true_z0_m": 0.1,
+      "z0_quantiles_m": [
+        0.01426701647740167,
+        0.09947511124577704,
+        0.3237331940277909
+      ],
+      "assumptions": "neutral, known heights/displacement, AR1=.8 SD=.15m/s, no temporal meteorological evolution"
+    },
+    "touchdown_time": {
+      "nominal_s": 28.571428571428573,
+      "empirical_sd_s": 0.8188604559607124,
+      "linear_sd_s": 0.8177142399870321,
+      "quantiles_s": [
+        27.03840633661529,
+        28.569352256595085,
+        30.24786463818855
+      ]
+    },
+    "shared_swing_wind_bias": {
+      "assumptions": "linear15deg swing,1.5m fixed pivot,isotropic tau; sensors share physical motion, perfect derivatives",
+      "wind_rmse_mps": 2.058588800490294,
+      "image_minus_GPS_shared_bias_mps": 0.0,
+      "meaning": "even perfect agreement between two sensor inversions can hide this common wind error"
+    },
+    "thermistor": [
+      {
+        "tau_s": 0.1,
+        "lag_length_m": 1.05,
+        "bias_after10s_K": -0.008399999999994634
+      },
+      {
+        "tau_s": 1.0,
+        "lag_length_m": 10.5,
+        "bias_after10s_K": -0.08399618640589779
+      },
+      {
+        "tau_s": 2.0,
+        "lag_length_m": 21.0,
+        "bias_after10s_K": -0.1668680249041472
+      }
+    ]
+  },
+  "model_selection": {
+    "independent_profiles": 1000,
+    "true_model": "transverse_attached",
+    "selection_counts": {
+      "exponential_constant": 133,
+      "exponential_attached": 320,
+      "exponential_saturating": 40,
+      "transverse_constant": 77,
+      "transverse_attached": 223,
+      "transverse_saturating": 207
+    },
+    "scope": "six fixed known-parameter candidate priors, velocity noise0.6, likelihood comparison; no fitted-model Bayes factors or proof of physical eddy scaling"
+  },
+  "processing": {
+    "host": "Windows-11-10.0.26200-SP0",
+    "NCC": [
+      {
+        "stage": "fine",
+        "image_side_px": 96,
+        "template_side_px": 32,
+        "landmarks_per_frame": 50,
+        "median_single_ms": 0.5522999999811873,
+        "p95_single_ms": 0.6025750019034604,
+        "serial_correlations_ms": 27.614999999059364,
+        "tracemalloc_peak_bytes": 499985,
+        "old_window_array_bytes": 34611200
+      },
+      {
+        "stage": "coarse",
+        "image_side_px": 364,
+        "template_side_px": 64,
+        "landmarks_per_frame": 15,
+        "median_single_ms": 19.35590000357479,
+        "p95_single_ms": 28.413280000313538,
+        "serial_correlations_ms": 290.33850005362183,
+        "tracemalloc_peak_bytes": 7697815,
+        "old_window_array_bytes": 2968813568
+      }
+    ],
+    "queue_scenarios": [
+      {
+        "assumed_service_s": 0.15,
+        "workers": 1,
+        "last_wait_s": 0.0,
+        "last_latency_s": 0.14999999999999858
+      },
+      {
+        "assumed_service_s": 0.2,
+        "workers": 1,
+        "last_wait_s": 0.0,
+        "last_latency_s": 0.1999999999999993
+      },
+      {
+        "assumed_service_s": 0.25,
+        "workers": 1,
+        "last_wait_s": 7.449999999999999,
+        "last_latency_s": 7.699999999999999
+      },
+      {
+        "assumed_service_s": 0.25,
+        "workers": 2,
+        "last_wait_s": 0.0,
+        "last_latency_s": 0.25
+      }
+    ],
+    "radio_sweep": [
+      {
+        "sf": 7,
+        "packet_s": 0.082176,
+        "occupancy_at_1Hz_percent": 8.2176,
+        "interval_for_assumed1percent_s": 8.2176
+      },
+      {
+        "sf": 8,
+        "packet_s": 0.154112,
+        "occupancy_at_1Hz_percent": 15.4112,
+        "interval_for_assumed1percent_s": 15.4112
+      },
+      {
+        "sf": 9,
+        "packet_s": 0.287744,
+        "occupancy_at_1Hz_percent": 28.7744,
+        "interval_for_assumed1percent_s": 28.7744
+      },
+      {
+        "sf": 10,
+        "packet_s": 0.534528,
+        "occupancy_at_1Hz_percent": 53.4528,
+        "interval_for_assumed1percent_s": 53.452799999999996
+      },
+      {
+        "sf": 11,
+        "packet_s": 1.069056,
+        "occupancy_at_1Hz_percent": 106.9056,
+        "interval_for_assumed1percent_s": 106.90559999999999
+      },
+      {
+        "sf": 12,
+        "packet_s": 1.974272,
+        "occupancy_at_1Hz_percent": 197.4272,
+        "interval_for_assumed1percent_s": 197.4272
+      }
+    ],
+    "limits": "host timing is measured; not an H618 benchmark. 1% is an illustrative arithmetic budget, not a regulatory assertion. NCC excludes rectification, capture, logging, filtering, and resource contention."
+  },
+  "source": {
+    "path": "C:\\Users\\b_yee23\\Downloads\\type_shit.pdf",
+    "pages": 52,
+    "sha256": "771cacde831131c4eb60a0775d704e0fc8e07d724ce8a554c35a573d61fd1a4f"
+  },
+  "equations_indexed": 249,
+  "elapsed_s": 33.95435939999879
+}

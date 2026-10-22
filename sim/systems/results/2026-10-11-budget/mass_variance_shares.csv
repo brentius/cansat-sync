@@ -1,0 +1,28 @@
+key,item,sigma_g,share_of_variance,source
+shell,"Printed shell, cylindrical wall",4.84,0.2689,calculated
+internal_frame,"Internal frame: battery cradle, Pi rail, camera mount",4.11,0.1937,assumed
+end_caps,Printed top and bottom caps,2.83,0.0916,calculated
+lens,"Lens, Edmund #34-711 2.5 mm f/2 M12",2.35,0.0632,assumed
+camera_body,Global Shutter Camera body,2.27,0.0593,vendor
+fasteners,"Screws, standoffs and inserts",2.27,0.0593,assumed
+battery_pack,KeepPower 2S1P NCR18650GA pack,1.87,0.0401,vendor
+lens_adapter,C-to-M12 adapter #53-675 and lock nut,1.84,0.0389,assumed
+sundries,"Adhesive, tape, foam, cable ties, heat-shrink",1.65,0.0312,assumed
+canopy_fabric,Parachute canopy fabric,1.44,0.0237,calculated
+power_harness,"XT30 pair, master toggle switch, power wire",1.43,0.0236,assumed
+canopy_lines,Parachute lines,1.29,0.0191,calculated
+swivel_attachment,"Swivel, ring and attachment hardware",1.25,0.0178,assumed
+rf_pcb_bare,"RF PCB, bare board (circular)",1.2,0.0166,calculated
+rf_ribbon,MAIN-RF ribbon: two 20-way IDC sockets and cable,1.12,0.0145,assumed
+probe_shield,Thermistor probe and printed radiation shield,1.03,0.0121,assumed
+main_pcb_parts,"MAIN PCB, fitted parts and solder",0.72,0.0059,assumed
+window,Bottom window,0.7,0.0057,calculated
+rf_pcb_parts,"RF PCB, fitted parts and solder",0.59,0.004,assumed
+signal_harness,"Pi, trigger and probe harnesses (JST GH)",0.51,0.003,assumed
+pi_zero_2w,"Raspberry Pi Zero 2 W, unheadered",0.41,0.0019,vendor
+gnss_antenna,GNSS antenna Taoglas AGGP.25F.07.0060A,0.41,0.0019,datasheet
+main_pcb_bare,"MAIN PCB, bare board",0.4,0.0018,calculated
+csi_cable,"CSI cable, 150 mm Zero type",0.31,0.0011,assumed
+lora_antenna,LoRa antenna Taoglas FXP895 with 200 mm coax,0.31,0.0011,datasheet
+microsd,microSD card,0.05,0.0,assumed
+buzzer,Buzzer CMT-8504-100-SMT,0.02,0.0,datasheet

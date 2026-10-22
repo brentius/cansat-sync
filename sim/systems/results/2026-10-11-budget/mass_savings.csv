@@ -1,0 +1,9 @@
+option,low_g,typical_g,high_g,basis (all assumed)
+"Board-level IMX296 M12 camera in place of the metal-bodied camera, adapter and lock nut",20.0,28.0,35.0,removes the 34 g housing and the adapter; needs a module with a documented trigger input
+2S pack of 18500-size cells (about 2 Ah) in place of the 2S 18650 pack,25.0,30.0,35.0,"about 70 g and 14.7 Wh nominal; covers 3 h with the Pi idle, not 3 h with it working; cell choice unverified"
+Passive ceramic patch on the RF board in place of the 13 g active patch,6.0,8.0,10.0,MAX-M10S has an internal LNA; needs ground-plane area and an RF check
+"Mezzanine or flat-flex link in place of shrouded headers, IDC sockets and ribbon",6.0,8.0,11.0,about 2.5 g a header plus the ribbon set
+1.0 mm boards instead of 1.6 mm,5.0,6.0,7.0,37.5 % of the laminate on both boards
+Shell wall 1.0 mm in ASA instead of 1.2 mm PETG,8.0,11.0,14.0,stiffness and 20 g check needed
+"Lighter M12 lens (plastic barrel, 6-7 g class)",3.0,5.0,9.0,optical performance must be re-qualified
+Slide switch instead of toggle; nylon fasteners,3.0,5.0,8.0,check switch current rating

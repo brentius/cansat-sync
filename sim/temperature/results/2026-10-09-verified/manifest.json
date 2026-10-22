@@ -1,0 +1,25 @@
+{
+  "label": "reproducibility manifest",
+  "seed": 20261009,
+  "files": {
+    "conversion_bias.png": "d39e1e22be18e7915d429587262ef7c675f3e2635dcd0af21c835ca5ceb6de1a",
+    "fit_trials.csv": "a5f107916bf5218068976d12e11352228cf9cf5828c78bc53d04698b8b1aac61",
+    "lead_coupling.csv": "bb2aa21de84a51fe87370d8bb4e66e62722ada1836633269e7a929d9d274ecf7",
+    "profile_metrics.csv": "4b54f300d1e50ab59d17bad771bba177030ad105f8ed5c3e3e68bb6311b38dc6",
+    "pulsed_heating.csv": "c3f96e5016f145eafc3150ff7df5a472e339c8ed027b0da9fc23cdd5b50533ca",
+    "readout.csv": "18bc39d4b3a2b89f5f76fdfcff60e630ceb1ebaeaa45313f9152af7141f3e69c",
+    "readout_noise_equivalent_draws.npz": "d7c34fc95585362b55a85d98a6b018c931d163e055e3bce1666c582b54516d7d",
+    "schedules.csv": "f678b19a5ddb17e07f0e76883e869b21a03d0e9285958f7ea6c50d6537350900",
+    "summary.json": "207917bb1dd594c2e2f73d1e23641734b56586262e2b99534f015dedb39cb0ed",
+    "synthetic_profile.csv": "1dd0804df838e86c410a1a377d81ca76b8f8d727707260e82abef548f4b62186",
+    "synthetic_profile.npz": "1d201e37cc1d6f570f877c983571ed52a425eecf21142e85e665915328e4cb3f",
+    "SYNTHETIC_step_example.csv": "048d9b3e85e5c488c4c001f5aa9b8238e12ba053e1407251038327c96eb5fb79",
+    "synthetic_step_trials.npz": "ce5e785aead50a97df1bc579c83d1d1a81bbbeea5303cb9044fcfda948244787",
+    "temperature_profile.png": "0607983e66a2fd8bd5571ae116131585cdf506d3b5db9cbbccca42fa4312f258"
+  },
+  "code": {
+    "models.py": "4192dcff0cc9af585ebed98e48b595158d49614250a6529f21db560c170fde53",
+    "run_study.py": "3627d72719d1a9facf17445b637d25ea61ba358c4b12044e9a39de5abd7ee709",
+    "step_fit.py": "1e9bfd003b5d531363777e63982bd7b28c601e4f9570a8f7cfe5989b0e7afd68"
+  }
+}

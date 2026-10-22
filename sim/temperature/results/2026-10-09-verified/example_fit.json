@@ -1,0 +1,40 @@
+{
+  "label": "descriptive first-order thermal fit",
+  "data_origin": "unspecified by fitter",
+  "qualification": "not assessed",
+  "model": "probe = offset + gain * exact-ZOH-filtered(reference) + initial_transient",
+  "input_assumption": "reference is held at each sampled value; a known discontinuity is split at --step-time. Ramp curvature between samples or uncertain step timing can bias tau.",
+  "samples": 161,
+  "step_time_s": 3.137,
+  "tau_s": 0.9985851184247736,
+  "t63_s": 0.9985851184247736,
+  "t90_s": 2.2993272077705775,
+  "offset_c": 0.01747471699698156,
+  "gain": 0.9993232386644159,
+  "initial_transient_c": -0.008676369311021196,
+  "residual_rms_c": 0.018736111919904923,
+  "residual_lag1": -0.08786167433144085,
+  "fitted_probe_step_response_c": 4.99661619332208,
+  "profile_sse_span_fraction_of_constant_model": 0.20452278179189773,
+  "profile_sse_improvement_fraction": 0.9999129494074468,
+  "local_sse_rise_for_10pct_tau_change_fraction": 0.0006073561277803915,
+  "nuisance_design_condition_number": 30.986067199946135,
+  "nuisance_design_rank": 3,
+  "tau_bounds_s": [
+    0.02,
+    20.0
+  ],
+  "tau_hit_lower_bound": false,
+  "tau_hit_upper_bound": false,
+  "validity_flags": {
+    "probe_response_present": true,
+    "tau_profile_informative": true,
+    "full_rank_nuisance_fit": true,
+    "well_conditioned_nuisance_fit": true,
+    "tau_inside_bounds": true,
+    "small_residual_lag1": true,
+    "reference_excitation_present": true
+  },
+  "validity_notes": [],
+  "input_file": "sim\\temperature\\results\\2026-10-09-verified\\SYNTHETIC_step_example.csv"
+}

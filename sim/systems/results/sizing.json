@@ -1,0 +1,681 @@
+{
+ "canopy": {
+  "density": {
+   "standard": 1.225,
+   "march_min": 1.1848132451723472,
+   "march_max": 1.3200232898022177
+  },
+  "diameter_m": [
+   {
+    "speed": 10.5,
+    "mass_kg": 0.3,
+    "cd": 0.6,
+    "cd_s_m2": 0.04356695821185617,
+    "diameter_m": 0.3040591336104421
+   },
+   {
+    "speed": 10.5,
+    "mass_kg": 0.3,
+    "cd": 0.75,
+    "cd_s_m2": 0.04356695821185617,
+    "diameter_m": 0.2719587567730558
+   },
+   {
+    "speed": 10.5,
+    "mass_kg": 0.3,
+    "cd": 0.9,
+    "cd_s_m2": 0.04356695821185617,
+    "diameter_m": 0.2482632429927726
+   },
+   {
+    "speed": 10.5,
+    "mass_kg": 0.325,
+    "cd": 0.6,
+    "cd_s_m2": 0.047197538062844185,
+    "diameter_m": 0.31647478013199365
+   },
+   {
+    "speed": 10.5,
+    "mass_kg": 0.325,
+    "cd": 0.75,
+    "cd_s_m2": 0.047197538062844185,
+    "diameter_m": 0.2830636486157751
+   },
+   {
+    "speed": 10.5,
+    "mass_kg": 0.325,
+    "cd": 0.9,
+    "cd_s_m2": 0.047197538062844185,
+    "diameter_m": 0.25840057592762666
+   },
+   {
+    "speed": 10.5,
+    "mass_kg": 0.35,
+    "cd": 0.6,
+    "cd_s_m2": 0.05082811791383219,
+    "diameter_m": 0.32842140031863754
+   },
+   {
+    "speed": 10.5,
+    "mass_kg": 0.35,
+    "cd": 0.75,
+    "cd_s_m2": 0.05082811791383219,
+    "diameter_m": 0.29374903055125784
+   },
+   {
+    "speed": 10.5,
+    "mass_kg": 0.35,
+    "cd": 0.9,
+    "cd_s_m2": 0.05082811791383219,
+    "diameter_m": 0.26815495046366356
+   },
+   {
+    "speed": 11.0,
+    "mass_kg": 0.3,
+    "cd": 0.6,
+    "cd_s_m2": 0.03969634002361274,
+    "diameter_m": 0.29023826390087654
+   },
+   {
+    "speed": 11.0,
+    "mass_kg": 0.3,
+    "cd": 0.75,
+    "cd_s_m2": 0.03969634002361274,
+    "diameter_m": 0.25959699510155326
+   },
+   {
+    "speed": 11.0,
+    "mass_kg": 0.3,
+    "cd": 0.9,
+    "cd_s_m2": 0.03969634002361274,
+    "diameter_m": 0.23697855012946473
+   },
+   {
+    "speed": 11.0,
+    "mass_kg": 0.325,
+    "cd": 0.6,
+    "cd_s_m2": 0.04300436835891381,
+    "diameter_m": 0.30208956285326666
+   },
+   {
+    "speed": 11.0,
+    "mass_kg": 0.325,
+    "cd": 0.75,
+    "cd_s_m2": 0.04300436835891381,
+    "diameter_m": 0.27019711913323985
+   },
+   {
+    "speed": 11.0,
+    "mass_kg": 0.325,
+    "cd": 0.9,
+    "cd_s_m2": 0.04300436835891381,
+    "diameter_m": 0.24665509520364365
+   },
+   {
+    "speed": 11.0,
+    "mass_kg": 0.35,
+    "cd": 0.6,
+    "cd_s_m2": 0.046312396694214865,
+    "diameter_m": 0.31349315484960855
+   },
+   {
+    "speed": 11.0,
+    "mass_kg": 0.35,
+    "cd": 0.75,
+    "cd_s_m2": 0.046312396694214865,
+    "diameter_m": 0.280396801889837
+   },
+   {
+    "speed": 11.0,
+    "mass_kg": 0.35,
+    "cd": 0.9,
+    "cd_s_m2": 0.046312396694214865,
+    "diameter_m": 0.2559660890789516
+   },
+   {
+    "speed": 12.0,
+    "mass_kg": 0.3,
+    "cd": 0.6,
+    "cd_s_m2": 0.03335595238095238,
+    "diameter_m": 0.2660517419091369
+   },
+   {
+    "speed": 12.0,
+    "mass_kg": 0.3,
+    "cd": 0.75,
+    "cd_s_m2": 0.03335595238095238,
+    "diameter_m": 0.23796391217642388
+   },
+   {
+    "speed": 12.0,
+    "mass_kg": 0.3,
+    "cd": 0.9,
+    "cd_s_m2": 0.03335595238095238,
+    "diameter_m": 0.21723033761867602
+   },
+   {
+    "speed": 12.0,
+    "mass_kg": 0.325,
+    "cd": 0.6,
+    "cd_s_m2": 0.03613561507936508,
+    "diameter_m": 0.27691543261549445
+   },
+   {
+    "speed": 12.0,
+    "mass_kg": 0.325,
+    "cd": 0.75,
+    "cd_s_m2": 0.03613561507936508,
+    "diameter_m": 0.2476806925388032
+   },
+   {
+    "speed": 12.0,
+    "mass_kg": 0.325,
+    "cd": 0.9,
+    "cd_s_m2": 0.03613561507936508,
+    "diameter_m": 0.22610050393667336
+   },
+   {
+    "speed": 12.0,
+    "mass_kg": 0.35,
+    "cd": 0.6,
+    "cd_s_m2": 0.03891527777777777,
+    "diameter_m": 0.28736872527880786
+   },
+   {
+    "speed": 12.0,
+    "mass_kg": 0.35,
+    "cd": 0.75,
+    "cd_s_m2": 0.03891527777777777,
+    "diameter_m": 0.25703040173235064
+   },
+   {
+    "speed": 12.0,
+    "mass_kg": 0.35,
+    "cd": 0.9,
+    "cd_s_m2": 0.03891527777777777,
+    "diameter_m": 0.2346355816557056
+   }
+  ],
+  "paper_design_spread": {
+   "basis": "cut for 10.5 m/s assuming Cd = 0.75 at 325 g, standard density",
+   "speed_if_cd_0.90_mass_300g_dense_air": 8.871455335928989,
+   "speed_if_cd_0.60_mass_350g_thin_air": 12.387388013312885
+  },
+  "measured_design_spread": {
+   "basis": "trimmed to a measured 10.5 m/s at standard density, same mass on launch day",
+   "speed_dense_air": 10.115015358890851,
+   "speed_thin_air": 10.676585765926646,
+   "single_drop_relative_sigma": 0.029,
+   "target_for_floor_one_drop": 10.982682285534505,
+   "target_for_floor_five_drops": 10.649863294760932,
+   "mass_lever": "speed scales as sqrt(mass): 350 g instead of 325 g adds 3.77%"
+  },
+  "drop_test": {
+   "distance_to_95pct_terminal_m": 13.085574321142362,
+   "distance_to_99pct_terminal_m": 22.018383907068095,
+   "naive_speed_from_15m_drop": 6.971368916640175,
+   "naive_speed_from_100m_drop": 9.740926796703922
+  },
+  "opening": {
+   "steady_drag_n": 3.18716125,
+   "airspeed_reaching_50n": 31.896851924952124,
+   "force_at_20_mps": 19.657774603174605,
+   "force_at_30_mps": 44.22999285714286,
+   "fifty_newtons_in_g_at_325g": 15.687941738121973
+  }
+ },
+ "timeline": [
+  {
+   "release_m": 300.0,
+   "speed": 10.0,
+   "time_s": 30.0,
+   "frames_total": 150.0,
+   "frames_above_map_floor": 110.0,
+   "frames_per_layer": 10.0,
+   "lag_length_m": 10.197162129779283,
+   "lag_lengths_per_layer": 1.9613299999999998
+  },
+  {
+   "release_m": 300.0,
+   "speed": 10.5,
+   "time_s": 28.571428571428573,
+   "frames_total": 142.85714285714286,
+   "frames_above_map_floor": 104.76190476190476,
+   "frames_per_layer": 9.523809523809524,
+   "lag_length_m": 11.242371248081659,
+   "lag_lengths_per_layer": 1.7789841269841271
+  },
+  {
+   "release_m": 300.0,
+   "speed": 11.0,
+   "time_s": 27.272727272727273,
+   "frames_total": 136.36363636363637,
+   "frames_above_map_floor": 100.0,
+   "frames_per_layer": 9.09090909090909,
+   "lag_length_m": 12.338566177032932,
+   "lag_lengths_per_layer": 1.6209338842975205
+  },
+  {
+   "release_m": 300.0,
+   "speed": 12.0,
+   "time_s": 25.0,
+   "frames_total": 125.0,
+   "frames_above_map_floor": 91.66666666666666,
+   "frames_per_layer": 8.333333333333334,
+   "lag_length_m": 14.683913466882167,
+   "lag_lengths_per_layer": 1.3620347222222222
+  },
+  {
+   "release_m": 300.0,
+   "speed": 15.0,
+   "time_s": 20.0,
+   "frames_total": 100.0,
+   "frames_above_map_floor": 73.33333333333333,
+   "frames_per_layer": 6.666666666666666,
+   "lag_length_m": 22.943614792003387,
+   "lag_lengths_per_layer": 0.8717022222222222
+  },
+  {
+   "release_m": 400.0,
+   "speed": 10.0,
+   "time_s": 40.0,
+   "frames_total": 200.0,
+   "frames_above_map_floor": 160.0,
+   "frames_per_layer": 10.0,
+   "lag_length_m": 10.197162129779283,
+   "lag_lengths_per_layer": 1.9613299999999998
+  },
+  {
+   "release_m": 400.0,
+   "speed": 10.5,
+   "time_s": 38.095238095238095,
+   "frames_total": 190.47619047619048,
+   "frames_above_map_floor": 152.38095238095238,
+   "frames_per_layer": 9.523809523809524,
+   "lag_length_m": 11.242371248081659,
+   "lag_lengths_per_layer": 1.7789841269841271
+  },
+  {
+   "release_m": 400.0,
+   "speed": 11.0,
+   "time_s": 36.36363636363637,
+   "frames_total": 181.81818181818184,
+   "frames_above_map_floor": 145.45454545454544,
+   "frames_per_layer": 9.09090909090909,
+   "lag_length_m": 12.338566177032932,
+   "lag_lengths_per_layer": 1.6209338842975205
+  },
+  {
+   "release_m": 400.0,
+   "speed": 12.0,
+   "time_s": 33.333333333333336,
+   "frames_total": 166.66666666666669,
+   "frames_above_map_floor": 133.33333333333334,
+   "frames_per_layer": 8.333333333333334,
+   "lag_length_m": 14.683913466882167,
+   "lag_lengths_per_layer": 1.3620347222222222
+  },
+  {
+   "release_m": 400.0,
+   "speed": 15.0,
+   "time_s": 26.666666666666668,
+   "frames_total": 133.33333333333334,
+   "frames_above_map_floor": 106.66666666666666,
+   "frames_per_layer": 6.666666666666666,
+   "lag_length_m": 22.943614792003387,
+   "lag_lengths_per_layer": 0.8717022222222222
+  }
+ ],
+ "energy": {
+  "loads_w": {
+   "computer_idle": [
+    0.94,
+    1.12,
+    2.2
+   ],
+   "computer_busy": [
+    2.4,
+    2.4,
+    4.0
+   ],
+   "camera_idle": [
+    0.1,
+    0.3,
+    1.0
+   ],
+   "camera_streaming": [
+    0.5,
+    0.8,
+    1.0
+   ],
+   "gps": [
+    0.03,
+    0.1,
+    0.15
+   ],
+   "radio_average": [
+    0.01,
+    0.03,
+    0.05
+   ],
+   "sensors": [
+    0.01,
+    0.03,
+    0.08
+   ],
+   "storage": [
+    0.01,
+    0.05,
+    0.3
+   ]
+  },
+  "cases": {
+   "low": {
+    "pad_load_w": 1.1,
+    "flight_load_w": 2.959999999999999,
+    "converter_efficiency": 0.92,
+    "battery_power_pad_w": 1.1956521739130435,
+    "required_mah_for_3h": 1172.2080136402387,
+    "peak_battery_current_a_at_3v3": 0.9749670619235833
+   },
+   "typical": {
+    "pad_load_w": 1.6300000000000003,
+    "flight_load_w": 3.4099999999999997,
+    "converter_efficiency": 0.88,
+    "battery_power_pad_w": 1.8522727272727277,
+    "required_mah_for_3h": 1815.9536541889486,
+    "peak_battery_current_a_at_3v3": 1.174242424242424
+   },
+   "high": {
+    "pad_load_w": 3.78,
+    "flight_load_w": 5.58,
+    "converter_efficiency": 0.8,
+    "battery_power_pad_w": 4.725,
+    "required_mah_for_3h": 4632.35294117647,
+    "peak_battery_current_a_at_3v3": 2.1136363636363638
+   }
+  },
+  "cells": {
+   "LiPo pouch 2000 mAh": {
+    "mass_g": 38,
+    "usable_wh": 6.12,
+    "hours_low": 5.118545454545455,
+    "hours_typical": 3.3040490797546007,
+    "hours_high": 1.2952380952380955
+   },
+   "18650 3000 mAh": {
+    "mass_g": 46,
+    "usable_wh": 9.18,
+    "hours_low": 7.677818181818182,
+    "hours_typical": 4.956073619631901,
+    "hours_high": 1.942857142857143
+   },
+   "18650 3500 mAh": {
+    "mass_g": 48,
+    "usable_wh": 10.709999999999999,
+    "hours_low": 8.957454545454544,
+    "hours_typical": 5.782085889570551,
+    "hours_high": 2.2666666666666666
+   },
+   "21700 5000 mAh": {
+    "mass_g": 68,
+    "usable_wh": 15.299999999999999,
+    "hours_low": 12.796363636363635,
+    "hours_typical": 8.2601226993865,
+    "hours_high": 3.238095238095238
+   },
+   "2 x 18650 3000 mAh": {
+    "mass_g": 92,
+    "usable_wh": 18.36,
+    "hours_low": 15.355636363636364,
+    "hours_typical": 9.912147239263803,
+    "hours_high": 3.885714285714286
+   }
+  }
+ },
+ "mass": {
+  "components_g": {
+   "flight computer (SOURCED 12.5 g, CNX Software)": [
+    12.5,
+    12.5,
+    12.5
+   ],
+   "camera board, lens and holder": [
+    15,
+    20,
+    25
+   ],
+   "GPS module and antenna": [
+    5,
+    8,
+    12
+   ],
+   "radio module and antenna": [
+    3,
+    5,
+    8
+   ],
+   "IMU, barometer, thermistor and shield": [
+    3,
+    6,
+    10
+   ],
+   "carrier board, connectors and wiring": [
+    15,
+    20,
+    30
+   ],
+   "power conversion and switch": [
+    3,
+    5,
+    8
+   ],
+   "battery, one 18650": [
+    46,
+    47,
+    48
+   ],
+   "structure, printed shell and frame": [
+    45,
+    60,
+    80
+   ],
+   "window and fasteners": [
+    7,
+    10,
+    17
+   ],
+   "canopy, lines and swivel": [
+    10,
+    15,
+    25
+   ]
+  },
+  "total_g": {
+   "low": 164.5,
+   "typical": 208.5,
+   "high": 275.5
+  },
+  "ballast_to_reach_300g": {
+   "low": 135.5,
+   "typical": 91.5,
+   "high": 24.5
+  },
+  "headroom_to_350g": {
+   "low": 185.5,
+   "typical": 141.5,
+   "high": 74.5
+  }
+ },
+ "radio": {
+  "packet_bytes": 40,
+  "table": [
+   {
+    "sf": 7,
+    "bw_khz": 125.0,
+    "airtime_ms": 82.176,
+    "duty_at_1hz": 0.082176,
+    "min_interval_10pct_s": 0.8217599999999999,
+    "min_interval_1pct_s": 8.2176,
+    "sensitivity_dbm": -124.53089986991944,
+    "margin_db_1km_14dbm_868": 27.312722144506225,
+    "margin_db_2km_14dbm_868": 21.2921222312266,
+    "margin_db_2km_10dbm_433": 23.314723732172197
+   },
+   {
+    "sf": 7,
+    "bw_khz": 250.0,
+    "airtime_ms": 41.088,
+    "duty_at_1hz": 0.041088,
+    "min_interval_10pct_s": 0.41087999999999997,
+    "min_interval_1pct_s": 4.1088,
+    "sensitivity_dbm": -121.52059991327963,
+    "margin_db_1km_14dbm_868": 24.302422187866412,
+    "margin_db_2km_14dbm_868": 18.281822274586787,
+    "margin_db_2km_10dbm_433": 20.304423775532385
+   },
+   {
+    "sf": 8,
+    "bw_khz": 125.0,
+    "airtime_ms": 154.112,
+    "duty_at_1hz": 0.154112,
+    "min_interval_10pct_s": 1.5411199999999998,
+    "min_interval_1pct_s": 15.4112,
+    "sensitivity_dbm": -127.03089986991944,
+    "margin_db_1km_14dbm_868": 29.812722144506225,
+    "margin_db_2km_14dbm_868": 23.7921222312266,
+    "margin_db_2km_10dbm_433": 25.814723732172197
+   },
+   {
+    "sf": 8,
+    "bw_khz": 250.0,
+    "airtime_ms": 77.056,
+    "duty_at_1hz": 0.077056,
+    "min_interval_10pct_s": 0.7705599999999999,
+    "min_interval_1pct_s": 7.7056,
+    "sensitivity_dbm": -124.02059991327963,
+    "margin_db_1km_14dbm_868": 26.802422187866412,
+    "margin_db_2km_14dbm_868": 20.781822274586787,
+    "margin_db_2km_10dbm_433": 22.804423775532385
+   },
+   {
+    "sf": 9,
+    "bw_khz": 125.0,
+    "airtime_ms": 287.744,
+    "duty_at_1hz": 0.287744,
+    "min_interval_10pct_s": 2.87744,
+    "min_interval_1pct_s": 28.7744,
+    "sensitivity_dbm": -129.53089986991944,
+    "margin_db_1km_14dbm_868": 32.312722144506225,
+    "margin_db_2km_14dbm_868": 26.2921222312266,
+    "margin_db_2km_10dbm_433": 28.314723732172197
+   },
+   {
+    "sf": 9,
+    "bw_khz": 250.0,
+    "airtime_ms": 143.872,
+    "duty_at_1hz": 0.143872,
+    "min_interval_10pct_s": 1.43872,
+    "min_interval_1pct_s": 14.3872,
+    "sensitivity_dbm": -126.52059991327963,
+    "margin_db_1km_14dbm_868": 29.302422187866412,
+    "margin_db_2km_14dbm_868": 23.281822274586787,
+    "margin_db_2km_10dbm_433": 25.304423775532385
+   },
+   {
+    "sf": 10,
+    "bw_khz": 125.0,
+    "airtime_ms": 534.528,
+    "duty_at_1hz": 0.534528,
+    "min_interval_10pct_s": 5.34528,
+    "min_interval_1pct_s": 53.452799999999996,
+    "sensitivity_dbm": -132.03089986991944,
+    "margin_db_1km_14dbm_868": 34.812722144506225,
+    "margin_db_2km_14dbm_868": 28.7921222312266,
+    "margin_db_2km_10dbm_433": 30.814723732172197
+   },
+   {
+    "sf": 10,
+    "bw_khz": 250.0,
+    "airtime_ms": 267.264,
+    "duty_at_1hz": 0.267264,
+    "min_interval_10pct_s": 2.67264,
+    "min_interval_1pct_s": 26.726399999999998,
+    "sensitivity_dbm": -129.02059991327963,
+    "margin_db_1km_14dbm_868": 31.802422187866412,
+    "margin_db_2km_14dbm_868": 25.781822274586787,
+    "margin_db_2km_10dbm_433": 27.804423775532385
+   }
+  ],
+  "one_percent_band_schedule": {
+   "hourly_airtime_budget_s": 36.0,
+   "reserve_for_60s_at_1hz_s": 4.93056,
+   "pad_packets_per_hour": 378.0841121495327,
+   "pad_interval_s": 9.521690767519466
+  }
+ },
+ "exposure": {
+  "assumptions": "reflectance 0.15, f/2.4, transmission 0.85, QE 0.5, 3 um pixel, 1e16 photons/m2/s/lux, read noise 5 e-",
+  "table": [
+   {
+    "sky": "heavy overcast",
+    "scene_lux": 2000,
+    "exposure_ms": 0.5,
+    "electrons": 249.02343750000006,
+    "snr": 15.043412654704218,
+    "contrast_to_noise_20pct": 3.0086825309408436
+   },
+   {
+    "sky": "heavy overcast",
+    "scene_lux": 2000,
+    "exposure_ms": 1.0,
+    "electrons": 498.0468750000001,
+    "snr": 21.777093391526595,
+    "contrast_to_noise_20pct": 4.355418678305319
+   },
+   {
+    "sky": "overcast",
+    "scene_lux": 10000,
+    "exposure_ms": 0.5,
+    "electrons": 1245.1171875000002,
+    "snr": 34.93721895168811,
+    "contrast_to_noise_20pct": 6.987443790337622
+   },
+   {
+    "sky": "overcast",
+    "scene_lux": 10000,
+    "exposure_ms": 1.0,
+    "electrons": 2490.2343750000005,
+    "snr": 49.65362887835812,
+    "contrast_to_noise_20pct": 9.930725775671625
+   },
+   {
+    "sky": "clear, sun at 35 deg",
+    "scene_lux": 60000,
+    "exposure_ms": 0.5,
+    "electrons": 7470.703125000001,
+    "snr": 86.28897094127242,
+    "contrast_to_noise_20pct": 17.257794188254486
+   },
+   {
+    "sky": "clear, sun at 35 deg",
+    "scene_lux": 60000,
+    "exposure_ms": 1.0,
+    "electrons": 14941.406250000002,
+    "snr": 122.13291124914734,
+    "contrast_to_noise_20pct": 24.42658224982947
+   }
+  ]
+ },
+ "camera_link": {
+  "raw_y8_mb_per_s": 5.12,
+  "yuy2_over_usb_mb_per_s": 10.24,
+  "usb2_high_speed_practical_mb_per_s": 35,
+  "focal_length_mm_for_90deg_hfov": 1.9200000000000002,
+  "focal_length_mm_for_70deg_hfov": 2.74204417294486,
+  "footprint_width_m_at_300m_90deg": 599.9999999999999,
+  "footprint_width_m_at_300m_70deg": 420.12452292582583,
+  "gsd_m_at_300m_70deg": 0.3282222835358014,
+  "ram_buffer_mb_40s": 204.8
+ }
+}

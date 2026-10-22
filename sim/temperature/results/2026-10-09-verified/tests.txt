@@ -1,0 +1,28 @@
+test_beta_roundtrip (test_models.Conversion.test_beta_roundtrip) ... ok
+test_documented_divider_values_and_global_power_bound (test_models.Conversion.test_documented_divider_values_and_global_power_bound) ... ok
+test_invalid_readings_are_refused (test_models.Conversion.test_invalid_readings_are_refused) ... ok
+test_nominal_interpolation_hits_source_and_is_monotonic (test_models.Conversion.test_nominal_interpolation_hits_source_and_is_monotonic) ... ok
+test_pga_normalization_and_ratiometric_supply_cancellation (test_models.Conversion.test_pga_normalization_and_ratiometric_supply_cancellation) ... ok
+test_readout_derivative_against_finite_difference (test_models.Conversion.test_readout_derivative_against_finite_difference) ... ok
+test_three_point_fit_and_independent_held_out_data (test_models.Conversion.test_three_point_fit_and_independent_held_out_data) ... ok
+test_invalid_schedule_cannot_return_nan_or_optimistic_bound (test_models.Scheduling.test_invalid_schedule_cannot_return_nan_or_optimistic_bound) ... ok
+test_schedule_two_completed_conversions_and_rate_tolerance (test_models.Scheduling.test_schedule_two_completed_conversions_and_rate_tolerance) ... ok
+test_bad_thermal_inputs (test_models.Thermal.test_bad_thermal_inputs) ... ok
+test_lag_smears_ramp_by_speed_times_tau (test_models.Thermal.test_lag_smears_ramp_by_speed_times_tau) ... ok
+test_lead_heat_equilibrium_and_time_constant (test_models.Thermal.test_lead_heat_equilibrium_and_time_constant) ... ok
+test_nonlinear_heating_converges_with_timestep (test_models.Thermal.test_nonlinear_heating_converges_with_timestep) ... ok
+test_pulse_exact_limits_and_energy_balance (test_models.Thermal.test_pulse_exact_limits_and_energy_balance) ... ok
+test_resolved_nonlinear_pulses_match_small_heating_limit (test_models.Thermal.test_resolved_nonlinear_pulses_match_small_heating_limit) ... ok
+test_rk4_matches_closed_form_no_heating (test_models.Thermal.test_rk4_matches_closed_form_no_heating) ... ok
+test_constant_probe_is_flagged_as_no_response_and_unidentified (test_step_fit.ThermalStepFit.test_constant_probe_is_flagged_as_no_response_and_unidentified) ... ok
+test_continuous_analytic_irregular_step_recovers_tau (test_step_fit.ThermalStepFit.test_continuous_analytic_irregular_step_recovers_tau) ... ok
+test_invalid_or_unexcited_records_are_rejected (test_step_fit.ThermalStepFit.test_invalid_or_unexcited_records_are_rejected) ... ok
+test_irregular_ramp_is_fit_with_actual_intervals (test_step_fit.ThermalStepFit.test_irregular_ramp_is_fit_with_actual_intervals) ... ok
+test_noisy_step_recovers_time_constant (test_step_fit.ThermalStepFit.test_noisy_step_recovers_time_constant) ... ok
+test_two_pole_response_is_flagged_by_residual_correlation (test_step_fit.ThermalStepFit.test_two_pole_response_is_flagged_by_residual_correlation) ... ok
+test_undersampled_fast_response_hits_lower_bound_and_is_unidentified (test_step_fit.ThermalStepFit.test_undersampled_fast_response_hits_lower_bound_and_is_unidentified) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 3.488s
+
+OK
