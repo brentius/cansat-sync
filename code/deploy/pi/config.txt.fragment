@@ -1,0 +1,7 @@
+# GPL-3.0-only. Merge into /boot/firmware/config.txt; do not replace that file.
+[all]
+enable_uart=1
+dtoverlay=disable-bt
+gpio=15=pu
+camera_auto_detect=0
+dtoverlay=imx296,always-on

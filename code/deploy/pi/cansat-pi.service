@@ -1,0 +1,31 @@
+# GPL-3.0-only. Install paths described in README.md. Not target validated.
+[Unit]
+Description=CANSAT candidate Pi navigation and serial service
+After=local-fs.target
+RequiresMountsFor=/data/cansat
+AssertPathIsMountPoint=/data
+StartLimitIntervalSec=60
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/cansat
+Environment=PYTHONPATH=/opt/cansat/code
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=LIBCAMERA_RPI_CONFIG_FILE=/etc/cansat/camera-timeout.yaml
+# Limit numerical-library thread pools so acquisition leaves CPU for serial.
+Environment=OPENBLAS_NUM_THREADS=1
+Environment=OMP_NUM_THREADS=1
+ExecStartPre=/bin/sh /opt/cansat/code/deploy/pi/enable-trigger.sh
+ExecStart=/usr/bin/python3 -m piapp --config /etc/cansat/flight.toml
+Restart=on-failure
+RestartSec=2
+TimeoutStopSec=25
+KillSignal=SIGTERM
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,39 @@
+# GPL-3.0-only. Candidate deployment values [assumed], not hardware calibration.
+[service]
+port = "/dev/ttyAMA0"
+baud = 230400
+site = "/opt/cansat/site.npz"
+data_dir = "/data/cansat"
+message_capacity = 1500
+writer_capacity = 32
+# Images may wait; Linux and this service remain powered/running on the pad.
+capture_on_pad = false
+landed_capture_s = 5.0
+trigger_period_ms = 200
+# ~0.5 ms candidate exposure (flight_computer_bom.md timing): low pulse + 14.26 us.
+trigger_pulse_us = 486
+frame_latency_s = 0.020
+frame_wait_s = 0.1
+max_trigger_age_s = 1.0
+max_frame_age_s = 8.0
+max_nav_cache_age_s = 0.6
+sync_interval_s = 1.0
+shutdown_timeout_s = 15.0
+poll_interval_s = 0.005
+# Required for a real SHUTDOWN to halt the OS. CLI replay forces this off.
+allow_poweroff = true
+
+[camera]
+kind = "picamera2"
+width = 1456
+height = 1088
+gain = 1.0
+exposure_us = 500
+trigger_mode_path = "/sys/module/imx296/parameters/trigger_mode"
+
+[navigator]
+min_height_m = 80.0
+max_height_m = 450.0
+history_seconds = 8.0
+history_max_events = 1500
+max_nav_age_s = 0.6

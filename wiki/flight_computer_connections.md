@@ -195,7 +195,7 @@ GPIO names are STM32 ports; the number column is the physical **LQFP-64 package 
 | IMU_G_CS_N | PC5 | 25 | GPIO output, 10 kOhm pull-up | U2 CSB2 pin 5 |
 | CAM_TRIG_3V3 | PB0 | 26 | AF2 TIM3_CH3 output | Camera divider |
 | ADC_RDY_N | PA8 | 41 | GPIO input, optional EXTI8 | U4 ALERT/RDY pin 2 |
-| TEMP_GATE_N | PB1 | 27 | Open-drain GPIO output | Temperature PMOS gate |
+| TEMP_GATE_N | PB1 | 27 | Open-drain output; firmware drives it as AF3 TIM8_CH3N in one-pulse mode, so the timer ends excitation in hardware | Temperature PMOS gate |
 | TEMP_SCL | PB10 | 29 | AF4 I2C2_SCL open drain | U4 SCL pin 10 |
 | TEMP_SDA | PB11 | 30 | AF4 I2C2_SDA open drain | U4 SDA pin 9 |
 | FLASH_CS_N | PB12 | 33 | GPIO output, 10 kOhm pull-up | MAIN U11 CS pin 1 |

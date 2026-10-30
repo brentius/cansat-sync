@@ -18,7 +18,7 @@ The 335 g expected mass and about 11 m/s recommended drop-calibration target are
 | Requirement (2025-26 rules) | Result | Margin | How sure |
 |---|---|---|---|
 | Mass 300-350 g | **Probably inside, not securely.** Expected 335 g; sum of typical values 324 g. | 15 g (4 %) below the limit at the expected value. 90 % of outcomes lie between 320 and 351 g. Chance of exceeding 350 g: **6 %** if item errors are independent, **15 %** if shell, caps and frame err together. Chance of being under 300 g: under 0.1 %. | Low. Of the 324 g typical, 89 g is assumed, 75 g is calculated from assumed dimensions, 144 g is from seller listings and 16 g from datasheets. No enclosure design exists; the three printed parts carry 55 % of the variance. If every item came out at its high value the total would be 431 g. |
-| Powered for 3 h | **Yes, with a large margin**, provided the Pi is idle (or off) while waiting. 3 h on the pad with the Pi idle, the flight and a 1 h beacon use 4.3 Wh of 19.6 Wh usable. | 78 % of usable energy left in the typical case; 45 % left with every load high and the pack cold and worn. Switching the Pi on 10 minutes before launch instead: 91 % and 81 %. | Medium. The conclusion survives a factor of two on any single load. The Pi and camera figures are other people's bench reports and an assumption, not measurements of this build. |
+| Powered for 3 h | **Yes in the model, with a large margin**, with Linux/service booted and the Pi powered but image processing idle throughout the wait. 3 h on the pad with the Pi idle, the flight and a 1 h beacon use 4.3 Wh of 19.6 Wh usable. | 78 % of usable energy left in the typical case; 45 % left with every load high and the pack cold and worn. | Medium. The conclusion survives a factor of two on any single load. The Pi and camera figures are other people's bench reports and an assumption, not measurements of this build. |
 | Descent rate at least 10 m/s | **Not established; the historical 10.5 m/s sizing point is too close to the floor.** | A canopy that really does 10.5 m/s in standard air does 10.1 m/s on a cold, high-pressure March day. A canopy cut from a handbook drag coefficient and never dropped has a 6-21 % chance of falling below 10 m/s, depending on type. | Low until drop tests. Current recommendation: trim to about 11.0 m/s measured. |
 | Peak currents | **Inside every limit checked**, smallest ratio 1.8 (3.3 V buck). | Section 5. | Medium. |
 
@@ -150,7 +150,7 @@ The first two together are worth about 55-60 g and would move the expected mass 
 
 ## 4. Power: loads
 
-Loads at the regulated rails while active. Radio transmit power is **not configured anywhere in `code/`**; the BOM says to start at +14 dBm, and the range below runs from that to the module's +22 dBm maximum. Full table: `power_loads.csv`.
+Loads at the regulated rails while active. Radio transmit power was not configured anywhere in `code/` when this budget was written; the candidate firmware now sets **+14 dBm** (`APP_RADIO_POWER_DBM` in `code/firmware/stm32/app/config.h`, 29 October cross-check). The BOM says to start at +14 dBm, and the range below runs from that to the module's +22 dBm maximum. Full table: `power_loads.csv`.
 
 | Load | Rail | Low | Typical | High | Source (basis) |
 |---|---|---:|---:|---:|---|
@@ -172,7 +172,7 @@ Loads at the regulated rails while active. Radio transmit power is **not configu
 | Camera streaming at 5 Hz | 5.1 V | 0.4 W | 0.8 W | 1.2 W | assumed: no published figure found |
 | microSD writing frames | 5.1 V | 0.05 W | 0.15 W | 0.40 W | assumed |
 
-**Radio duty cycle** comes from the flight code, not from an assumption: `lora.time_on_air` gives 82.2 ms for the 40-byte packet at SF7 / 125 kHz, so 8.2 % at 1 Hz in flight. On the pad `DownlinkScheduler` gives the same 1 s interval under a 10 % duty limit (the 869.4-869.65 MHz option in the BOM) and a 9.5 s interval (0.86 %) under a 1 % limit. The difference is 16 mW at the battery and does not matter to endurance.
+**Radio duty cycle** comes from the flight code, not from an assumption: `lora.time_on_air` gives 82.2 ms for the 40-byte packet at SF7 / 125 kHz, so 8.2 % at 1 Hz in flight. On the pad `DownlinkScheduler` gives the same 1 s interval under a 10 % duty limit (the 869.4-869.65 MHz option in the BOM) and a 9.5 s interval (0.86 %) under a 1 % limit. The difference is 16 mW at the battery and does not matter to endurance. The firmware's PAD/LANDED interval (`APP_RADIO_GROUND_INTERVAL_S`) was 10 s until the 29 October cross-check and is now 1 s, matching this budget.
 
 **Converters** (from the 2S input; best / typical / worst): TPS62130 to 5.1 V 95 / 92 / 88 %; TPS62162 to 3.3 V 90 / 87 / 82 %. These are **recalled from the datasheet efficiency curves**, which are images and could not be re-read this session; they need checking against the curves at 6-8.4 V in and the currents below. Series resistance is assumed: 0.03 / 0.05 / 0.10 Ω for the load switch and Pi harness (TPS22965 is 16 mΩ typical) and 0.06 / 0.10 / 0.16 Ω for switch, connector, fuse, reverse-protection MOSFET and wiring.
 
@@ -215,12 +215,12 @@ Each is 3 h powered before launch, 10 s ascent, 40 s descent and a 1 h recovery 
 | Scenario | Used (Wh), low / typ / high | Margin left, low / typ / high | Nominal pack energy that would be enough | Monte Carlo: P(runs out) |
 |---|---:|---:|---:|---:|
 | Pi on (idle) for the whole 3 h | 2.8 / 4.3 / 8.1 | 88 % / 78 % / 45 % | 3.0 / 5.3 / 13.0 Wh | 0 in 100,000 |
-| Pi off, switched on 10 minutes before launch | 1.1 / 1.7 / 2.9 | 95 % / 91 % / 81 % | 1.2 / 2.1 / 4.6 Wh | 0 in 100,000 |
+| Historical off alternative, switched on 10 minutes before launch — not selected flight policy | 1.1 / 1.7 / 2.9 | 95 % / 91 % / 81 % | 1.2 / 2.1 / 4.6 Wh | 0 in 100,000 |
 | Pi and camera working flat out for the whole 3 h | 9.5 / 14.0 / 20.0 | 59 % / 29 % / **−35 %** | 10.1 / 17.2 / 32.1 Wh | 0.04 % |
 
 After the first scenario the typical remaining energy would run the beacon for about 38 more hours.
 
-**What breaks it.** Only one thing in this model: running the image pipeline at full load for the whole wait, with high-end loads, a cold worn pack and worst-case converters all at once (20.0 Wh needed, 14.8 Wh usable). The Monte Carlo, which does not stack every corner, gives the Pi-working case a median endurance of 4.1 h and a 1st percentile of 3.4 h. So the software rule is simple and should be written down: **the Pi idles, or is off, until the launch is imminent; the camera streams only from just before launch.** With the Pi merely idle the worst corner still gives 6.0 h.
+**What breaks it.** Only one thing in this model: running the image pipeline at full load for the whole wait, with high-end loads, a cold worn pack and worst-case converters all at once (20.0 Wh needed, 14.8 Wh usable). The Monte Carlo, which does not stack every corner, gives the Pi-working case a median endurance of 4.1 h and a 1st percentile of 3.4 h. The selected software rule, clarified 28 October, is: **Linux and the flight service boot before loading; the Pi stays powered throughout the pad wait, with image processing idle until PREPARE/ascent.** With the Pi merely idle the worst corner still gives 6.0 h. The off alternative is retained as a historical numerical comparison, not the selected continuous-operation policy. Raw simulation outputs are unchanged; none of these figures establishes physical endurance.
 
 Things outside the model that could break it: a Pi idle draw several times the published figures (for example Wi-Fi left on, a busy-wait in the flight software, HDMI enabled); a cell much colder than −10 °C; a pack that is not the one specified.
 

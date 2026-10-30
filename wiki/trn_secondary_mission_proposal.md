@@ -4,6 +4,11 @@
 
 *Revised 13 October 2026 to the current flight computer BOM and the 9-11 October engineering studies. Preliminary design; no physical flight or bench qualification claimed.*
 
+Implementation update, 27 October: the integrated STM32 and Pi candidate software
+is described in the [flight software report](flight_software.md), including source
+structure, decisions, host/cross-build evidence and hardware next steps. The design
+targets and historical study evidence below retain their original scope.
+
 The [current design baseline](design_baseline.md) summarises selected parts, rates and evidence. [The BOM](flight_computer_bom.md) governs component selection; the [connection guide](flight_computer_connections.md) and [STM32-Pi protocol](stm32_pi_link_protocol.md) govern intended interfaces. The September hardware assumptions are superseded in this live proposal. The original is retained as a [dated historical snapshot](history/trn_secondary_mission_proposal_2026-09-27.md).
 
 ## 1. Summary
@@ -118,7 +123,7 @@ The current radio payload is **40 bytes at 1 Hz**. Candidate 869.525 MHz SF7/BW1
 | Phase | Intended activity | Verification dependency |
 |---|---|---|
 | Preparation | Obtain launch-site orthoimage, calibrate camera/extrinsics/probe, build maps/prediction tables, configure radio and ground logs | Real imagery, calibrated build and confirmed rules/channel |
-| Pad waiting, up to 3 h | STM32 primary/housekeeping logs; Pi idle or controlled startup; independent GNSS and ground anemometer available as planned | Endurance, boot and ground-support rehearsal; no GNSS pose seeding of TRN |
+| Pad waiting, up to 3 h | Linux and the Pi flight service already booted before loading; Pi continuously powered, image processing idle until PREPARE/ascent; STM32 logs and independent GNSS continue | Check heartbeat/map/camera/storage readiness before loading; rehearse endurance and enclosed 5–10 minute launch preparation; no GNSS pose seeding of TRN |
 | Ascent | High-rate STM32 IMU/pressure logging and capture; retain event history; camera start policy tested | Firmware/event detection and shock qualification outstanding |
 | Ejection and inflation | Trigger camera; log full-field frames and STM32 trigger times; establish swing-averaged tilt reference | Settling/event definitions and frame association measured |
 | First fix | Search unknown heading/position, refine pose and confirm agreement over two distinct images | T1 clock starts at defined canopy settling; no promise of a fixed three-image sequence |
@@ -276,16 +281,16 @@ The dated mandatory IC/module subtotal, about $45.49 before support parts/assemb
 
 | Function | Target / candidate implementation | Status |
 |---|---|---|
-| STM32 sensor/timing/power/radio firmware | C/C++; captured sensor/PPS/XTR timing, watchdog, independent logging/1 Hz telemetry | Not implemented |
-| Pi sensor/time link | `link.py`, cumulative IMU differencing, trigger association; 230400 baud | Python reference/golden vectors; laptop only |
+| STM32 sensor/timing/power/radio firmware | C/C++; captured sensor/PPS/XTR timing, watchdog, independent logging/1 Hz telemetry | Integrated candidate in `code/firmware/stm32`: host tests, SITL and linked Cortex-M4F image ([flight software report](flight_software.md)); no hardware execution |
+| Pi sensor/time link | `link.py`, cumulative IMU differencing, trigger association; 230400 baud | Python reference, C twin and Pi service (`code/piapp`) against golden vectors; host only |
 | First fix | `coarse.py`, `firstfix.py`; 1 m/px map and two-image confirmation | Synthetic validation; Pi timing and real terrain outstanding |
-| Tracking/navigation | Fine matcher + `eskf.py`; nominal 100 Hz propagation, image updates as budget allows | Filter exists; fine matcher/handoff/full flight application incomplete |
+| Tracking/navigation | Fine matcher + `eskf.py`; nominal 100 Hz propagation, image updates as budget allows | Fine matcher, handoff and live orchestration (`navigator.py`) integrated; rendered synthetic images only, Pi timing unmeasured |
 | Wind / landing | `windprofile.py`, `landing.py`; selected predictor to STM32 | Synthetic component/closed-loop studies; hardware untested |
-| Radio/ground data | `telemetry.py` defines 40-byte packet | Reference encode/decode; actual radio/ground integration incomplete |
-| Capture/logging/ground UI | Camera setup, bounded queues, save raw frames/quality; laptop graphs/maps | Full application and sustained writes unverified |
+| Radio/ground data | `telemetry.py` defines 40-byte packet | Firmware builds and schedules it (host/SITL); RF link and ground UI untested/outside the onboard baseline |
+| Capture/logging/ground UI | Camera setup, bounded queues, save raw frames/quality; laptop graphs/maps | Pi camera/service/SD writer implemented and host tested; sustained writes and ground UI unverified |
 | Low-altitude odometry / T4 | Optional future modules | Not implemented flight capability |
 
-Python/NumPy is the current candidate navigation stack. OpenCV or a compiled implementation may support calibrated image processing after profiling; they are not evidence of target execution. Capture cadence, matcher latency, filter update timing and logging throughput must be budgeted independently. Temperature readout also has an unresolved constraint: the <=6% excitation goal conflicts with the study's 128 SPS/10 Hz paired-read bench schedule (~19.41% duty). Resolve settling/rate/self-heating before firmware adoption.
+Python/NumPy is the current candidate navigation stack. OpenCV or a compiled implementation may support calibrated image processing after profiling; they are not evidence of target execution. Capture cadence, matcher latency, filter update timing and logging throughput must be budgeted independently. Temperature readout: the study's 128 SPS/10 Hz paired-read bench schedule (~19.41% duty) exceeded the <=6% excitation goal; the firmware instead uses 8 Hz pairs at 860 SPS (5.0048% calculated duty, [design baseline](design_baseline.md)). Settling and self-heating still need hardware verification.
 
 ## 17. Verification campaign
 
@@ -380,9 +385,9 @@ Proposed outreach activities are a younger-pupil terrain-matching demonstration,
 - Confirm current-season rulebook/rubric/deadlines, regional/final launch sites, channel allocation and parachute mass treatment.
 - Obtain representative orthoimages and check permissions/datum/extent; nearest atmospheric reference sources remain to be selected.
 - Prove selected lens/adapter infinity focus, retention, envelope and calibrated ray mapping.
-- Measure Pi capture/matching/logging worst-case performance; finish firmware, fine matcher and acquisition-filter handoff.
+- Measure Pi capture/matching/logging worst-case performance and bring up the integrated candidate firmware/Pi software on the assembled hardware.
 - Choose/qualify passive canopy and complete mechanical/material/access design; weigh full assembly and obtain delivered flight quotes.
-- Resolve thermistor pulse/read schedule against <=6% duty, installed response and science precision; no TMP117 substitution without redesign.
+- Verify the selected 8 Hz / 860 SPS thermistor schedule (5.0048% calculated duty) for settling, installed response and science precision; no TMP117 substitution without redesign.
 - Secure/select the ground reference instrument/support and calibrate any proposed lateral-force airspeed correction.
 - Test GNSS receiver dynamics and independent touchdown scoring; a GNSS feed defined by the protocol is not yet integrated hardware.
 - Agree actual student ownership, available hours, support and outreach dates.

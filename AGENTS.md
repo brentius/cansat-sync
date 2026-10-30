@@ -47,7 +47,7 @@ Keep handoffs brief: completed work, changed files, relevant evidence or checks,
 
 ### Models and token spend
 
-- Use **Luna (`gpt-6-luna`) for Codex subagents** and **Sonnet (`sonnet`) for Claude subagents**. Select the model explicitly at launch; do not inherit a more expensive parent model.
-- Use a higher-cost subagent model only when the user explicitly requests it. If the requested model is unavailable, report that limitation and complete suitable work directly instead of silently switching models.
+- Use **Luna (`gpt-6-luna`) for Codex subagents**. For Claude subagents, default to **Sonnet (`sonnet`) at high/xhigh effort**; use **Opus (`opus`) at a lower effort (low/medium)** instead when it is likely to do the task better than Sonnet at xhigh, such as subtle reasoning, safety-critical embedded code, cross-document consistency or independent review. Select the model and effort explicitly at launch; do not inherit a more expensive parent model or effort.
+- Use other higher-cost subagent models or settings only when the user explicitly requests them. If the requested model is unavailable, report that limitation and complete suitable work directly instead of silently switching models.
 - Pass only relevant context, keep assignments focused, and request concise outputs. Avoid unnecessary full-history copies, repeated file reads, redundant checks, and excessive polling.
 - Check the selected model when the environment exposes it. These instructions guide delegation; model selection must also be set in the actual launch parameters or agent configuration.

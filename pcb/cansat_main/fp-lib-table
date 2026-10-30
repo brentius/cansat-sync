@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "CansatMain")(type "KiCad")(uri "${KIPRJMOD}/CansatMain.pretty")(options "")(descr "Selected MAIN RF header"))
+)

@@ -2,7 +2,7 @@
 
 Prepared 11 October 2026; status cross-checked 13 October 2026. Protocol version 1. Companion to the current [design baseline](design_baseline.md), [connection guide](flight_computer_connections.md) (sections 4 and 9), [`code/cansat/telemetry.py`](../code/cansat/telemetry.py), the executable Python reference [`code/cansat/link.py`](../code/cansat/link.py), and [the navigation simulation report](navigation_closed_loop_simulation.md). The 32-byte `Nav` link payload is not the STM32's separate 40-byte radio telemetry packet.
 
-**Status.** This is a protocol design and software simulation, not an implemented or hardware-qualified link. The reference codec `code/cansat/link.py` is Python and has been executed on a development laptop only. It is written for the Raspberry Pi Zero 2 W (decoder, IMU differencing, frame time-stamping, the Pi's own messages) and is the model the STM32F405 firmware must reproduce; it has been executed on neither target processor. No STM32 firmware exists. The available reference is this specification, the Python implementation, and 60 golden message vectors plus 9 stream vectors in `code/tests/link_vectors.json`.
+**Implementation update, 27 October 2026.** The C twin now exists in `code/firmware/stm32/core/`, and the Pi serial/control service is in `code/piapp/`. Golden vectors, host tests and cross-builds establish software evidence; neither processor nor the physical link is hardware qualified. See the [flight-software report](flight_software.md) for current integrated verification. Historical simulation tables below retain their original scope and dates.
 
 Every number below is tagged: **[calc]** arithmetic shown here, **[sim]** measured in simulation on the laptop, **[src]** from a named source, **[recalled]** from a named source but not re-read while writing this page (check before relying on it), **[assumed]**.
 
@@ -125,7 +125,7 @@ Section 6 defines the integrals. Samples are raw: the STM32 applies the fixed ax
 | 10 | 1 | n_samples | pressure conversions averaged |
 | 11 | 1 | flags | 1 valid |
 
-At OSR 4096 one pressure and one temperature conversion take up to 2 × 9.04 ms [src: TE datasheet via [navigation_parameter_sources](navigation_parameter_sources.md)], so about 50 pressure/temperature pairs per second are possible and the 10 Hz message averages up to 5. The Pi converts pressure to height with the pad baseline from Status and `atmosphere.pressure_altitude`.
+At OSR 4096 one pressure and one temperature conversion take up to 2 × 9.04 ms [src: TE datasheet via [navigation_parameter_sources](navigation_parameter_sources.md)], so about 50 pressure/temperature pairs per second are possible and the 10 Hz message averages up to 5. The implemented driver instead interleaves one die-temperature conversion after every nine pressure conversions, so a Baro message normally averages about 8–9 pressure samples; `n_samples` reports the actual count. The Pi converts pressure to height with the pad baseline from Status and `atmosphere.pressure_altitude`.
 
 ### 0x12 Gnss (60 bytes)
 
@@ -208,7 +208,7 @@ The origin and baseline are here because both processors must use the same ones:
 | | 1 | 1 | epoch | boot counter kept in a backup register |
 | | 2 | 2 | fw_version | |
 | | 4 | 1 | reset_cause | 1 power, 2 pin, 4 watchdog, 8 software, 16 brown-out |
-| | 5 | 1 | flags | reserved |
+| | 5 | 1 | flags | bit 0: current-epoch PiStatus echo required before Nav |
 | | 6 | 2 | tick_hi | |
 | | 8 | 4 | tick | |
 | | 12 | 4 | tick_hz | 1000000 |
@@ -216,6 +216,8 @@ The origin and baseline are here because both processors must use the same ones:
 | | 4 | 1 | cmd_seq | |
 | | 5 | 1 | cmd | 1 SHUTDOWN, 2 PREPARE (triggers are about to start) |
 | | 6 | 2 | arg | SHUTDOWN: seconds until power is removed regardless |
+
+The firmware repeats SHUTDOWN at 2 Hz until it is acknowledged. PREPARE is sent once, on entering ASCENT. It is not repeated because the Status sent immediately on that state change, and again at 1 Hz, carries the same ASCENT/DESCENT state, and the Pi enables capture on either one.
 
 ### 0x80 PiStatus (24 bytes)
 
@@ -311,6 +313,8 @@ Because the fields are running totals, their rounding does not accumulate: over 
 
 The thread breaks, and the filter must be told its inertial information stopped, when: the epoch changes or the restart flag is set (STM32 reset), the gap exceeds a limit (2 s proposed [assumed]), or a quaternion is not of unit length. Each has a counter.
 
+Implementation (29 October cross-check): `link.ImuDifferencer` keeps the 2 s default, but the flight `Navigator` sets `max_imu_gap_s = 0.5`, the bound used for the bias argument above. A link outage of 0.5 s or more therefore breaks the thread and requires reacquisition, unlike the §11 outage rows, which bridged 510 ms. The Navigator also breaks on saturation and fault flags, whose intervals are wrong by an unknown amount. Missed-sample flags do not break it on an increment of up to 30 ms (the §11 bridging bound), because the STM32 integrates across a missing sample. The flags carry no gap length, so a longer flagged increment still breaks the thread. Before 29 October every missed-sample flag broke it, so one late data-ready dropped TRN.
+
 ### The alternatives, and what loss costs in each
 
 | Scheme | Each message carries | Wire bytes | Bytes/s at 100 Hz | A lost message |
@@ -344,11 +348,36 @@ What remains is the trigger-edge-to-exposure latency inside the sensor, which is
 
 **STM32 boot.** Buffer disabled, Pi off (hardware defaults). Start TIM2, sensors, the integrals (new epoch, restart flag on the first snapshot), telemetry and the flash log. None of this waits for the Pi.
 
-**Pi start.** OE high → check PGOOD_5V → PI_PWR_EN high → settle → OE low. The STM32 then transmits its normal stream at once and continuously; it does not wait for the Pi to listen. Bytes sent while the Pi boots are lost and that is harmless: every message is self-contained and the IMU stream can be joined at any snapshot. The Pi's service opens the port, discards up to the first delimiter, and starts sending PiStatus (state booting, then ready). On the first valid frame from a Pi that was silent, the STM32 sends Hello. The Pi sends TrigCfg when the camera is ready; the STM32 starts TIM3 and Trig messages follow.
+**Pi start.** OE high → check PGOOD_5V → PI_PWR_EN high → settle → OE low. The STM32 then transmits its normal stream at once and continuously; it does not wait for the Pi to listen. Bytes sent while the Pi boots are lost and that is harmless: every message is self-contained and the IMU stream can be joined at any snapshot. The Pi's service opens the port, discards up to the first delimiter, and starts sending PiStatus (state booting, then ready). On the first valid frame from a Pi that was silent, the STM32 sends Hello. The Pi service sends TrigCfg at 1 Hz from startup, with `enable=0` until the camera is ready and capture is allowed (PREPARE, ASCENT/DESCENT, or `capture_on_pad`); on `enable=1` the STM32 starts TIM3 and Trig messages follow.
+
+**Prelaunch operation (28 October correction).** Pi start occurs at system
+switch-on, not at launch detection. Linux and the flight service must finish
+startup before loading, and Pi power remains enabled through pad waiting and
+launch. The 100 ms supply-settling interval is electrical, not a Linux boot
+allowance. Camera capture may wait for PREPARE/ascent while Linux/service remains
+running. Confirm heartbeat and map/camera/storage readiness before sealing/loading.
 
 **Normal running.** Any valid frame from the Pi resets the STM32's Pi-alive timer; PiStatus at 2 Hz guarantees one.
 
-**Pi loss.** No valid frame for 3 s [assumed] → clear Pi-alive, mark the TRN and prediction fields not available (the 2 s Nav age limit will already have done so), keep transmitting. Recovery policy [assumed, to be decided with the power budget]: after 10 s of silence in PAD state, power-cycle the Pi (OE high, power off, 2 s, power on); in ASCENT or DESCENT a power cycle costs the whole descent's imagery (Pi boot is tens of seconds [assumed]) and is only worth it if the Pi has been silent since before launch.
+**Epoch handshake (27 October implementation extension).** Payload layouts and
+protocol version remain 1. Hello.flags bit 0 advertises that the firmware gates
+Nav until it receives a compatible PiStatus with flags bit 6 set and bits 15:8
+equal to the current MCU epoch. PiStatus bits 5:0 keep their original meanings;
+bit 7 remains reserved. The Pi echoes the epoch most recently learned from
+Hello/Status/Imu. The UART has one writer and preserves byte order, so any
+partially transmitted pre-reset Nav completes before the new-epoch heartbeat
+and is rejected. Firmware clears its gate and cached Nav on Pi power/UART loss
+or heartbeat loss. An older Pi implementation remains usable for heartbeat and
+primary telemetry, but its Nav is refused until upgraded. The eight-bit boot
+counter is a bounded reset identity, not authentication.
+
+A same-epoch Hello also occurs on Pi reappearance and therefore preserves the
+Pi navigation/trigger history. Initial epoch, changed epoch, or a new IMU_RESTART
+indication resets the time-dependent state. Serial framing and CRC are unchanged;
+the existing byte-level golden vectors remain valid.
+
+
+**Pi loss.** No valid frame for 3 s [assumed] → clear Pi-alive, mark the TRN and prediction fields not available (the 2 s Nav age limit will already have done so), keep transmitting. The selected flight default keeps Pi power on regardless of silence, including during Linux startup, PAD, ASCENT and DESCENT. `cycle_silence_ms=0` disables automatic power cycling. An explicit nonzero setting enables the retained recovery state machine for bench/alternative experiments; it is not the selected continuous-power flight policy. The former 10 s default could prevent Linux from completing boot and is superseded. Explicit shutdown and low-voltage safety remain separate from heartbeat loss.
 
 **Clean shutdown.** STM32 sends Cmd SHUTDOWN (arg = seconds allowed) at 2 Hz. The Pi answers Ack accepted, stops the camera and navigation, syncs its storage, sends Ack done, and halts. The STM32 stops triggers and drives PB0 low, waits for Ack done plus 2 s or for the allowed time, then OE high and PI_PWR_EN low. The data partition must tolerate the timeout path (the connection guide and BOM already require a read-only OS).
 
@@ -471,7 +500,7 @@ Verified on the development laptop [sim]:
 
 Not verified:
 
-- Anything on the Pi Zero 2 W or the STM32F405. No firmware exists. Nothing was timed on the Pi.
+- Anything on the Pi Zero 2 W or the STM32F405. Firmware now exists with host/cross-build evidence in the flight-software report; nothing was timed on either target.
 - The physical layer: baud-rate accuracy, the PL011 overrun rate under camera and matching load, behaviour of the Pi's RXD with the buffer disabled, Pi boot time.
 - Single-precision quaternion arithmetic on the STM32, asynchronous gyro and accelerometer sampling, sensor group delay.
 - The exposure-to-reception latency of camera frames and whether the libcamera timestamp is steady enough for the quarter-period rule (it should be by a wide margin).

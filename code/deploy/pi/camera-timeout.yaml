@@ -1,0 +1,17 @@
+# GPL-3.0-only. Candidate VC4 pipeline config for Pi Zero 2 W.
+# Based on Raspberry Pi libcamera vc4/data/rpi_apps.yaml (see README).
+# [assumed] Four-hour timeout keeps an armed camera open during a three-hour
+# pad wait without asking STM32 to capture on the pad. 0 means computed timeout,
+# NOT unlimited. Target compatibility must be verified before deployment.
+{
+    "version": 1.0,
+    "target": "bcm2835",
+    "pipeline_handler": {
+        "min_unicam_buffers": 2,
+        "min_total_unicam_buffers": 4,
+        "camera_timeout_value_ms": 14400000,
+        "disable_startup_frame_drops": true,
+        "raw_mandatory_stream": true,
+        "output0_mandatory_stream": true
+    }
+}

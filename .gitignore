@@ -25,6 +25,18 @@ __pycache__/
 *.py[cod]
 .venv/
 venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# LaTeX build intermediates beside wiki sources; retain PDFs and figures.
+/wiki/*.aux
+/wiki/*.log
+/wiki/*.out
+/wiki/*.toc
+/wiki/*.fls
+/wiki/*.fdb_latexmk
+/wiki/*.synctex.gz
 
 # Simulation scratch files.
 /sim/**/*.log
@@ -37,3 +49,9 @@ venv/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Firmware build outputs (host tests and target images).
+/code/firmware/**/build/
+
+# Preserved synthetic independent-review probes and test scratch.
+/firmware/build/

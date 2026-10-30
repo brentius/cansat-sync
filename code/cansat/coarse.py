@@ -411,6 +411,13 @@ class Leveller:
         self.ignored = 0
         self.reset()
 
+    def clone(self):
+        """Independent copy (deepcopy without its cost): scalars shared, arrays copied."""
+        other = object.__new__(Leveller)
+        other.__dict__.update(self.__dict__)
+        other.rg, other.force = self.rg.copy(), self.force.copy()
+        return other
+
     def reset(self):
         self.rg = LEVEL.copy()          # body to the gyro frame (level if the can is level at the start)
         self.force = np.zeros(3)        # mean specific force in the gyro frame; weight is how much of it is real

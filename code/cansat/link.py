@@ -12,7 +12,7 @@ Which processor runs what:
     Raspberry Pi Zero 2 W   this module as it stands: Decoder for the STM32's
                             stream, ImuDifferencer, TickClock, FrameStamper,
                             and Encoder for PiStatus, Nav, Ack, TrigCfg
-    STM32F405               a C implementation that does not exist yet. The
+    STM32F405               the C twin in code/firmware/stm32/core/. The
                             encode side here (Encoder, ImuAccumulator) is the
                             model it must reproduce; it is not flight code
     ground tools, tests     everything
@@ -60,7 +60,7 @@ Payload layouts (offset, size, field, unit or coding).
     1  1  epoch        boot counter kept in a backup register
     2  2  fw_version
     4  1  reset_cause  RESET_* bits
-    5  1  flags        reserved, 0
+    5  1  flags        bit 0 requires current-epoch PiStatus echo
     6  2  tick_hi      wraps of TIM2 since boot
     8  4  tick
     12 4  tick_hz      1000000
@@ -193,8 +193,9 @@ FrameStamper.stamp never raise in the flight loop, hold a bounded amount of
 memory and count every kind of fault instead. Standard library only.
 
 Design-stage code. It has been executed on a development laptop only: not on
-the Pi, and no STM32 firmware exists.
+the Pi. A C twin now exists in code/firmware/stm32, with separate host/cross-build evidence.
 """
+import binascii
 import math
 import struct
 from dataclasses import dataclass, fields
@@ -225,6 +226,12 @@ CMD_SHUTDOWN, CMD_PREPARE = 1, 2
 ACK_ACCEPTED, ACK_DONE, ACK_REFUSED, ACK_UNKNOWN = 0, 1, 2, 3
 PI_BOOTING, PI_READY, PI_CAMERA, PI_NAVIGATING, PI_STOPPING, PI_FAULT = range(6)
 PIFLAG_CAMERA, PIFLAG_MAP, PIFLAG_STORAGE, PIFLAG_UNDERVOLT, PIFLAG_THROTTLED, PIFLAG_NAV = 1, 2, 4, 8, 16, 32
+# 27 October compatible use of reserved flag bits. Layout/version stay v1;
+# firmware requires an ordered current-epoch heartbeat before accepting Nav.
+HELLO_REQUIRE_EPOCH_ECHO = 1
+PIFLAG_EPOCH_ECHO = 0x0040
+PIFLAG_EPOCH_SHIFT = 8
+PIFLAG_EPOCH_MASK = 0xff00
 
 _RANGE = {'B': (0, 0xFF), 'b': (-0x80, 0x7F), 'H': (0, 0xFFFF), 'h': (-0x8000, 0x7FFF),
           'I': (0, 0xFFFFFFFF), 'i': (-0x80000000, 0x7FFFFFFF)}
@@ -247,11 +254,8 @@ _CRC = _crc_table()
 
 
 def crc(data, value=0xFFFF):
-    """telemetry.crc16 by table: CRC-16/CCITT-FALSE."""
-    table = _CRC
-    for byte in data:
-        value = ((value << 8) & 0xFFFF) ^ table[(value >> 8) ^ byte]
-    return value
+    """telemetry.crc16 by table: CRC-16/CCITT-FALSE (binascii's CRC-CCITT, no reflection or final xor)."""
+    return binascii.crc_hqx(data if isinstance(data, (bytes, bytearray, memoryview)) else bytes(data), value)
 
 
 def cobs_encode(data):

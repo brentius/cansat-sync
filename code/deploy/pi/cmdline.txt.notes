@@ -1,0 +1,5 @@
+# GPL-3.0-only. Edit the existing SINGLE LINE /boot/firmware/cmdline.txt.
+# Remove console=serial0,115200 / console=ttyAMA0,... / console=ttyS0,...
+# Keep console=tty1 if desired and preserve root=PARTUUID=... and other OS options.
+# Disable serial-getty@ttyAMA0.service and hciuart.service during provisioning.
+# Do not paste this notes file into cmdline.txt.

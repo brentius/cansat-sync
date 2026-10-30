@@ -2,12 +2,14 @@
 
 Aligned 13 October 2026. This page summarises the selected design and evidence; it does not certify a flight article. The detailed purchasing authority is [the flight computer BOM](flight_computer_bom.md), incorporating its saved MAIN completion and the 3 October temperature replacement. The [mission proposal](trn_secondary_mission_proposal.md) defines objectives; the [connection guide](flight_computer_connections.md) and [serial protocol](stm32_pi_link_protocol.md) define intended interfaces. Actual CAD/schematic artifacts describe implementation progress, not automatically a validated design.
 
+**Board allocation update, 22 October 2026:** the selected architecture separates POWER from MAIN. The [all-board BOM summary](board_bom_summary.md) allocates 35 existing fitted components to POWER and 76 to MAIN and records the required interconnect. The control schematic/layout remain combined; earlier MAIN completion, placement and connection records describe that saved implementation until CAD migration.
+
 ## 1. Selected configuration
 
 | Function | Baseline | Qualification / status |
 |---|---|---|
 | Image processing and storage | Raspberry Pi Zero 2 W, 512 MB RAM; SanDisk High Endurance 256 GB SDSQQNR-256G-GN6IA | No onboard timing or end-to-end runtime verified |
-| Timing, sensing and primary telemetry | STM32F405RGT6 | Firmware not implemented; Python reference software is not STM32 firmware |
+| Timing, sensing and primary telemetry | STM32F405RGT6 | C firmware implemented; see [software report](flight_software.md) for host/cross-build evidence; hardware unqualified |
 | IMU | Bosch BMI088 on MAIN, separate accel/gyro CS and data-ready captures | Gyro about 1 kHz; 100 Hz propagation/link design; synchronization/group delay require bench validation |
 | Pressure | TE MS561101BA03-50 on MAIN | Nominal 50 Hz pressure, slower die-temperature compensation; noise resolution is not absolute altitude accuracy; static-pressure vent needed |
 | Air-temperature prototype | TE GA10K3MCD1 external 10 kOhm NTC; 150 kOhm excitation resistor, OPA333 buffer and ADS1115 ADC, quiet 3.0 V rail | Replaces FP07; flight selection conditional on calibration and installed air response. Barometer die temperature is not air temperature |
@@ -17,8 +19,8 @@ Aligned 13 October 2026. This page summarises the selected design and evidence; 
 | Radio | Ebyte E22-900M22S; Taoglas FXP895.07.0200C FPC antenna | RF board; band/channel/power, complete antenna match and field range need verification |
 | Independent sensor log / recovery | W25Q128JVSIQ 16 MB NOR; CMT-8504-100-SMT-TR sounder; LEDs | MAIN; rolling preflight log with descent retention, not three hours of full-rate raw IMU logging |
 | Power | KeepPower protected NCR18650GA 2S1P, SKU C3-302, 7.2 V minimum 3.3 Ah, approximately 100 g | Supplier-approved charging; no balancing claim. Pack usable capacity and assembled loads unmeasured |
-| Power distribution | Master switch/fuse/reverse protection -> independent TPS62130 5.1 V and TPS62162 3.3 V; TPS22965 Pi switch, SN74LVC2G125 UART buffers; TPS7A2030 quiet 3.0 V | Primary does not depend on Linux, but shares battery/STM32 failure modes |
-| Physical arrangement | Top RF board, middle MAIN, bottom camera, side-mounted Pi; selected MAIN J4 Wuerth 61202021621 shrouded 2x10; compatible RF endpoint, keyed IDC mates and ribbon cable remain to be selected/verified | Complete envelope/access/retention not demonstrated; MAIN saved outline 44 x 64 mm; RF outline and enclosure not complete |
+| Power distribution | POWER: fuse/reverse protection, TPS62130 5.1 V, TPS62162 3.3 V, TPS22965 Pi switch, TPS7A2030 quiet 3.0 V and battery-voltage divider/filter. MAIN: MCU-controlled enables, UART buffers and local sensor conditioning/bypass | POWER–MAIN connector/pinout and remote 3.0 V noise/stability need review; primary shares battery/STM32 failure modes |
+| Physical arrangement | Separate POWER, MAIN and top RF custom boards, bottom camera and side-mounted Pi; MAIN J4 Wuerth 61202021621 remains the RF interface; additional POWER–MAIN link required | POWER position/outline/retention and revised MAIN packaging TBD; saved combined control outline is 44 x 64 mm; RF outline/enclosure and RF mates/cable remain incomplete |
 | Recovery | Passive reusable canopy, swivel, retained suspension/hardpoint | Canopy type/material/dimensions not frozen; proof-load and settled-descent tests required |
 
 Optional LIS3MDLTR is a yaw aid, not a mandatory baseline part. ICM-42688-P, alternate barometers, TMP117 digital temperature readout and high-g recorder remain alternatives. Changing to them requires coordinated circuit, driver, budget and qualification updates; they are not populated simply because an options table lists them.
@@ -26,13 +28,14 @@ Optional LIS3MDLTR is a yaw aid, not a mandatory baseline part. ICM-42688-P, alt
 ## 2. Rates, interfaces and data separation
 
 - Primary mission: temperature/pressure radio telemetry **once per second during descent**, with graphable ground logs.
+- Prelaunch power: Linux and the Pi flight service boot before loading, and Pi power remains enabled throughout pad waiting and launch. Idle image processing is not Pi power-off. Default UART silence handling invalidates secondary data without a power cycle; explicit shutdown/low-voltage safety is separate. Verify heartbeat and map/camera/storage readiness before sealing/loading; repeat readiness after any MCU reset.
 - Camera: **5 Hz capture target**. Full-rate image logging and 5 Hz TRN processing are separate targets; processing is unbenchmarked. Proposed lower processing rates/landmark counts are trade studies, not reductions of T1's 10 m / 5 s targets.
 - BMI088: high-rate acquisition/integration on STM32; snapshots of cumulative attitude/specific-force integrals every 10 ms over the serial link. The Pi uses interval differences for nominal 100 Hz navigation.
 - Camera timing: STM32 TIM3 output, TIM2 capture on the 3.3 V trigger signal, divider to camera's 1.8 V XTR; exposure timestamp corrected to the appropriate exposure centre. PPS and sensor captures share the 1 MHz TIM2 timebase; alignment target **<=0.5 ms**, unverified.
 - STM32-Pi UART: **230400 baud, 8N1**, buffered 3.3 V; COBS + CRC-16/CCITT-FALSE reference codec in `code/cansat/link.py`. PL011 configuration and hardware stream loss behavior need bench verification.
 - Radio packet: **40 bytes** defined in `code/cansat/telemetry.py`, one per second. Serial Nav's 32-byte payload is a different message on a different link. One radio packet carries one selected prediction; all comparison predictors belong in onboard logs/post-flight analysis, not three full predictions in that packet.
 - Candidate radio mode: 869.525 MHz, SF7/BW125 kHz/CR4/5, explicit header, radio CRC, eight-symbol preamble. Calculated 40-byte airtime **82.176 ms**, **8.2176%** at 1 Hz without additional transmissions. [Ofcom IR2030](https://www.ofcom.org.uk/siteassets/resources/documents/spectrum/interface-requirements/ir-2030.pdf), published 7 April 2026 and checked 13 October, permits airborne use under IR2030/1/19 at 869.40-869.65 MHz with 500 mW ERP maximum and a <=10% duty-cycle alternative. Count all radio traffic, use the organisers' allocation, verify radiated power/emissions; this is a candidate mode, not build certification.
-- Temperature excitation: BOM's <=6% duty ceiling remains the selected self-heating goal. The characterisation study's 128 SPS paired readings at 10 Hz require about 19.41% duty in its assumed schedule and are a bench candidate, not an adopted compliant acquisition setting. Resolve rate/settling/self-heating together before firmware implementation. Primary 1 Hz delivery remains required.
+- Temperature excitation: BOM's <=6% duty ceiling remains the selected self-heating goal. The characterisation study's 128 SPS paired readings at 10 Hz require about 19.41% duty in its assumed schedule and are a bench candidate, not an adopted compliant acquisition setting. The 27 October candidate firmware uses 860 SPS paired readings at 8 Hz with 2300 us settle and 6256 us reserved on-time (5.0048% calculated duty); actual settling/self-heating and cutoff require hardware verification. Primary 1 Hz delivery remains required.
 - TRN navigation uses camera, map, IMU and pressure; GNSS position/velocity is an independent comparison stream. A separately labelled GPS predictor or GPS-only fallback is allowed but must never be reported as GPS-denied TRN. A common PPS clock is not a position/velocity observation.
 
 ## 3. Budgets and model parameters
@@ -53,7 +56,7 @@ T1 retains **<=10 m horizontal position error above 80 m and first confirmed fix
 
 S1 retains **<=0.5 m/s RMS image-minus-GNSS wind difference in 20 m layers over 80-300 m**, a method-agreement metric rather than proof of absolute wind accuracy. S2's similarity/roughness inference is conditional on near-surface anemometer support and identifiable thermal/wind information. S3 swing/shear and S4 turbulence scaling are exploratory, with explicit identifiability/record-length limits. Lateral-force airspeed correction is calibration-dependent research, not a proven sensor product.
 
-Candidate Python code exists for acquisition, first-fix solving, a 17-error-state ESKF, wind retrieval, landing prediction, telemetry and the serial codec. No integrated flight application or STM32 firmware exists. First-fix-to-filter handoff, a flight fine matcher, below-80 m visual odometry, real imagery and Pi timings remain open. Study numbers are synthetic and scoped to each retained run; they are not combined flight-system results.
+Integrated candidate STM32 firmware and a Pi flight application now build on the acquisition, first-fix, fine matcher, 17-error-state ESKF, wind, landing, telemetry and link components. The [flight-software report](flight_software.md) records structure, assumptions and integrated host/cross-build evidence. Below 80 m the implemented policy is bounded IMU/barometer coasting; visual odometry, real imagery, calibration, Pi timing and hardware/flight qualification remain open. Historical study numbers retain their own scope and are not combined flight-system measurements.
 
 ## 5. Source and version policy
 

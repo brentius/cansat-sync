@@ -23,7 +23,7 @@ Layout, little-endian:
     29     4    predicted e, n  0.1 m, signed
     33     1    time to go      0.2 s steps
     34     3    pred. ellipse   major, minor in 0.5 m; angle in 180/256 deg
-    37     1    battery         2.50 V + 0.01 V steps
+    37     1    battery         2.50 V + 0.01 V steps, mean cell voltage (2S pack / 2)
     38     2    crc             CRC-16/CCITT-FALSE over bytes 0..37
 
 Signed 16-bit fields use -32768 for "not available"; unsigned 8-bit fields

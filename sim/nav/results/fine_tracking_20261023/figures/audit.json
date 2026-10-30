@@ -1,0 +1,49 @@
+{
+  "input": "sim\\nav\\results\\fine_tracking_20261023\\full_corrected",
+  "rows_verified": 4170,
+  "checks": {
+    "fresh": {
+      "accepted_matches": 15058,
+      "attempted_sites": 18420,
+      "filter_matches_accepted": 15058,
+      "horizontal_rms_recomputed_m": 0.09637310840357384,
+      "false_matches_recomputed": 0
+    },
+    "seasonal": {
+      "accepted_matches": 3607,
+      "attempted_sites": 18452,
+      "filter_matches_accepted": 2609,
+      "horizontal_rms_recomputed_m": 7.788543967542677,
+      "false_matches_recomputed": 2662
+    },
+    "near_capture": {
+      "accepted_matches": 15045,
+      "attempted_sites": 18420,
+      "filter_matches_accepted": 15045,
+      "horizontal_rms_recomputed_m": 0.13139171251149465,
+      "false_matches_recomputed": 0
+    },
+    "outside_capture": {
+      "accepted_matches": 455,
+      "attempted_sites": 17490,
+      "filter_matches_accepted": 74,
+      "horizontal_rms_recomputed_m": 254.2547638459597,
+      "false_matches_recomputed": 455
+    },
+    "textureless": {
+      "accepted_matches": 0,
+      "attempted_sites": 18439,
+      "filter_matches_accepted": 0,
+      "horizontal_rms_recomputed_m": 33.02185488688805,
+      "false_matches_recomputed": 0
+    }
+  },
+  "bands": "minimum to maximum across paired trials; not confidence intervals",
+  "sha256": {
+    "code/cansat/fine.py": "cce9a91dfab7a2deebe14ed645b76e46b645a1497c73ed9293f2a34abb0fb680",
+    "sim/nav/run_fine_mc.py": "dcdb64dde3f9cd30f755146a36f34fbe9e3aae43ece5735639f035ed2083e07e",
+    "sim/nav/analyse_fine_mc.py": "5af8641cb957dd37458c25f4215df200889bfed004d26a3576275b63d81f47ee",
+    "sim\\nav\\results\\fine_tracking_20261023\\full_corrected\\summary.json": "13687b85035b986c342974f5f206f2d558c1aa529a53c7cdc73bef5a63e3ac12",
+    "sim\\nav\\results\\fine_tracking_20261023\\full_corrected\\frames.csv": "2d4165afcad4d6708ea8cc1923fd860d6f66653f45d8ed504df6e072a8b94bcf"
+  }
+}

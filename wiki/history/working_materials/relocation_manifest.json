@@ -1,0 +1,37 @@
+[
+  {
+    "source": "tmp/pdfs/pdr_mark_scheme.pdf",
+    "destination": "wiki/history/working_materials/pdfs/pdr_mark_scheme.pdf",
+    "sha256": "cfe4fc012158577e2e591c7c52dde1e725a096bff5951789e550d96884435fcf"
+  },
+  {
+    "source": "tmp/pdfs/rubric-1.png",
+    "destination": "wiki/history/working_materials/pdfs/rubric-1.png",
+    "sha256": "c18365de254bd2414d57964bbaea6e5a65d0d96b72ca9cbb6626c3e92ce5358a"
+  },
+  {
+    "source": "tmp/pdfs/rubric-2.png",
+    "destination": "wiki/history/working_materials/pdfs/rubric-2.png",
+    "sha256": "bf7d7816c1b18b63b1d282153a03a1931929d8e69ec21daad24cb9310a2b31a7"
+  },
+  {
+    "source": "tmp/pdfs/rubric-3.png",
+    "destination": "wiki/history/working_materials/pdfs/rubric-3.png",
+    "sha256": "7e3e686cc2d107c1587dd20e9a11b2034a133fa2699cbd4870182b1a0d254f69"
+  },
+  {
+    "source": "tmp/pdfs/rubric-4.png",
+    "destination": "wiki/history/working_materials/pdfs/rubric-4.png",
+    "sha256": "5e4efa6d60947e0832f24e86a94fc95480314c3abcc2c42a0ccaebe9c54d3cef"
+  },
+  {
+    "source": "tmp/pdfs/rubric-5.png",
+    "destination": "wiki/history/working_materials/pdfs/rubric-5.png",
+    "sha256": "096a3a93c6e8444f322775c66d3cd0411a50e69d0823f1f359f89b14eac7fc46"
+  },
+  {
+    "source": "tmp/proposal_body.md",
+    "destination": "wiki/history/working_materials/proposal_body.md",
+    "sha256": "b90b87b6950dfc883e14d663bf8237c86946a653fab5fd9e00ad449bb6a4fe1d"
+  }
+]
